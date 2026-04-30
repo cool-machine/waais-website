@@ -17,6 +17,7 @@
   - Laravel backend (to be created; missing is expected): `/Users/gg1900/coding/waais-website/backend/`
   - This file: `/Users/gg1900/coding/waais-website/dev-context/DEV_CONTEXT.md`
 - [ ] Also read `/Users/gg1900/coding/waais-website/dev-context/CURRENT_STATE.md` for the latest concise handoff
+- [ ] If Vue implementation is being continued, read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md`
 - [ ] Read the Session Notes at the bottom — they reflect the most recent state of work
 - [ ] Note anything that has moved or changed, and update this file before starting
 
@@ -136,9 +137,16 @@
 
 ## 2. Current Work
 
-**Task: Ready for Vue frontend implementation**
+**Task: Vue frontend scaffold started, paused for handoff**
 
-The design phase has produced static HTML/CSS/JS prototypes for the public site, auth/member/admin app, and visual design system. George reviewed the key product flows and access rules; the next task is to scaffold the Vue frontend and convert the mockups into real routes/components.
+The design phase has produced static HTML/CSS/JS prototypes for the public site, auth/member/admin app, and visual design system. George reviewed the key product flows and access rules. Vue frontend scaffolding has started on branch `codex/vue-frontend-scaffold`, but implementation was paused due to token limits.
+
+Important current implementation state:
+- `frontend/` exists locally and is untracked in git.
+- `frontend/` was generated with Vite/Vue and then modified into a first WAAIS route/component scaffold.
+- `npm run build` passed inside `/frontend/`.
+- The Vue dev server was started on `http://127.0.0.1:5174/` and then stopped before handoff.
+- Read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md` before continuing implementation.
 
 - [x] Audit existing React codebase
 - [x] Define stack, domain, architecture, design direction
@@ -163,6 +171,12 @@ The design phase has produced static HTML/CSS/JS prototypes for the public site,
 - [x] Replace simplified membership form with the current Google Forms questionnaire fields
 - [x] Replace dead external Forum nav link with an internal forum preview page until Discourse is installed
 - [x] Hand mockup to developer as the visual spec for the Vue build
+- [x] Create branch `codex/vue-frontend-scaffold`
+- [x] Create initial `/frontend/` Vite/Vue scaffold
+- [x] Install Vue Router, Pinia, Tailwind, and Tailwind Vite plugin
+- [x] Add first-pass public Vue route/component scaffold
+- [x] Verify frontend build with `npm run build`
+- [ ] Review, clean, stage, and commit `/frontend/`
 
 **Design decisions from mockup review**
 - Wharton colors (#011F5B navy, #C41E3A crimson) are confirmed — do not change these
@@ -203,7 +217,7 @@ The design phase has produced static HTML/CSS/JS prototypes for the public site,
 - [x] Final design sign-off before dev starts, especially membership/auth flow and admin content management UX
 
 ### Phase 1 — Public site (Vue frontend)
-- [ ] Scaffold Vue 3 project (Vite + Tailwind + Vue Router + Pinia)
+- [x] Scaffold Vue 3 project (Vite + Tailwind + Vue Router + Pinia) locally; not committed yet
 - [ ] Convert design-system tokens/components into reusable Vue/Tailwind primitives
 - [ ] Homepage: video hero, scroll motion, mission, stats, events preview, startup preview, partner preview, CTA
 - [ ] Events page: upcoming and past, filters, clickable event cards, event detail pages, and past-event recap pages
@@ -314,6 +328,14 @@ The design phase has produced static HTML/CSS/JS prototypes for the public site,
 ## Session Notes
 
 > Newest entry at the top. Update this at the end of every session.
+
+**April 30, 2026 — Vue frontend scaffold started**
+- Did: created branch `codex/vue-frontend-scaffold`
+- Did: generated `/frontend/` with Vite/Vue, installed dependencies, added Vue Router, Pinia, Tailwind, and first WAAIS public route/component scaffold
+- Did: added Vue pages for Home, Events, Startups, About, Partners, Membership, Forum Preview, Contact, and Legal, plus reusable layout/card/hero components and static data files
+- Did: verified `npm run build` succeeds inside `/frontend/`
+- Left off at: `/frontend/` exists locally but is untracked; implementation paused for handoff before cleanup/commit
+- Watch out for: default Vite README/assets may still need cleanup; Vue pages are not pixel-perfect mockup conversions yet; backend/Laravel not started
 
 **April 30, 2026 — Product review decisions finalized**
 - Did: reviewed and documented membership/auth, role model, application form, admin content governance, event rules, startup directory rules, Discourse/forum behavior, data ownership, audit trail, and email/notification requirements

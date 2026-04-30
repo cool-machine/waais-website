@@ -123,21 +123,27 @@ The forum UX target is similar to PyTorch forums or fast.ai forums: simple categ
 
 ## What We Are Doing Now
 
-The product/design review decisions are documented and the mockups are ready to be used as the visual/UX spec for Vue implementation. The next practical step is to scaffold the Vue frontend and convert the static mockups into real routes/components.
+Vue frontend scaffolding has started on branch `codex/vue-frontend-scaffold`, but implementation was paused because the conversation was reaching the token limit. Read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md` before continuing.
+
+At handoff time, `frontend/` exists locally but is untracked in git. The next LLM/developer must inspect it before staging or committing.
 
 ## Remaining Next Steps
 
-1. Scaffold `/frontend/` with Vue 3, Vite, Tailwind, Vue Router, and likely Pinia.
-2. Convert the static mockups into reusable Vue routes and components.
-3. Temporarily deploy the Vue frontend to GitHub Pages while backend work is not ready.
-4. Replace placeholder logo/brand mark when George provides it.
-5. Scaffold `/backend/` with Laravel/PHP.
-6. Implement Google OAuth, pending approval, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO.
-7. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
+1. Inspect the untracked `/frontend/` scaffold and read `VUE_FRONTEND_HANDOFF.md`.
+2. Clean up the Vue scaffold README/assets as needed.
+3. Re-run `npm run build` in `/frontend/`.
+4. Continue converting the static public mockup into Vue routes/components.
+5. Commit the Vue scaffold once it is clean enough.
+6. Temporarily deploy the Vue frontend to GitHub Pages while backend work is not ready.
+7. Replace placeholder logo/brand mark when George provides it.
+8. Scaffold `/backend/` with Laravel/PHP later.
+9. Implement Google OAuth, pending approval, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO later.
+10. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
 
 ## Watch Outs
 
 - The deployed site is static HTML/CSS/JS, not Vue and not PHP.
+- The new Vue scaffold is local and untracked until reviewed/committed.
 - The admin page is reached through `mockups/app-dashboard-admin-auth.html`, not from the public mockup root.
 - Browser cache may show an old GitHub Pages version; hard refresh or open the direct mockup URLs.
 - `legacy/` exists locally but is ignored by git.
