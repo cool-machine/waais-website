@@ -41,6 +41,7 @@
 - Backend: **Laravel (PHP)** — REST API, auth, events, Discourse SSO relay
 - Forum: **Discourse** (self-hosted on Azure VM)
 - Auth: **Google OAuth** via Laravel Socialite — new accounts start as `pending`, require admin approval
+- Future auth possibility: PennKey could be ideal for University of Pennsylvania / Wharton affiliation verification, but it likely requires Penn/Wharton IT approval. Do not block the first implementation on PennKey; keep Google OAuth for now and document PennKey as a future institutional integration.
 - Deployment: **Microsoft Azure** non-profit grant (~$2,000/year, ~$167/month cap)
 - Database: **Azure Database for MySQL**
 
@@ -57,19 +58,56 @@
 - Homepage page-body direction: use a hybrid public-site treatment — dark hero/top shell, then selected white/off-white scroll sections for readability and contrast. Keep dashboard/admin/auth dark.
 
 **Users & roles**
-- `pending` → registers via Google OAuth, cannot access dashboard or forum yet
-- `member` → approved by admin, gets dashboard + forum access
+- `anonymous visitor` → logged-out public visitor; can see public pages only
+- `pending` → registered / application submitted / Google identity known, but not approved; not shown in directory or forums, including private forums
+- `member` → approved alumni member; gets dashboard + forum access
+- `student` → current student; must be tracked distinctly from alumni because access rules may differ
+- `partner_guest` → invited non-alumni partner/guest; can receive full access when approved/invited
 - `admin` → all member features + user management, event management, announcements, moderation
+- `super_admin` → George plus at most two designated super admins; only super admins can promote a user to admin or remove admin privileges
 - Discourse SSO is automatic — no separate forum account needed
 - Admins: George + a small group (names TBD)
+- Application editing: applicants/members should be able to edit submitted application/profile fields, similar to the current Google Forms workflow, but should not be able to delete their application.
+- Application audit history: keep a change history so admins can see what changed, when, and by whom.
+- Identity fields: after account creation, users should not be able to freely change legal identity fields such as first name, last name, verified email, or linked Google identity without admin review.
+- Display identity: users may set a display name/username for public/member-facing visibility where appropriate. Admins should still see the real identity and audit history.
+- Anonymous posting: approved members may be able to choose anonymous display for individual posts/comments where enabled. This is separate from `anonymous visitor`; admins/super admins should retain the ability to audit the real identity if needed.
+- Rejected applicants can reapply; they do not necessarily need a new invitation.
+- Form/settings governance: admins or super admins should be able to configure which application fields are visible/required where allowed, but members/non-admins cannot. Super admins can override admin settings and lock critical settings.
+- Content governance: admins can edit, publish, hide, archive/remove events, startups, partners, homepage cards, and announcements. Super admins can override admin changes and change whether admins may publish directly.
+- Team member profiles: team members should be able to edit their own names/profile details. Admins can manage team member records as needed, but team members should own routine self-updates.
+- Data ownership: after public content is approved/published, only admins or super admins can edit events, startups, partners, homepage cards, announcements, and other public content. Regular members cannot directly change public content.
+- Admin permissions: at launch, all admins have equal permissions. Super admins have higher privileges and can override anything admins can do.
+- Remove behavior: remove should first mean hidden/archived for a retention period; hard deletion can happen later according to policy.
+- Audit trail: record who did what and when for application edits, admin settings changes, content changes, publish/hide/archive/remove actions, and role changes.
+- Public content status: all public content should support draft, published, hidden, and archived statuses, at least visible to super admins.
+- Email/notifications: application submission sends an automatic email thanking the applicant by name and saying WAAIS will get back to them as soon as possible.
+- Email/notifications: admins receive an email when a new application is submitted.
+- Email/notifications: approval emails and request-more-information emails should be supported.
+- Email/notifications: rejection emails are optional and only sent if an admin chooses to send one.
+- Email/notifications: event registration sends confirmation and reminder emails; reminder timing is admin-configurable and defaults to two days before the event.
+- Email/notifications: announcements go by both email and dashboard notification.
+- Event visibility: each event must support a visibility setting of public, members-only, or mixed.
+- Event registration: current registration may happen through external tools such as NationBuilder; WAAIS should support external registration links now and can add internal RSVP/registration later.
+- Events need capacity limits and waitlists.
+- Cancelled events should be hidden from public views but remain visible to admins.
+- Past events should support recap pages.
+- Forum visibility: public users can see some public forum content; approved members should be able to see all member forums.
+- Startup submissions: approved members can submit startup listings; admins review/approve before they are published on the website.
+- Startup directory: every published startup should have a dedicated detail page.
 - Forum URL decision: use `forum.whartonai.studio`, not `/forum`, to avoid fragile subfolder/reverse-proxy complexity
 - Public site may keep a `/forum` route or nav link that redirects users to `https://forum.whartonai.studio`
 - Public navigation should include a Forum item. In mockups, it opens an internal forum preview page so review does not navigate to the not-yet-installed `forum.whartonai.studio`.
 - Forum taxonomy should imitate the current WhatsApp structure with two major category families:
-  - Region-based groups: New York, San Francisco, London, etc.
-  - Industry-based groups: Finance, Media & Entertainment, etc.
+  - Industry-based groups are primary.
+  - Region-based groups also exist, but are secondary.
+  - Users should be able to define/propose regions and industries even if they are not in the launch list.
+  - Launch industry examples: Finance, Fintech, Investments in AI, AI Engineering, AI Theory, AI in Business, Publishing.
 - Discourse UX target: close to PyTorch forums / fast.ai forums — category grid, topic lists, threaded discussion feel, straightforward technical-community navigation
-- Topic creation and replies may require approval/moderation; final moderation rules are still TBD
+- Topic creation and replies inside approved industry/category spaces should not require pre-approval by default.
+- Admins must be able to remove or moderate posts/topics if behavior or content is inappropriate.
+- Forum public/private visibility: publishers can request that a discussion be public, but admins must approve whether it becomes public.
+- Public site forum teasers: show latest/selected public forum topics as teasers, but admins must approve or curate which topics appear publicly.
 
 **Page inventory — ~20 pages total**
 
@@ -168,8 +206,8 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] Scaffold Vue 3 project (Vite + Tailwind + Vue Router + Pinia)
 - [ ] Convert design-system tokens/components into reusable Vue/Tailwind primitives
 - [ ] Homepage: video hero, scroll motion, mission, stats, events preview, startup preview, partner preview, CTA
-- [ ] Events page: upcoming and past, filters, clickable event cards, and event detail pages
-- [ ] Startups directory: public teaser + gated member-only full directory treatment, clickable startup cards, and startup detail pages
+- [ ] Events page: upcoming and past, filters, clickable event cards, event detail pages, and past-event recap pages
+- [ ] Startups directory: public teaser + gated member-only full directory treatment, member startup submissions, admin approval, clickable startup cards, and startup detail pages
 - [ ] About / Team
 - [ ] Partners with clickable partner cards leading to partner detail pages or external partner websites
 - [ ] Membership landing page: existing-member sign-in, new-applicant application, non-member actions
@@ -179,8 +217,24 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 ### Phase 2 — Auth & accounts (Laravel)
 - [ ] Google OAuth (Laravel Socialite)
 - [ ] User model: name, email, role, status
-- [ ] Membership application data model should mirror the current Google Form: email, first name, last name, WhatsApp phone, alumnus/a yes/no, school affiliation, graduation year, inviter name for non-alumni, primary/secondary location, LinkedIn, experience, expertise, industries to add value to, industries to extend expertise to, availability, gender, age
+- [ ] Role/status model must support anonymous visitor, pending, member, student, partner/guest, admin, and super_admin
+- [ ] Pending users must not appear in directory or forum
+- [ ] Only super_admin users can promote another user to admin or remove admin privileges
+- [ ] Limit super_admin users to George plus at most two designated others
+- [ ] Partner/guest users can receive full access when explicitly approved/invited
+- [ ] Membership application data model should mirror the current Google Form: email, first name, last name, WhatsApp phone, alumnus/a yes/no, free-text school affiliation, graduation year, inviter name for non-alumni, primary/secondary location, LinkedIn, experience, expertise, industries to add value to, industries to extend expertise to, availability, optional gender, optional age
+- [ ] WhatsApp phone is required because it is currently used for WhatsApp group onboarding
+- [ ] Gender and age are optional
+- [ ] No file upload / proof of affiliation required for v1; admin review is enough
+- [ ] Alumni question must be yes/no only
+- [ ] School affiliation must be free text, not a predefined student/faculty/staff dropdown
 - [ ] Keep alumni status explicit because non-alumni/current students may need different access rules
+- [ ] Allow applicants/members to edit application/profile answers after submission, but do not allow self-deletion
+- [ ] Store application revision history for admin review and conflict resolution
+- [ ] Lock legal identity fields after verification unless admin-approved
+- [ ] Add optional public/member-facing display name or username separate from real identity
+- [ ] Support optional anonymous posting/display mode for approved members where enabled, while preserving admin auditability
+- [ ] Support rejection plus later reapplication
 - [ ] Approval flow: pending → admin approves → active
 - [ ] Session management (Laravel Sanctum)
 - [ ] Discourse SSO relay endpoint
@@ -195,10 +249,22 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] Pending approvals queue
 - [ ] User list: view, suspend, promote
 - [ ] Event management: create, edit, publish, cancel
+- [ ] Event visibility setting: public, members-only, or mixed
+- [ ] External registration link support, including current NationBuilder-style registration flow
+- [ ] Capacity limits and waitlist support
+- [ ] Cancelled events hidden publicly but visible to admins
+- [ ] Past event recap page management
 - [ ] Public content management: create/edit/publish/hide/remove cards for events, startups, partners, homepage modules
-- [ ] Startup listing management: review/approve/update startup cards and member-only profile visibility
+- [ ] Startup listing management: members can submit listings; admins review/approve/update startup cards and member-only profile visibility
 - [ ] Partner listing management: create/edit/publish/hide partner cards
+- [ ] Team member self-editing for own profile details, with admin/super-admin oversight
 - [ ] Announcements: broadcast to all or segments
+- [ ] Application form settings: configure field visibility/requiredness where allowed; critical settings lockable by super_admin
+- [ ] Content publishing policy setting: default admins can publish directly; super_admin can change this policy
+- [ ] Remove/archive workflow: hide/archive first, hard delete only later by policy
+- [ ] Admin audit log: who did what and when for content, form settings, role changes, and application/profile edits
+- [ ] Public content statuses: draft, published, hidden, archived
+- [ ] Equal admin permissions at launch, with super_admin override privileges
 - [ ] Forum moderation shortcuts
 - [ ] Basic analytics
 
@@ -208,10 +274,13 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] SSL certificate for `forum.whartonai.studio`
 - [ ] Custom dark theme matching site design
 - [ ] Discourse Connect (SSO) → Laravel relay
-- [ ] Seed initial forum categories:
-  - Region-based: New York, San Francisco, London, etc.
-  - Industry-based: Finance, Media & Entertainment, etc.
-- [ ] Decide moderation rules: who can create topics, whether first topics require approval, whether replies require approval, and which categories are members-only
+- [ ] Seed initial forum categories with industry-first structure; initial examples include Finance, Fintech, Investments in AI, AI Engineering, AI Theory, AI in Business, Publishing
+- [ ] Support user-defined/proposed regions and industries beyond launch categories
+- [ ] Topic creation and replies inside approved categories should not require pre-approval by default
+- [ ] Admins must be able to remove/moderate inappropriate posts/topics
+- [ ] Public discussion workflow: publisher can request public visibility; admin approves whether it becomes public
+- [ ] Forum visibility split: public users can see some public forum content; approved members can see all member forums
+- [ ] Public site should show latest/selected public forum topics as teasers, curated or approved by admins
 - [ ] WhatsApp group member invite / migration flow
 
 ### Phase 6 — Deployment & launch
@@ -222,10 +291,20 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] End-to-end smoke test
 - [ ] WhatsApp group migration
 
+### Email and notification requirements
+- [ ] Application auto-reply: thank applicant by name and confirm WAAIS will respond as soon as possible
+- [ ] Admin notification email for each new application
+- [ ] Approval email
+- [ ] Request-more-information email
+- [ ] Optional rejection email, sent only when an admin chooses to send it
+- [ ] Event registration confirmation email
+- [ ] Event reminder email with admin-configurable timing, default two days before event
+- [ ] Announcements sent through both email and dashboard notification
+
 ### Open questions
+- [ ] PennKey feasibility: can WAAIS verify PennKey without institutional approval, or is Penn/Wharton IT approval required?
 - [ ] Exact initial Discourse region categories?
-- [ ] Exact initial Discourse industry categories?
-- [ ] Discourse moderation model: approve new topics only, approve first post per new member, approve replies, or rely on trust levels?
+- [ ] Exact initial Discourse industry categories beyond Finance, Fintech, Investments in AI, AI Engineering, AI Theory, AI in Business, Publishing?
 - [ ] Who are the other admins besides George?
 - [ ] API location: `whartonai.studio/api` or `api.whartonai.studio`?
 - [ ] Email provider for transactional mail (approvals, event reminders)?

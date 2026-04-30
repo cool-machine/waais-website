@@ -42,9 +42,49 @@ The Membership page should present:
 - New applicants: Apply for membership.
 - Non-members: Propose a topic, partner with WAAIS, or request a startup listing.
 
-The application form should mirror the current Google Forms questionnaire: email, first name, last name, WhatsApp phone, alumnus/a yes/no, school affiliation, graduation year, inviter name for non-alumni, primary/secondary location, LinkedIn, experience, expertise, industries to add value to, industries to extend expertise to, availability, gender, and age. Alumni status must be explicit because non-alumni/current students may need different access rules from alumni. After submission, the user lands in a pending approval state until an admin approves them.
+The application form should mirror the current Google Forms questionnaire: email, first name, last name, required WhatsApp phone, alumnus/a yes/no, free-text school affiliation, graduation year, inviter name for non-alumni, primary/secondary location, LinkedIn, experience, expertise, industries to add value to, industries to extend expertise to, availability, optional gender, and optional age. Alumni status must be yes/no only. School affiliation should be free text so users can describe student, faculty, staff, school, program, or other affiliation without a predefined dropdown. No proof upload is needed for v1; admin review is enough. After submission, the user lands in a pending approval state until an admin approves them.
 
 The startup directory is designed as partially gated: public users can see teasers, but full member/startup profiles require approved member access.
+
+Membership/auth review decisions:
+
+- PennKey would be the best long-term affiliation signal if Penn/Wharton allows integration, but do not block the first implementation on it. Use Google OAuth first and keep PennKey as a future institutional integration question.
+- Role vocabulary: `anonymous visitor` means a logged-out public visitor, not an approved member hiding their name.
+- Approved members may later get an anonymous posting/display option for specific posts/comments where enabled. Admins/super admins should still be able to audit real identity if needed.
+- Pending users are not shown in the member directory or in forums, including private forums.
+- Students must be tracked distinctly from alumni because access rules may differ.
+- Invited non-alumni partners/guests can receive full access when approved/invited.
+- Only `super_admin` users can promote a user to admin or remove admin privileges. This group should be George plus at most two designated others.
+- Applicants/members should be able to edit submitted application/profile answers, similar to the current Google Forms workflow.
+- Applicants/members should not be able to delete their application.
+- The system should keep application/profile revision history so admins can see what changed, when, and by whom.
+- Users should not be able to freely change legal identity fields such as first name, last name, verified email, or linked Google identity after verification.
+- Users may set a display name/username for public/member-facing visibility if they want partial anonymity in community contexts. Admins should still see real identity.
+- Rejected applicants can reapply; a new invitation is not necessarily required.
+- Admins/super admins should be able to configure which application fields are visible/required where allowed; members and non-admins cannot change form settings.
+- Admins can edit, publish, hide, and archive/remove events, startups, partners, homepage cards, and announcements.
+- Super admins can override admin changes and can change whether admins are allowed to publish directly.
+- Team members should be able to edit their own names/profile details.
+- Only admins and super admins can edit public content such as partners, events, startups, homepage cards, and announcements after approval/publishing.
+- At launch, all admins have equal permissions. Super admins have higher privileges and can override admin actions.
+- Remove should first mean hidden/archived for a retention period; hard deletion can happen later according to policy.
+- The system needs an audit trail for who did what and when, covering content edits, publish/hide/archive/remove actions, form-setting changes, application/profile edits, and role changes.
+- Public content should support draft, published, hidden, and archived statuses, at least visible to super admins.
+- Application submission should send an automatic email thanking the applicant by name and saying WAAIS will get back to them as soon as possible.
+- Admins should receive an email for each new application.
+- Approval and request-more-information emails should be supported.
+- Rejection emails are optional and only sent if an admin chooses to send one.
+- Event registration should send confirmation and reminder emails. Reminder timing is admin-configurable and defaults to two days before the event.
+- Announcements should go by both email and dashboard notification.
+- Events can be public, members-only, or mixed; each event needs a visibility setting.
+- Event registration can stay external for now, including current NationBuilder-style registration links, while WAAIS keeps room for internal RSVP later.
+- Events need capacity limits and waitlists.
+- Cancelled events should be hidden from public views but visible to admins.
+- Past events should have recap pages.
+- Public users can see some public forum content; approved members should be able to see all member forums.
+- Approved members can submit startup listings.
+- Startup listings require admin approval before they are published on the website.
+- Every published startup should have a dedicated detail page.
 
 ## Admin / Content Management Now Designed
 
@@ -65,12 +105,12 @@ Important: this is not implemented as working software yet. It is a static HTML 
 
 Discourse should be installed later, not inside this GitHub Pages/static mockup phase. It will run on its own Azure VM using the official Docker-based Discourse install, with DNS pointing `forum.whartonai.studio` to that VM.
 
-The forum should imitate the structure people already understand from the WhatsApp groups:
+The forum should imitate the structure people already understand from the WhatsApp groups, with industry-based organization as the primary structure and region-based organization as a secondary structure:
 
-- Region-based categories: New York, San Francisco, London, etc.
-- Industry-based categories: Finance, Media & Entertainment, etc.
+- Initial industry examples: Finance, Fintech, Investments in AI, AI Engineering, AI Theory, AI in Business, Publishing.
+- Regions and industries should not be limited to a fixed launch list; users should be able to define/propose regions and industries not already listed.
 
-The forum UX target is similar to PyTorch forums or fast.ai forums: simple category lists, topic lists, and discussion threads. Moderation rules are still open: WAAIS needs to decide whether new topics require approval, whether replies require approval, and whether rules vary by category or member trust level.
+The forum UX target is similar to PyTorch forums or fast.ai forums: simple category lists, topic lists, and discussion threads. Topic creation and replies inside approved categories should not require pre-approval by default. Admins must be able to remove or moderate inappropriate posts/topics. If a discussion is public, that public visibility is requested by the publisher and approved by an admin. The public site should show latest/selected public forum topics as teasers, but admins must approve or curate which topics appear.
 
 ## Current URLs
 
