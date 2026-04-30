@@ -101,7 +101,10 @@ The design phase is in progress. A first-pass interactive mockup of all 5 main p
 - [x] Isolate old React/Vite website under `/legacy/old-react-site/` as reference-only material
 - [x] Create interactive app/auth/admin mockup: Sign In, Pending Approval, member dashboard pages, admin dashboard pages
 - [x] Create visual design system mockup: colors, surfaces, typography, buttons, cards, tables, forms, tags
-- [x] Create public-site mockup: Home, Events, Startups, About, Partners, Get Involved, Contact, Legal
+- [x] Create public-site mockup: Home, Events, Startups, About, Partners, Membership, Contact, Legal
+- [x] Correct membership UX: Become a Member landing, existing-member sign-in, new-member application form, non-member actions
+- [x] Add gated directory treatment for startup directory preview
+- [x] Expand admin mockup for public content management: events, startups, partners, homepage cards
 - [x] Add homepage/public-site scroll motion: reveal-on-scroll, left/right converging sections, stat count-ups, floating topic cluster, subtle hero parallax, reduced-motion fallback
 - [x] Add local homepage hero video asset from George's licensed YouTube upload
 - [x] Resolve navbar color: selected steel water blue `#256F8F`
@@ -206,8 +209,14 @@ The design phase is in progress. A first-pass interactive mockup of all 5 main p
 - Left off at: GitHub Pages is enabled; deployment may take a short time to become available after the first push
 - Watch out for: `legacy/` remains ignored and should not be pushed
 
+**April 30, 2026 — Membership flow and admin CMS mockups**
+- Did: changed the public CTA/nav from generic Get Involved to Become a Member; the membership page now has existing-member Sign In, new-applicant Apply for Membership, and non-member actions for topic proposals, partnerships, and startup listing requests
+- Did: added a membership application form state and a gated startup-directory preview explaining that full startup profiles require approved member access
+- Did: expanded `/mockups/app-dashboard-admin-auth.html` with a Public Content admin section for editing/publishing/hiding/removing public-site cards for events, startups, partners, and homepage content
+- Left off at: these are mockup-only flows; real sign-in, admin permissions, CMS persistence, and public card publishing still need Vue/Laravel implementation
+
 **April 30, 2026 — Public site mockup**
-- Did: added `/mockups/public-site.html`, a clickable public website prototype covering Home, Events, Startups, About, Partners, Get Involved, Contact, and Legal with Privacy/Cookie/GDPR sub-tabs
+- Did: added `/mockups/public-site.html`, a clickable public website prototype covering Home, Events, Startups, About, Partners, Membership/Get Involved, Contact, and Legal with Privacy/Cookie/GDPR sub-tabs
 - Did: added old-site-inspired scroll motion to `/mockups/public-site.html`: reveal-on-scroll sections/cards, left/right converging card motion, staggered delays, count-up metrics, floating topic cluster, hero background parallax, and `prefers-reduced-motion` support
 - Did: extended the homepage length with What We Do, featured startups, community voice/testimonials, newsletter, partners, and CTA-style sections
 - Did: downloaded George's licensed YouTube video into `/mockups/assets/waais-hero-video.mp4` and wired it into the home hero with a dark overlay, poster fallback, and reduced-motion fallback

@@ -764,6 +764,7 @@
             <button class="page-tab" data-page="approvals">Approvals <span class="count">8</span></button>
             <button class="page-tab" data-page="users">User management</button>
             <button class="page-tab" data-page="events-admin">Event management</button>
+            <button class="page-tab" data-page="content-admin">Public content</button>
             <button class="page-tab" data-page="announcements">Announcements</button>
           </div>
         </aside>
@@ -976,8 +977,8 @@
             <div class="hero-line">
               <div>
                 <p class="eyebrow">Admin dashboard</p>
-                <h1>Manage approvals, events, members, and announcements.</h1>
-                <p class="lede">Admin screens are denser and more operational, while keeping the same premium dark visual system.</p>
+                <h1>Manage approvals, public content, members, and announcements.</h1>
+                <p class="lede">Admins control the small public-site cards: events, startups, partners, announcements, and member approvals.</p>
               </div>
               <button class="solid-button">Create announcement</button>
             </div>
@@ -985,7 +986,7 @@
               <div class="metric"><span>Pending approvals</span><b>8</b></div>
               <div class="metric"><span>Active members</span><b>284</b></div>
               <div class="metric"><span>Published events</span><b>12</b></div>
-              <div class="metric"><span>Open reports</span><b>3</b></div>
+              <div class="metric"><span>Public cards</span><b>46</b></div>
             </div>
             <div class="grid main" style="margin-top:16px">
               <div class="card">
@@ -993,15 +994,17 @@
                 <div class="table">
                   <div class="table-row"><div><h3>Approve 8 new applicants</h3><p class="small">3 appear to match Wharton emails</p></div><span class="status pending">Needs review</span><span class="small">Today</span><span></span><button class="tiny-button">Review</button></div>
                   <div class="table-row"><div><h3>Publish Demo Night</h3><p class="small">Draft event missing speaker details</p></div><span class="status">Draft</span><span class="small">This week</span><span></span><button class="tiny-button">Edit</button></div>
+                  <div class="table-row"><div><h3>Review startup listing</h3><p class="small">New listing request from AutoFlow AI</p></div><span class="status pending">Pending</span><span class="small">Today</span><span></span><button class="tiny-button">Review</button></div>
                 </div>
               </div>
               <div class="card">
                 <h2>Quick actions</h2>
                 <div class="grid">
                   <button class="ghost-button">Create event</button>
+                  <button class="ghost-button">Add startup</button>
+                  <button class="ghost-button">Add partner</button>
                   <button class="ghost-button">Invite member</button>
                   <button class="ghost-button">Open Discourse admin</button>
-                  <button class="danger-button">Review reports</button>
                 </div>
               </div>
             </div>
@@ -1051,8 +1054,8 @@
             <div class="hero-line">
               <div>
                 <p class="eyebrow">Event management</p>
-                <h1>Create, publish, and manage member events.</h1>
-                <p class="lede">A practical event editor with status, capacity, visibility, and registration controls.</p>
+                <h1>Create, publish, cancel, and remove events.</h1>
+                <p class="lede">Admins can edit public event cards, hide events that did not happen, cancel registrations, and publish new sessions.</p>
               </div>
               <button class="solid-button">Create event</button>
             </div>
@@ -1065,15 +1068,67 @@
                   <div class="field"><label>Capacity</label><input value="50" /></div>
                   <div class="field"><label>Status</label><select><option>Published</option><option>Draft</option><option>Cancelled</option></select></div>
                   <div class="field"><label>Visibility</label><select><option>Members only</option><option>Public</option></select></div>
+                  <div class="field"><label>Website placement</label><select><option>Homepage + Events page</option><option>Events page only</option><option>Hidden from public site</option></select></div>
+                  <div class="field"><label>Registration</label><select><option>Open</option><option>Waitlist</option><option>Closed</option></select></div>
                   <div class="field full"><label>Description</label><textarea>Private dinner for AI founders and operators in the WAAIS community.</textarea></div>
+                </div>
+                <div class="row" style="margin-top:16px">
+                  <button class="solid-button">Publish changes</button>
+                  <button class="ghost-button">Save draft</button>
+                  <button class="danger-button">Cancel / hide event</button>
                 </div>
               </div>
               <div class="card">
                 <h2>Published events</h2>
-                <div class="timeline">
-                  <div class="timeline-item"><span class="dot"></span><div><h3>AI Founder Salon</h3><p class="small">42 / 50 registered</p></div></div>
-                  <div class="timeline-item"><span class="dot"></span><div><h3>Agentic Workflows</h3><p class="small">18 / 100 registered</p></div></div>
-                  <div class="timeline-item"><span class="dot"></span><div><h3>Demo Night</h3><p class="small">Draft, missing speakers</p></div></div>
+                <div class="table">
+                  <div class="table-row"><div><h3>AI Founder Salon</h3><p class="small">Homepage + Events</p></div><span class="status good">Published</span><span class="small">42 / 50</span><span></span><button class="tiny-button">Edit</button></div>
+                  <div class="table-row"><div><h3>Agentic Workflows</h3><p class="small">Events page only</p></div><span class="status good">Published</span><span class="small">18 / 100</span><span></span><button class="tiny-button">Edit</button></div>
+                  <div class="table-row"><div><h3>Demo Night</h3><p class="small">Not organized, hide from site</p></div><span class="status pending">Draft</span><span class="small">0 / 80</span><span></span><button class="tiny-button">Hide</button></div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article id="content-admin" class="page">
+            <div class="hero-line">
+              <div>
+                <p class="eyebrow">Public content</p>
+                <h1>Edit website cards without touching code.</h1>
+                <p class="lede">This is the CMS-style admin area for public events, startup cards, partner cards, homepage feature cards, and visibility controls.</p>
+              </div>
+              <button class="solid-button">Create card</button>
+            </div>
+            <div class="grid four">
+              <div class="metric"><span>Events</span><b>12</b></div>
+              <div class="metric"><span>Startups</span><b>6</b></div>
+              <div class="metric"><span>Partners</span><b>8</b></div>
+              <div class="metric"><span>Hidden cards</span><b>4</b></div>
+            </div>
+            <div class="grid main" style="margin-top:16px">
+              <div class="card">
+                <h2>Content inventory</h2>
+                <div class="table">
+                  <div class="table-row header"><span>Card</span><span>Type</span><span>Status</span><span>Placement</span><span>Action</span></div>
+                  <div class="table-row"><div><h3>Neural Insights</h3><p class="small">Founder startup listing</p></div><span class="tag">Startup</span><span class="status good">Published</span><span class="small">Directory teaser</span><button class="tiny-button">Edit</button></div>
+                  <div class="table-row"><div><h3>Microsoft Azure</h3><p class="small">Partner logo card</p></div><span class="tag">Partner</span><span class="status good">Published</span><span class="small">Partners page</span><button class="tiny-button">Edit</button></div>
+                  <div class="table-row"><div><h3>Demo Night</h3><p class="small">Event not organized</p></div><span class="tag">Event</span><span class="status pending">Hidden</span><span class="small">None</span><button class="tiny-button">Restore</button></div>
+                  <div class="table-row"><div><h3>AutoFlow AI</h3><p class="small">New founder submission</p></div><span class="tag">Startup</span><span class="status pending">Review</span><span class="small">Pending</span><button class="tiny-button">Review</button></div>
+                </div>
+              </div>
+              <div class="card">
+                <h2>Edit selected card</h2>
+                <div class="form-grid">
+                  <div class="field full"><label>Title</label><input value="Neural Insights" /></div>
+                  <div class="field"><label>Content type</label><select><option>Startup</option><option>Event</option><option>Partner</option><option>Homepage feature</option></select></div>
+                  <div class="field"><label>Status</label><select><option>Published</option><option>Draft</option><option>Hidden</option><option>Pending review</option></select></div>
+                  <div class="field full"><label>Short description</label><textarea>AI-powered analytics platform for extracting actionable insights from complex datasets.</textarea></div>
+                  <div class="field"><label>Placement</label><select><option>Public teaser only</option><option>Members-only full card</option><option>Homepage featured</option><option>Hidden</option></select></div>
+                  <div class="field"><label>Image / logo</label><input value="neural-insights.jpg" /></div>
+                </div>
+                <div class="row" style="margin-top:16px">
+                  <button class="solid-button">Publish</button>
+                  <button class="ghost-button">Save draft</button>
+                  <button class="danger-button">Hide / remove</button>
                 </div>
               </div>
             </div>

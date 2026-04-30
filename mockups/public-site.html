@@ -796,6 +796,24 @@
         border-color: var(--nav);
       }
 
+      .application-panel {
+        display: none;
+        margin-top: 18px;
+      }
+
+      .application-panel.active {
+        display: block;
+      }
+
+      .lock-box {
+        border: 1px solid var(--paper-line);
+        border-radius: var(--radius);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(238, 244, 248, 0.94)),
+          repeating-linear-gradient(135deg, transparent 0 10px, rgba(37, 111, 143, 0.04) 10px 20px);
+        padding: 22px;
+      }
+
       .legal-panel {
         display: none;
       }
@@ -1053,7 +1071,7 @@
           <button class="nav-tab" data-page="startups">Startups</button>
           <button class="nav-tab" data-page="about">About</button>
           <button class="nav-tab" data-page="partners">Partners</button>
-          <button class="nav-tab" data-page="involved">Get involved</button>
+          <button class="nav-tab" data-page="involved">Become a member</button>
           <button class="nav-tab" data-page="contact">Contact</button>
           <button class="nav-tab" data-page="legal">Legal</button>
         </nav>
@@ -1088,7 +1106,7 @@
                 executives using artificial intelligence in the real world.
               </p>
               <div class="row">
-                <button class="button primary nav-tab" data-page="involved">Join the community</button>
+                <button class="button primary nav-tab" data-page="involved">Become a member</button>
                 <button class="button secondary nav-tab" data-page="events">Explore events</button>
               </div>
             </div>
@@ -1247,7 +1265,7 @@
                 <p class="eyebrow">Featured startups</p>
                 <h2>Alumni companies building across AI categories.</h2>
               </div>
-              <button class="button water nav-tab" data-page="startups">View startup directory</button>
+              <button class="button water nav-tab" data-page="involved">Apply to view directory</button>
             </div>
             <div class="grid three">
               <div class="card image-card split-left">
@@ -1412,13 +1430,23 @@
             <div class="section-head">
               <div>
                 <p class="eyebrow">Directory</p>
-                <h2>Companies across applied AI.</h2>
+                <h2>Member directory preview.</h2>
               </div>
               <div class="filters">
                 <button class="filter active">All stages</button>
                 <button class="filter">Pre-seed</button>
                 <button class="filter">Seed</button>
                 <button class="filter">Series A+</button>
+              </div>
+            </div>
+            <div class="lock-box" style="margin-bottom:18px">
+              <div class="row between">
+                <div>
+                  <span class="tag">Members only</span>
+                  <h3 style="margin-top:10px">Full startup profiles require approved member access.</h3>
+                  <p class="small">Public visitors can see sample categories and teaser cards. Founder details, contact links, and full directory search unlock after sign-in.</p>
+                </div>
+                <button class="button water nav-tab" data-page="involved">Apply for access</button>
               </div>
             </div>
             <div class="grid three">
@@ -1514,19 +1542,61 @@
         <section class="hero compact involved">
           <div class="section-inner hero-inner">
             <div>
-              <p class="eyebrow">Get involved</p>
-              <h1>Contribute to the WAAIS community.</h1>
-              <p class="lede">Join as a member, host a session, mentor a founder, propose a partnership, or help migrate high-value discussion into the forum.</p>
+              <p class="eyebrow">Membership</p>
+              <h1>Become a WAAIS member.</h1>
+              <p class="lede">Existing members can sign in. New applicants can apply for access. Non-members can still propose topics, partnerships, and event ideas.</p>
             </div>
           </div>
         </section>
         <section class="section paper">
           <div class="section-inner">
-            <div class="grid four">
-              <div class="card"><span class="tag">Members</span><h3>Join the platform</h3><p class="small">Apply with Google sign-in and wait for admin approval.</p><a class="button water" href="./app-dashboard-admin-auth.html">Sign in</a></div>
-              <div class="card"><span class="tag">Speakers</span><h3>Host a session</h3><p class="small">Lead a founder salon, workshop, or focused AI adoption roundtable.</p><button class="button secondary nav-tab" data-page="contact">Propose topic</button></div>
-              <div class="card"><span class="tag">Founders</span><h3>List a startup</h3><p class="small">Share your company with alumni investors, customers, and collaborators.</p><button class="button secondary nav-tab" data-page="startups">View directory</button></div>
-              <div class="card"><span class="tag">Partners</span><h3>Support programming</h3><p class="small">Sponsor events, provide credits, or collaborate on member education.</p><button class="button secondary nav-tab" data-page="partners">See partners</button></div>
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Access paths</p>
+                <h2>Choose the right path.</h2>
+              </div>
+              <p class="lede">The member dashboard, forum, full startup directory, and private event registration require approval.</p>
+            </div>
+            <div class="grid two">
+              <div class="card split-left">
+                <span class="tag">Existing members</span>
+                <h3>Sign in to your account</h3>
+                <p class="small">Approved members and admins use Google sign-in to access the dashboard, forum, and private directories.</p>
+                <a class="button water" href="./app-dashboard-admin-auth.html">Sign in</a>
+              </div>
+              <div class="card split-right">
+                <span class="tag">New applicants</span>
+                <h3>Apply for membership</h3>
+                <p class="small">Tell us who you are, your Wharton affiliation, and how you are connected to AI.</p>
+                <button class="button primary application-toggle">Apply for membership</button>
+              </div>
+            </div>
+            <div class="application-panel form-panel" id="membership-application">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Application form</p>
+                  <h2>Request member access.</h2>
+                </div>
+                <p class="lede">Submission creates a pending application. Admin approval unlocks dashboard and forum access.</p>
+              </div>
+              <div class="form-grid">
+                <div class="field"><label>Full name</label><input placeholder="Your name" /></div>
+                <div class="field"><label>Email</label><input placeholder="you@example.com" /></div>
+                <div class="field"><label>Wharton affiliation</label><input placeholder="Program, school, or alumni status" /></div>
+                <div class="field"><label>Graduation year</label><input placeholder="e.g. WG'20" /></div>
+                <div class="field"><label>LinkedIn</label><input placeholder="linkedin.com/in/..." /></div>
+                <div class="field"><label>AI category</label><select><option>Founder</option><option>Operator</option><option>Investor</option><option>Researcher</option><option>Student / alumni learner</option></select></div>
+                <div class="field full"><label>Why do you want to join?</label><textarea placeholder="Tell admins what you are building, researching, investing in, or hoping to learn."></textarea></div>
+              </div>
+              <div class="row" style="margin-top:16px">
+                <button class="button primary">Submit application</button>
+                <a class="button secondary" href="./app-dashboard-admin-auth.html">Preview pending screen</a>
+              </div>
+            </div>
+            <div class="grid three" style="margin-top:18px">
+              <div class="card"><span class="tag">Non-members</span><h3>Propose a topic</h3><p class="small">Suggest a founder salon, workshop, or focused AI adoption roundtable.</p><button class="button secondary nav-tab" data-page="contact">Propose topic</button></div>
+              <div class="card"><span class="tag">Partners</span><h3>Partner with us</h3><p class="small">Sponsor events, provide credits, or collaborate on member education.</p><button class="button secondary nav-tab" data-page="contact">Partner with us</button></div>
+              <div class="card"><span class="tag">Founders</span><h3>List a startup</h3><p class="small">Startup listings are reviewed and published by admins after member access is confirmed.</p><button class="button secondary nav-tab" data-page="contact">Request listing</button></div>
             </div>
           </div>
         </section>
@@ -1650,6 +1720,8 @@
       const pages = document.querySelectorAll(".page");
       const legalTabs = document.querySelectorAll(".legal-tab");
       const legalPanels = document.querySelectorAll(".legal-panel");
+      const applicationToggles = document.querySelectorAll(".application-toggle");
+      const applicationPanel = document.querySelector("#membership-application");
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const revealSelector = [
         ".section-head",
@@ -1804,6 +1876,15 @@
           const panelId = button.dataset.legal;
           legalTabs.forEach((item) => item.classList.toggle("active", item === button));
           legalPanels.forEach((panel) => panel.classList.toggle("active", panel.id === panelId));
+          observeActivePage();
+        });
+      });
+
+      applicationToggles.forEach((button) => {
+        button.addEventListener("click", () => {
+          if (!applicationPanel) return;
+          applicationPanel.classList.add("active");
+          applicationPanel.scrollIntoView({ behavior: "smooth", block: "start" });
           observeActivePage();
         });
       });
