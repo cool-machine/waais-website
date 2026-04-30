@@ -136,9 +136,9 @@
 
 ## 2. Current Work
 
-**Task: UI design handoff and next Vue implementation**
+**Task: Ready for Vue frontend implementation**
 
-The design phase has produced first-pass static HTML/CSS/JS prototypes for the public site, auth/member/admin app, and visual design system. The current task is to preserve the session state in Markdown, then move to Vue 3 implementation once George approves the mockup direction.
+The design phase has produced static HTML/CSS/JS prototypes for the public site, auth/member/admin app, and visual design system. George reviewed the key product flows and access rules; the next task is to scaffold the Vue frontend and convert the mockups into real routes/components.
 
 - [x] Audit existing React codebase
 - [x] Define stack, domain, architecture, design direction
@@ -159,10 +159,10 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [x] Extend mockup to cover Dashboard (member), Dashboard (admin), Sign In, Membership, and application/pending states
 - [ ] George supplies brand/logo asset — drop into mockup
 - [x] Deploy current mockups to GitHub Pages from `main`
-- [ ] Confirm George's design review items before Vue build: membership flow, admin content controls, homepage video/motion, public/dashboard navigation
+- [x] Confirm George's design review items before Vue build: membership flow, admin content controls, homepage video/motion, public/dashboard navigation
 - [x] Replace simplified membership form with the current Google Forms questionnaire fields
 - [x] Replace dead external Forum nav link with an internal forum preview page until Discourse is installed
-- [ ] Hand mockup to developer as the visual spec for the Vue build
+- [x] Hand mockup to developer as the visual spec for the Vue build
 
 **Design decisions from mockup review**
 - Wharton colors (#011F5B navy, #C41E3A crimson) are confirmed — do not change these
@@ -200,7 +200,7 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [x] Mockups for: public pages including Membership page
 - [x] Mockups for: admin public content management for events, startups, partners, homepage cards
 - [ ] Logo asset from George → place in all mockups
-- [ ] Final design sign-off before dev starts, especially membership/auth flow and admin content management UX
+- [x] Final design sign-off before dev starts, especially membership/auth flow and admin content management UX
 
 ### Phase 1 — Public site (Vue frontend)
 - [ ] Scaffold Vue 3 project (Vite + Tailwind + Vue Router + Pinia)
@@ -222,8 +222,8 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] Only super_admin users can promote another user to admin or remove admin privileges
 - [ ] Limit super_admin users to George plus at most two designated others
 - [ ] Partner/guest users can receive full access when explicitly approved/invited
-- [ ] Membership application data model should mirror the current Google Form: email, first name, last name, WhatsApp phone, alumnus/a yes/no, free-text school affiliation, graduation year, inviter name for non-alumni, primary/secondary location, LinkedIn, experience, expertise, industries to add value to, industries to extend expertise to, availability, optional gender, optional age
-- [ ] WhatsApp phone is required because it is currently used for WhatsApp group onboarding
+- [ ] Membership application data model should mirror the current Google Form but with updated phone wording: email, first name, last name, optional phone associated with WhatsApp account, alumnus/a yes/no, free-text school affiliation, graduation year, inviter name for non-alumni, primary/secondary location, LinkedIn, experience, expertise, industries to add value to, industries to extend expertise to, availability, optional gender, optional age
+- [ ] Phone associated with WhatsApp account is optional; ask only for applicants who also want to join the WhatsApp community
 - [ ] Gender and age are optional
 - [ ] No file upload / proof of affiliation required for v1; admin review is enough
 - [ ] Alumni question must be yes/no only
@@ -307,13 +307,21 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] Exact initial Discourse industry categories beyond Finance, Fintech, Investments in AI, AI Engineering, AI Theory, AI in Business, Publishing?
 - [ ] Who are the other admins besides George?
 - [ ] API location: `whartonai.studio/api` or `api.whartonai.studio`?
-- [ ] Email provider for transactional mail (approvals, event reminders)?
+- [ ] Email provider for transactional mail: decide later; candidates include Azure Communication Services Email and Google for Nonprofits / Google Workspace options
 
 ---
 
 ## Session Notes
 
 > Newest entry at the top. Update this at the end of every session.
+
+**April 30, 2026 — Product review decisions finalized**
+- Did: reviewed and documented membership/auth, role model, application form, admin content governance, event rules, startup directory rules, Discourse/forum behavior, data ownership, audit trail, and email/notification requirements
+- Did: updated `/mockups/public-site.html` membership form to use the Google Forms question set with optional phone associated with WhatsApp account, optional gender, optional age, yes/no alumni status, and free-text school affiliation
+- Did: confirmed `forum.whartonai.studio` as the future Discourse subdomain; current mockup uses an internal Forum preview page until Discourse is installed
+- Did: verified key context/mockup paths exist; `/frontend/` and `/backend/` are still intentionally missing until implementation begins
+- Left off at: ready to scaffold Vue frontend from the static mockups
+- Watch out for: current GitHub Pages deployment is still static HTML/CSS/JS, not Vue/PHP
 
 **April 30, 2026 — Session documentation refresh**
 - Did: added `/dev-context/CURRENT_STATE.md` as a concise recovery handoff for the current design/prototype state

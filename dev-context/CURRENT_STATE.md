@@ -42,7 +42,7 @@ The Membership page should present:
 - New applicants: Apply for membership.
 - Non-members: Propose a topic, partner with WAAIS, or request a startup listing.
 
-The application form should mirror the current Google Forms questionnaire: email, first name, last name, required WhatsApp phone, alumnus/a yes/no, free-text school affiliation, graduation year, inviter name for non-alumni, primary/secondary location, LinkedIn, experience, expertise, industries to add value to, industries to extend expertise to, availability, optional gender, and optional age. Alumni status must be yes/no only. School affiliation should be free text so users can describe student, faculty, staff, school, program, or other affiliation without a predefined dropdown. No proof upload is needed for v1; admin review is enough. After submission, the user lands in a pending approval state until an admin approves them.
+The application form should mirror the current Google Forms questionnaire, with updated phone wording: email, first name, last name, optional phone associated with WhatsApp account, alumnus/a yes/no, free-text school affiliation, graduation year, inviter name for non-alumni, primary/secondary location, LinkedIn, experience, expertise, industries to add value to, industries to extend expertise to, availability, optional gender, and optional age. Phone is only for applicants who also want to join the WhatsApp community. Alumni status must be yes/no only. School affiliation should be free text so users can describe student, faculty, staff, school, program, or other affiliation without a predefined dropdown. No proof upload is needed for v1; admin review is enough. After submission, the user lands in a pending approval state until an admin approves them.
 
 The startup directory is designed as partially gated: public users can see teasers, but full member/startup profiles require approved member access.
 
@@ -76,6 +76,7 @@ Membership/auth review decisions:
 - Rejection emails are optional and only sent if an admin chooses to send one.
 - Event registration should send confirmation and reminder emails. Reminder timing is admin-configurable and defaults to two days before the event.
 - Announcements should go by both email and dashboard notification.
+- Email provider can be decided later. Candidates include Azure Communication Services Email and Google for Nonprofits / Google Workspace options.
 - Events can be public, members-only, or mixed; each event needs a visibility setting.
 - Event registration can stay external for now, including current NationBuilder-style registration links, while WAAIS keeps room for internal RSVP later.
 - Events need capacity limits and waitlists.
@@ -122,24 +123,17 @@ The forum UX target is similar to PyTorch forums or fast.ai forums: simple categ
 
 ## What We Are Doing Now
 
-We are documenting the full session state so the project can continue cleanly after the context limit. The next practical step is design review, then implementation of the Vue frontend from these mockups.
+The product/design review decisions are documented and the mockups are ready to be used as the visual/UX spec for Vue implementation. The next practical step is to scaffold the Vue frontend and convert the static mockups into real routes/components.
 
 ## Remaining Next Steps
 
-1. George reviews the current mockups:
-   - Homepage video and motion.
-   - Membership/sign-in/application flow.
-   - Gated startup directory treatment.
-   - Admin public-content management concept.
-   - Dashboard/admin navigation.
-   - Whether event, startup, and partner card detail-page behavior is complete enough for implementation.
-2. Replace placeholder logo/brand mark when George provides it.
-3. Scaffold `/frontend/` with Vue 3, Vite, Tailwind, Vue Router, and likely Pinia.
-4. Convert the static mockups into reusable Vue routes and components.
-5. Temporarily deploy the Vue frontend to GitHub Pages while backend work is not ready.
-6. Scaffold `/backend/` with Laravel/PHP.
-7. Implement Google OAuth, pending approval, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO.
-8. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
+1. Scaffold `/frontend/` with Vue 3, Vite, Tailwind, Vue Router, and likely Pinia.
+2. Convert the static mockups into reusable Vue routes and components.
+3. Temporarily deploy the Vue frontend to GitHub Pages while backend work is not ready.
+4. Replace placeholder logo/brand mark when George provides it.
+5. Scaffold `/backend/` with Laravel/PHP.
+6. Implement Google OAuth, pending approval, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO.
+7. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
 
 ## Watch Outs
 
