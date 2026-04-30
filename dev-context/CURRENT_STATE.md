@@ -6,7 +6,7 @@ This file is the short version of the handoff. Read `DEV_CONTEXT.md` for the ful
 
 ## What This Project Is
 
-WAAIS is the Wharton Alumni AI Studio platform: a public website, approved-member dashboard, admin dashboard, and future Discourse forum for Wharton alumni working in or interested in AI. The long-term production stack is Vue 3 for the frontend and Laravel/PHP for the backend, with Discourse mounted at `/forum`.
+WAAIS is the Wharton Alumni AI Studio platform: a public website, approved-member dashboard, admin dashboard, and future Discourse forum for Wharton alumni working in or interested in AI. The long-term production stack is Vue 3 for the frontend and Laravel/PHP for the backend, with Discourse hosted at `forum.whartonai.studio`.
 
 ## What Was Done This Session
 
@@ -29,6 +29,7 @@ WAAIS is the Wharton Alumni AI Studio platform: a public website, approved-membe
 - Homepage uses a dark video hero and dynamic scroll motion, followed by white/off-white readable content sections.
 - Dashboard, admin, auth, and operational surfaces remain dark.
 - Current logo is a placeholder; George will provide a real club brand mark later.
+- Forum will use `forum.whartonai.studio`, not `whartonai.studio/forum`.
 
 ## Membership Flow Now Designed
 
@@ -59,6 +60,17 @@ The Public Content section is intended to let admins create, edit, publish, draf
 
 Important: this is not implemented as working software yet. It is a static HTML prototype only. Real authentication, permissions, database persistence, and publishing logic still need the Vue + Laravel build.
 
+## Discourse Direction
+
+Discourse should be installed later, not inside this GitHub Pages/static mockup phase. It will run on its own Azure VM using the official Docker-based Discourse install, with DNS pointing `forum.whartonai.studio` to that VM.
+
+The forum should imitate the structure people already understand from the WhatsApp groups:
+
+- Region-based categories: New York, San Francisco, London, etc.
+- Industry-based categories: Finance, Media & Entertainment, etc.
+
+The forum UX target is similar to PyTorch forums or fast.ai forums: simple category lists, topic lists, and discussion threads. Moderation rules are still open: WAAIS needs to decide whether new topics require approval, whether replies require approval, and whether rules vary by category or member trust level.
+
 ## Current URLs
 
 - GitHub repo: `https://github.com/cool-machine/waais-website`
@@ -85,7 +97,7 @@ We are documenting the full session state so the project can continue cleanly af
 5. Temporarily deploy the Vue frontend to GitHub Pages while backend work is not ready.
 6. Scaffold `/backend/` with Laravel/PHP.
 7. Implement Google OAuth, pending approval, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO.
-8. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `/forum`.
+8. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
 
 ## Watch Outs
 

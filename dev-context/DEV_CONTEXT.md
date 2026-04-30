@@ -29,7 +29,7 @@
 **Project**
 - Platform for the **Wharton Alumni AI Studio and Research Center** — community of Wharton alumni working in AI
 - Domain: `whartonai.studio`
-- Forum at `whartonai.studio/forum` (Discourse, path-based via nginx reverse proxy)
+- Forum at `forum.whartonai.studio` (Discourse on subdomain)
 - API at `whartonai.studio/api` — exact subdomain vs. path still TBD
 - Old broken site: `https://cool-machine.github.io/waais-v2/` — reference only
 - New design mockup repo: `https://github.com/cool-machine/waais-website`
@@ -62,6 +62,13 @@
 - `admin` → all member features + user management, event management, announcements, moderation
 - Discourse SSO is automatic — no separate forum account needed
 - Admins: George + a small group (names TBD)
+- Forum URL decision: use `forum.whartonai.studio`, not `/forum`, to avoid fragile subfolder/reverse-proxy complexity
+- Public site may keep a `/forum` route or nav link that redirects users to `https://forum.whartonai.studio`
+- Forum taxonomy should imitate the current WhatsApp structure with two major category families:
+  - Region-based groups: New York, San Francisco, London, etc.
+  - Industry-based groups: Finance, Media & Entertainment, etc.
+- Discourse UX target: close to PyTorch forums / fast.ai forums — category grid, topic lists, threaded discussion feel, straightforward technical-community navigation
+- Topic creation and replies may require approval/moderation; final moderation rules are still TBD
 
 **Page inventory — ~20 pages total**
 
@@ -72,7 +79,7 @@
 | Auth | Sign In, Membership Application, Pending Approval screen |
 | Member dashboard | Overview, Profile, My Events, Forum Feed |
 | Admin dashboard | Approvals Queue, User Management, Event Management, Public Content Management, Announcements |
-| Forum | `/forum` — Discourse app, not a Vue page |
+| Forum | `forum.whartonai.studio` — Discourse app, not a Vue page |
 
 **Azure cost estimate**
 - App Service (B2): ~$15–20/mo
@@ -191,12 +198,16 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] Forum moderation shortcuts
 - [ ] Basic analytics
 
-### Phase 5 — Discourse (`/forum`)
-- [ ] Provision Azure VM, install Discourse with `DISCOURSE_RELATIVE_URL_ROOT=/forum`
-- [ ] nginx reverse proxy config
+### Phase 5 — Discourse (`forum.whartonai.studio`)
+- [ ] Provision Azure VM and install Discourse using the official Docker-based install
+- [ ] DNS: point `forum.whartonai.studio` to the Discourse VM
+- [ ] SSL certificate for `forum.whartonai.studio`
 - [ ] Custom dark theme matching site design
 - [ ] Discourse Connect (SSO) → Laravel relay
-- [ ] Seed initial forum categories (George to define — based on WhatsApp group topics)
+- [ ] Seed initial forum categories:
+  - Region-based: New York, San Francisco, London, etc.
+  - Industry-based: Finance, Media & Entertainment, etc.
+- [ ] Decide moderation rules: who can create topics, whether first topics require approval, whether replies require approval, and which categories are members-only
 - [ ] WhatsApp group member invite / migration flow
 
 ### Phase 6 — Deployment & launch
@@ -208,7 +219,9 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] WhatsApp group migration
 
 ### Open questions
-- [ ] What are the initial Discourse forum categories?
+- [ ] Exact initial Discourse region categories?
+- [ ] Exact initial Discourse industry categories?
+- [ ] Discourse moderation model: approve new topics only, approve first post per new member, approve replies, or rely on trust levels?
 - [ ] Who are the other admins besides George?
 - [ ] API location: `whartonai.studio/api` or `api.whartonai.studio`?
 - [ ] Email provider for transactional mail (approvals, event reminders)?
