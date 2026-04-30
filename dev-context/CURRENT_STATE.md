@@ -147,4 +147,5 @@ At handoff time, `frontend/` exists locally but is untracked in git. The next LL
 - The admin page is reached through `mockups/app-dashboard-admin-auth.html`, not from the public mockup root.
 - Browser cache may show an old GitHub Pages version; hard refresh or open the direct mockup URLs.
 - `legacy/` exists locally but is ignored by git.
-- `/frontend/` and `/backend/` do not exist yet; that is expected.
+- `/frontend/` exists locally and is untracked until reviewed/committed.
+- `/backend/` does not exist yet; that is expected.

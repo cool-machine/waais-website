@@ -13,7 +13,7 @@
   - Old React source (reference only): `/Users/gg1900/coding/waais-website/legacy/old-react-site/src/`
   - Old React app root (reference only): `/Users/gg1900/coding/waais-website/legacy/old-react-site/`
   - Dev context folder: `/Users/gg1900/coding/waais-website/dev-context/`
-  - Vue frontend (to be created; missing is expected): `/Users/gg1900/coding/waais-website/frontend/`
+  - Vue frontend (created locally; untracked until committed): `/Users/gg1900/coding/waais-website/frontend/`
   - Laravel backend (to be created; missing is expected): `/Users/gg1900/coding/waais-website/backend/`
   - This file: `/Users/gg1900/coding/waais-website/dev-context/DEV_CONTEXT.md`
 - [ ] Also read `/Users/gg1900/coding/waais-website/dev-context/CURRENT_STATE.md` for the latest concise handoff

@@ -66,6 +66,14 @@ Actions completed:
   - `startups.js`
   - `partners.js`
   - `forum.js`
+- Continued the public frontend pass after coherence review:
+  - Copied the licensed hero video into `frontend/public/assets/waais-hero-video.mp4`.
+  - Added video support to `PageHero.vue`.
+  - Expanded homepage, events, startups, membership, and forum preview content toward the approved static mockups.
+  - Rewrote `frontend/README.md` for WAAIS instead of the default Vite text.
+  - Renamed the package to `waais-frontend`.
+  - Set Vite `base: './'` for portable static output.
+  - Fixed stale handoff wording in `DEV_CONTEXT.md` and `CURRENT_STATE.md` about `/frontend/`.
 
 ## Verification Already Run
 
@@ -79,14 +87,14 @@ npm run build
 Result:
 
 ```text
-✓ built in 190ms
+✓ built in 154ms
 ```
 
 The Vue dev server was also started successfully at:
 
 `http://127.0.0.1:5174/`
 
-Then it was stopped with `Ctrl-C` before handoff.
+At the latest handoff, it was left running for local review after an escalated port bind approval.
 
 The previous static mockup server may still be available at:
 
@@ -99,7 +107,7 @@ Do not treat this as a finished frontend. It is only the first scaffold.
 Not done:
 
 - The Vue pages are not yet a pixel-perfect conversion of the static mockups.
-- Homepage hero video from `mockups/assets/waais-hero-video.mp4` is not yet wired into Vue.
+- Homepage hero video is wired into Vue from `frontend/public/assets/waais-hero-video.mp4`.
 - Scroll animations/count-up/parallax behavior are not yet ported from the static mockup.
 - App/auth/member/admin dashboard pages are not yet converted into Vue.
 - Admin role gating is not implemented.
