@@ -31,6 +31,8 @@
 - Forum at `whartonai.studio/forum` (Discourse, path-based via nginx reverse proxy)
 - API at `whartonai.studio/api` — exact subdomain vs. path still TBD
 - Old broken site: `https://cool-machine.github.io/waais-v2/` — reference only
+- New design mockup repo: `https://github.com/cool-machine/waais-website`
+- GitHub Pages mockup URL: `https://cool-machine.github.io/waais-website/`
 - Old React app isolated in `/legacy/old-react-site/` for content, copy, and page structure reference
 
 **Tech stack**
@@ -199,7 +201,8 @@ The design phase is in progress. A first-pass interactive mockup of all 5 main p
 
 **April 30, 2026 — GitHub Pages prep**
 - Did: added root `/index.html` as a static GitHub Pages landing page linking to the public-site, app/admin/auth, and design-system mockups; added `.nojekyll`
-- Left off at: ready to push to GitHub and enable Pages from `main` root, but local `gh` authentication tokens are currently invalid
+- Did: created public GitHub repo `https://github.com/cool-machine/waais-website`, pushed `main`, and enabled GitHub Pages from `main` root at `https://cool-machine.github.io/waais-website/`
+- Left off at: GitHub Pages is enabled; deployment may take a short time to become available after the first push
 - Watch out for: `legacy/` remains ignored and should not be pushed
 
 **April 30, 2026 — Public site mockup**
