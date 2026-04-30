@@ -30,6 +30,7 @@ WAAIS is the Wharton Alumni AI Studio platform: a public website, approved-membe
 - Dashboard, admin, auth, and operational surfaces remain dark.
 - Current logo is a placeholder; George will provide a real club brand mark later.
 - Forum will use `forum.whartonai.studio`, not `whartonai.studio/forum`.
+- Public navigation should include a Forum link. The current mockup links to `https://forum.whartonai.studio`.
 
 ## Membership Flow Now Designed
 
@@ -41,7 +42,7 @@ The Membership page should present:
 - New applicants: Apply for membership.
 - Non-members: Propose a topic, partner with WAAIS, or request a startup listing.
 
-The application form should collect Wharton affiliation, year/program, LinkedIn, AI category/interest, and reason for joining. After submission, the user lands in a pending approval state until an admin approves them.
+The application form should collect Wharton status, year/program, LinkedIn, AI category/interest, and reason for joining. Wharton status must distinguish alumni from current students because current students may need different access rules from alumni. After submission, the user lands in a pending approval state until an admin approves them.
 
 The startup directory is designed as partially gated: public users can see teasers, but full member/startup profiles require approved member access.
 
@@ -91,6 +92,7 @@ We are documenting the full session state so the project can continue cleanly af
    - Gated startup directory treatment.
    - Admin public-content management concept.
    - Dashboard/admin navigation.
+   - Whether event, startup, and partner card detail-page behavior is complete enough for implementation.
 2. Replace placeholder logo/brand mark when George provides it.
 3. Scaffold `/frontend/` with Vue 3, Vite, Tailwind, Vue Router, and likely Pinia.
 4. Convert the static mockups into reusable Vue routes and components.

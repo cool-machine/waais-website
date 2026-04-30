@@ -132,6 +132,7 @@
       }
 
       .main-nav button,
+      .main-nav a,
       .button,
       .filter {
         border-radius: var(--radius);
@@ -139,15 +140,18 @@
         color: var(--white);
       }
 
-      .main-nav button {
+      .main-nav button,
+      .main-nav a {
         background: transparent;
         padding: 9px 11px;
         color: rgba(255, 255, 255, 0.82);
         font-size: 13px;
+        text-decoration: none;
       }
 
       .main-nav button.active,
-      .main-nav button:hover {
+      .main-nav button:hover,
+      .main-nav a:hover {
         background: rgba(255, 255, 255, 0.12);
         color: var(--white);
       }
@@ -1072,6 +1076,7 @@
           <button class="nav-tab" data-page="about">About</button>
           <button class="nav-tab" data-page="partners">Partners</button>
           <button class="nav-tab" data-page="involved">Become a member</button>
+          <a href="https://forum.whartonai.studio">Forum</a>
           <button class="nav-tab" data-page="contact">Contact</button>
           <button class="nav-tab" data-page="legal">Legal</button>
         </nav>
@@ -1582,10 +1587,10 @@
               <div class="form-grid">
                 <div class="field"><label>Full name</label><input placeholder="Your name" /></div>
                 <div class="field"><label>Email</label><input placeholder="you@example.com" /></div>
-                <div class="field"><label>Wharton affiliation</label><input placeholder="Program, school, or alumni status" /></div>
-                <div class="field"><label>Graduation year</label><input placeholder="e.g. WG'20" /></div>
+                <div class="field"><label>Wharton status</label><select><option>Alumnus / alumna</option><option>Current student</option><option>Faculty / staff</option><option>Other Wharton affiliation</option></select></div>
+                <div class="field"><label>Program and year</label><input placeholder="e.g. WG'20, W'26, EMBA'18" /></div>
                 <div class="field"><label>LinkedIn</label><input placeholder="linkedin.com/in/..." /></div>
-                <div class="field"><label>AI category</label><select><option>Founder</option><option>Operator</option><option>Investor</option><option>Researcher</option><option>Student / alumni learner</option></select></div>
+                <div class="field"><label>AI category</label><select><option>Founder</option><option>Operator</option><option>Investor</option><option>Researcher</option><option>Learner / community member</option></select></div>
                 <div class="field full"><label>Why do you want to join?</label><textarea placeholder="Tell admins what you are building, researching, investing in, or hoping to learn."></textarea></div>
               </div>
               <div class="row" style="margin-top:16px">

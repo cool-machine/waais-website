@@ -64,6 +64,7 @@
 - Admins: George + a small group (names TBD)
 - Forum URL decision: use `forum.whartonai.studio`, not `/forum`, to avoid fragile subfolder/reverse-proxy complexity
 - Public site may keep a `/forum` route or nav link that redirects users to `https://forum.whartonai.studio`
+- Public navigation should include a Forum link once the forum exists; current mockup links directly to `https://forum.whartonai.studio`
 - Forum taxonomy should imitate the current WhatsApp structure with two major category families:
   - Region-based groups: New York, San Francisco, London, etc.
   - Industry-based groups: Finance, Media & Entertainment, etc.
@@ -121,6 +122,7 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] George supplies brand/logo asset — drop into mockup
 - [x] Deploy current mockups to GitHub Pages from `main`
 - [ ] Confirm George's design review items before Vue build: membership flow, admin content controls, homepage video/motion, public/dashboard navigation
+- [x] Separate Wharton status from AI category in the membership form so current students and alumni are not grouped together
 - [ ] Hand mockup to developer as the visual spec for the Vue build
 
 **Design decisions from mockup review**
@@ -165,10 +167,10 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] Scaffold Vue 3 project (Vite + Tailwind + Vue Router + Pinia)
 - [ ] Convert design-system tokens/components into reusable Vue/Tailwind primitives
 - [ ] Homepage: video hero, scroll motion, mission, stats, events preview, startup preview, partner preview, CTA
-- [ ] Events page: upcoming and past, filters
-- [ ] Startups directory: public teaser + gated member-only full directory treatment
+- [ ] Events page: upcoming and past, filters, clickable event cards, and event detail pages
+- [ ] Startups directory: public teaser + gated member-only full directory treatment, clickable startup cards, and startup detail pages
 - [ ] About / Team
-- [ ] Partners
+- [ ] Partners with clickable partner cards leading to partner detail pages or external partner websites
 - [ ] Membership landing page: existing-member sign-in, new-applicant application, non-member actions
 - [ ] Contact
 - [ ] Legal pages: Privacy Policy, Cookie Policy, GDPR Request
@@ -177,6 +179,7 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] Google OAuth (Laravel Socialite)
 - [ ] User model: name, email, role, status
 - [ ] Membership application data model: Wharton affiliation, year/program, LinkedIn, AI category, join reason
+- [ ] Keep Wharton status explicit: alumnus/alumna, current student, faculty/staff, or other Wharton affiliation
 - [ ] Approval flow: pending → admin approves → active
 - [ ] Session management (Laravel Sanctum)
 - [ ] Discourse SSO relay endpoint
