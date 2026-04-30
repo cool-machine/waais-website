@@ -582,6 +582,20 @@ textarea {
   gap: 8px;
 }
 
+.app-nav-group {
+  display: grid;
+  gap: 8px;
+}
+
+.sidebar-label {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
 .app-nav a {
   border-radius: var(--radius);
   color: rgba(255, 255, 255, 0.8);
@@ -599,6 +613,11 @@ textarea {
   padding: 48px;
 }
 
+.app-stack {
+  display: grid;
+  gap: 22px;
+}
+
 .app-hero {
   max-width: 900px;
   margin-bottom: 28px;
@@ -610,6 +629,120 @@ textarea {
 
 .app-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.auth-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 22px;
+  align-items: stretch;
+}
+
+.auth-panel,
+.auth-card {
+  border: 1px solid rgba(100, 130, 200, 0.14);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 28px;
+}
+
+.auth-card {
+  display: grid;
+  align-content: center;
+  gap: 14px;
+}
+
+.app-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.app-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--white);
+  font-weight: 800;
+}
+
+.app-form .full {
+  grid-column: 1 / -1;
+}
+
+.app-form.card {
+  padding: 20px;
+}
+
+.button-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.status-pill {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.status-pill.pending {
+  background: rgba(245, 158, 11, 0.16);
+  color: #fbbf24;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--crimson);
+}
+
+.wide-card {
+  overflow-x: auto;
+}
+
+.admin-table {
+  min-width: 720px;
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.3fr) minmax(120px, 0.8fr) minmax(100px, 0.6fr) minmax(190px, 1fr);
+  gap: 14px;
+  align-items: center;
+  border-bottom: 1px solid rgba(100, 130, 200, 0.14);
+  padding: 12px 0;
+}
+
+.admin-row.header {
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.mobile-preview {
+  display: grid;
+  justify-items: center;
+}
+
+.mobile-card {
+  max-width: 320px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(5, 14, 32, 0.9);
+  padding: 22px;
 }
 
 @media (max-width: 1120px) {
@@ -647,6 +780,12 @@ textarea {
   }
 
   .app-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-wrap,
+  .grid.four,
+  .grid.three {
     grid-template-columns: 1fr;
   }
 }
@@ -696,6 +835,10 @@ textarea {
 
   .app-canvas {
     padding: 28px 16px;
+  }
+
+  .app-form {
+    grid-template-columns: 1fr;
   }
 
   h1 {
