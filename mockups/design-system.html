@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WAAIS Visual Design System</title>
+    <style>
+      :root {
+        --bg: #050e20;
+        --panel: #0a1833;
+        --panel-2: #0d1f42;
+        --nav: #256f8f;
+        --nav-dark: #011f5b;
+        --crimson: #c41e3a;
+        --white: #ffffff;
+        --paper: #f7f9fc;
+        --paper-2: #eef4f8;
+        --ink: #071225;
+        --muted: #94a3b8;
+        --paper-muted: #526173;
+        --soft: #c7d2fe;
+        --line: rgba(100, 130, 200, 0.14);
+        --line-strong: rgba(148, 163, 184, 0.22);
+        --paper-line: #d8e2ec;
+        --green: #33d69f;
+        --amber: #f6b84b;
+        --blue: #62b7ff;
+        --radius: 8px;
+        --shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--white);
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: var(--nav);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .topbar-inner,
+      .section-inner {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding-left: 28px;
+        padding-right: 28px;
+      }
+
+      .topbar-inner {
+        min-height: 68px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 24px;
+        align-items: center;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand-mark {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.13);
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .brand strong {
+        display: block;
+        font-size: 14px;
+      }
+
+      .brand span {
+        display: block;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 12px;
+      }
+
+      .nav {
+        display: flex;
+        gap: 2px;
+        justify-content: center;
+      }
+
+      .nav a,
+      .nav-action {
+        color: rgba(255, 255, 255, 0.82);
+        text-decoration: none;
+        border-radius: var(--radius);
+        padding: 9px 12px;
+        font-size: 13px;
+      }
+
+      .nav a.active,
+      .nav a:hover,
+      .nav-action {
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--white);
+      }
+
+      .hero {
+        background:
+          radial-gradient(circle at 15% 0%, rgba(37, 111, 143, 0.48), transparent 30rem),
+          radial-gradient(circle at 90% 10%, rgba(196, 30, 58, 0.14), transparent 24rem),
+          var(--bg);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .hero .section-inner {
+        min-height: 510px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 420px;
+        gap: 48px;
+        align-items: center;
+        padding-top: 56px;
+        padding-bottom: 56px;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: #ffb7c5;
+        font-size: 12px;
+        text-transform: uppercase;
+        font-weight: 800;
+        letter-spacing: 0;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 18px;
+        max-width: 780px;
+        font-size: clamp(42px, 6vw, 76px);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin-bottom: 16px;
+        font-size: clamp(28px, 4vw, 44px);
+        line-height: 1.06;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin-bottom: 8px;
+        font-size: 16px;
+        letter-spacing: 0;
+      }
+
+      .lede {
+        max-width: 720px;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.58;
+      }
+
+      .section {
+        padding: 72px 0;
+      }
+
+      .dark {
+        background: var(--bg);
+        color: var(--white);
+      }
+
+      .paper {
+        background: var(--paper);
+        color: var(--ink);
+      }
+
+      .paper.alt {
+        background: var(--paper-2);
+      }
+
+      .paper .lede,
+      .paper .small,
+      .paper label {
+        color: var(--paper-muted);
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid.four {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .grid.main {
+        grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+      }
+
+      .card,
+      .metric,
+      .table,
+      .form-panel {
+        border-radius: var(--radius);
+      }
+
+      .dark .card,
+      .dark .metric,
+      .dark .table,
+      .dark .form-panel,
+      .hero-card {
+        background: rgba(10, 24, 51, 0.88);
+        border: 1px solid var(--line);
+      }
+
+      .paper .card,
+      .paper .metric,
+      .paper .table,
+      .paper .form-panel {
+        background: var(--white);
+        border: 1px solid var(--paper-line);
+        box-shadow: 0 12px 34px rgba(7, 18, 37, 0.07);
+      }
+
+      .card,
+      .form-panel,
+      .hero-card {
+        padding: 22px;
+      }
+
+      .metric {
+        padding: 18px;
+      }
+
+      .metric span,
+      .small,
+      label {
+        font-size: 13px;
+      }
+
+      .dark .metric span,
+      .dark .small,
+      .dark label {
+        color: var(--muted);
+      }
+
+      .metric b {
+        display: block;
+        margin-top: 8px;
+        font-size: 32px;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .row.between {
+        justify-content: space-between;
+      }
+
+      .button {
+        min-height: 40px;
+        border: 0;
+        border-radius: var(--radius);
+        padding: 0 15px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: var(--white);
+        text-decoration: none;
+        white-space: nowrap;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .button.primary {
+        background: var(--crimson);
+      }
+
+      .button.secondary {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--line-strong);
+      }
+
+      .paper .button.secondary {
+        color: var(--ink);
+        background: var(--white);
+        border-color: var(--paper-line);
+      }
+
+      .button.water {
+        background: var(--nav);
+      }
+
+      .button.navy {
+        background: var(--nav-dark);
+      }
+
+      .button.danger {
+        background: rgba(196, 30, 58, 0.14);
+        border: 1px solid rgba(196, 30, 58, 0.38);
+        color: #ffc4ce;
+      }
+
+      .swatch-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .swatch {
+        overflow: hidden;
+        border-radius: var(--radius);
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .swatch-color {
+        height: 86px;
+      }
+
+      .swatch-body {
+        padding: 12px;
+      }
+
+      .swatch-body strong,
+      .swatch-body code {
+        display: block;
+      }
+
+      .swatch-body code {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .tag,
+      .status {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .tag {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--soft);
+      }
+
+      .paper .tag {
+        background: #e8eef6;
+        color: #213454;
+      }
+
+      .status {
+        background: rgba(98, 183, 255, 0.14);
+        color: #bfe4ff;
+      }
+
+      .status.good {
+        background: rgba(51, 214, 159, 0.14);
+        color: #aef4dc;
+      }
+
+      .status.pending {
+        background: rgba(246, 184, 75, 0.16);
+        color: #ffdc9b;
+      }
+
+      .status.danger {
+        background: rgba(196, 30, 58, 0.2);
+        color: #ffc0cb;
+      }
+
+      .paper .status {
+        color: #105d83;
+        background: #dff3ff;
+      }
+
+      .paper .status.good {
+        color: #13694e;
+        background: #dff8ef;
+      }
+
+      .paper .status.pending {
+        color: #72500a;
+        background: #fff0ca;
+      }
+
+      .paper .status.danger {
+        color: #942039;
+        background: #ffe1e7;
+      }
+
+      .table {
+        overflow: hidden;
+      }
+
+      .table-row {
+        display: grid;
+        grid-template-columns: 1.3fr 0.8fr 0.8fr auto;
+        gap: 16px;
+        align-items: center;
+        padding: 15px 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .table-row:first-child {
+        border-top: 0;
+      }
+
+      .paper .table-row {
+        border-color: var(--paper-line);
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+      }
+
+      .field.full {
+        grid-column: 1 / -1;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        min-height: 42px;
+        border-radius: var(--radius);
+        border: 1px solid var(--line-strong);
+        background: rgba(255, 255, 255, 0.055);
+        color: var(--white);
+        padding: 10px 12px;
+        outline: 0;
+      }
+
+      textarea {
+        min-height: 108px;
+        resize: vertical;
+      }
+
+      .paper input,
+      .paper textarea,
+      .paper select {
+        background: var(--white);
+        color: var(--ink);
+        border-color: var(--paper-line);
+      }
+
+      .rule-list {
+        display: grid;
+        gap: 10px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+
+      .rule-list li {
+        display: grid;
+        grid-template-columns: 12px 1fr;
+        gap: 10px;
+        align-items: start;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .paper .rule-list li {
+        color: var(--paper-muted);
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        margin-top: 7px;
+        border-radius: 50%;
+        background: var(--crimson);
+      }
+
+      .surface-sample {
+        min-height: 190px;
+        display: grid;
+        align-content: end;
+        gap: 12px;
+      }
+
+      @media (max-width: 1000px) {
+        .topbar-inner {
+          grid-template-columns: 1fr auto;
+        }
+
+        .nav {
+          display: none;
+        }
+
+        .hero .section-inner,
+        .grid.main {
+          grid-template-columns: 1fr;
+        }
+
+        .grid.four,
+        .grid.three,
+        .swatch-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 680px) {
+        .topbar-inner,
+        .section-inner {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+
+        .grid.two,
+        .grid.three,
+        .grid.four,
+        .swatch-grid,
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .table-row {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 42px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-mark">WA</div>
+          <div>
+            <strong>Wharton Alumni AI Studio</strong>
+            <span>Visual system</span>
+          </div>
+        </div>
+        <nav class="nav" aria-label="Design system sections">
+          <a class="active" href="#colors">Colors</a>
+          <a href="#surfaces">Surfaces</a>
+          <a href="#components">Components</a>
+          <a href="#forms">Forms</a>
+          <a href="#rules">Rules</a>
+        </nav>
+        <a class="nav-action" href="./app-dashboard-admin-auth.html">App mockup</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="section-inner">
+          <div>
+            <p class="eyebrow">Design system v1</p>
+            <h1>Premium, readable, and operationally calm.</h1>
+            <p class="lede">
+              The public site can move between a dark Wharton AI hero and light
+              editorial sections. The authenticated app stays dark, dense, and focused.
+            </p>
+            <div class="row">
+              <a class="button primary" href="#components">View components</a>
+              <a class="button secondary" href="#surfaces">Surface rules</a>
+            </div>
+          </div>
+          <div class="hero-card">
+            <p class="eyebrow">Core decision</p>
+            <h2>Water blue navbar</h2>
+            <p class="small">
+              Use `#256F8F` for primary navigation shells with white text. Keep Wharton
+              navy for deep brand blocks and crimson for decisive actions.
+            </p>
+            <div class="grid two" style="margin-top:18px">
+              <div class="metric"><span>Navbar</span><b>#256F8F</b></div>
+              <div class="metric"><span>Accent</span><b>#C41E3A</b></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="colors" class="section dark">
+        <div class="section-inner">
+          <p class="eyebrow">Tokens</p>
+          <h2>Color Palette</h2>
+          <div class="swatch-grid">
+            <div class="swatch"><div class="swatch-color" style="background:#256F8F"></div><div class="swatch-body"><strong>Water blue</strong><code>#256F8F</code></div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#011F5B"></div><div class="swatch-body"><strong>Wharton navy</strong><code>#011F5B</code></div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#C41E3A"></div><div class="swatch-body"><strong>Crimson</strong><code>#C41E3A</code></div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#050E20"></div><div class="swatch-body"><strong>Near black</strong><code>#050E20</code></div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#0A1833"></div><div class="swatch-body"><strong>Dark card</strong><code>#0A1833</code></div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#F7F9FC"></div><div class="swatch-body"><strong>Paper</strong><code>#F7F9FC</code></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="surfaces" class="section paper">
+        <div class="section-inner">
+          <p class="eyebrow">Surface model</p>
+          <h2>Public pages can breathe.</h2>
+          <p class="lede">
+            Use light sections for scan-heavy public content after the dark hero:
+            mission, events, startups, partners, team, and contact.
+          </p>
+          <div class="grid three">
+            <div class="card surface-sample">
+              <span class="tag">Public content</span>
+              <h3>White card on paper</h3>
+              <p class="small">Best for event previews, partner lists, startup cards, and editorial content.</p>
+            </div>
+            <div class="card surface-sample">
+              <span class="tag">Light band</span>
+              <h3>Off-white section</h3>
+              <p class="small">Keeps long home pages readable without losing the premium top-level identity.</p>
+            </div>
+            <div class="card surface-sample">
+              <span class="tag">CTA contrast</span>
+              <h3>Crimson actions</h3>
+              <p class="small">Use sparingly for joining, registering, approving, publishing, and sending.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section dark">
+        <div class="section-inner">
+          <p class="eyebrow">Authenticated surfaces</p>
+          <h2>Dashboard and admin stay dark.</h2>
+          <div class="grid four">
+            <div class="metric"><span>Pending approvals</span><b>8</b></div>
+            <div class="metric"><span>Active members</span><b>284</b></div>
+            <div class="metric"><span>Upcoming events</span><b>12</b></div>
+            <div class="metric"><span>Forum topics</span><b>146</b></div>
+          </div>
+          <div class="grid main" style="margin-top:16px">
+            <div class="table">
+              <div class="table-row">
+                <div><h3>Maya Chen</h3><p class="small">maya@wharton.upenn.edu</p></div>
+                <span class="status pending">Pending</span>
+                <span class="tag">Wharton email</span>
+                <a class="button secondary" href="#">Review</a>
+              </div>
+              <div class="table-row">
+                <div><h3>AI Founder Salon</h3><p class="small">Private dinner, New York</p></div>
+                <span class="status good">Published</span>
+                <span class="tag">42 registered</span>
+                <a class="button secondary" href="#">Edit</a>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Admin density</h3>
+              <p class="small">
+                Tables should be compact but not cramped. Use status tags, short actions,
+                and one primary command per screen.
+              </p>
+              <div class="row">
+                <span class="status good">Active</span>
+                <span class="status pending">Pending</span>
+                <span class="status danger">Suspended</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="components" class="section paper alt">
+        <div class="section-inner">
+          <p class="eyebrow">Components</p>
+          <h2>Buttons, cards, tags, and tables.</h2>
+          <div class="grid main">
+            <div class="card">
+              <h3>Buttons</h3>
+              <p class="small">Primary actions use crimson. Navigation shells use water blue. Secondary actions are quiet.</p>
+              <div class="row">
+                <a class="button primary" href="#">Primary action</a>
+                <a class="button water" href="#">Water action</a>
+                <a class="button navy" href="#">Navy block</a>
+                <a class="button secondary" href="#">Secondary</a>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Labels</h3>
+              <p class="small">Tags identify categories. Status pills communicate workflow state.</p>
+              <div class="row">
+                <span class="tag">Founders</span>
+                <span class="tag">Operators</span>
+                <span class="status good">Approved</span>
+                <span class="status pending">Pending</span>
+                <span class="status danger">Rejected</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="forms" class="section dark">
+        <div class="section-inner">
+          <p class="eyebrow">Forms</p>
+          <h2>Inputs and editing flows.</h2>
+          <div class="form-panel">
+            <div class="form-grid">
+              <div class="field"><label>Name</label><input value="George Chen" /></div>
+              <div class="field"><label>Role</label><input value="Founder" /></div>
+              <div class="field"><label>Status</label><select><option>Member</option><option>Admin</option><option>Pending</option></select></div>
+              <div class="field"><label>Visibility</label><select><option>Members only</option><option>Public</option></select></div>
+              <div class="field full"><label>Profile bio</label><textarea>Building a community for Wharton alumni working in AI.</textarea></div>
+            </div>
+            <div class="row" style="margin-top:16px">
+              <button class="button primary">Save changes</button>
+              <button class="button secondary">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="rules" class="section paper">
+        <div class="section-inner">
+          <p class="eyebrow">Usage rules</p>
+          <h2>Design decisions to carry into every page.</h2>
+          <div class="grid two">
+            <div class="card">
+              <h3>Do</h3>
+              <ul class="rule-list">
+                <li><span class="dot"></span><span>Use water blue `#256F8F` for the navbar/top shell with white text.</span></li>
+                <li><span class="dot"></span><span>Use dark dashboard/admin surfaces for focused, repeated workflows.</span></li>
+                <li><span class="dot"></span><span>Use light homepage sections after the hero for readability and contrast.</span></li>
+                <li><span class="dot"></span><span>Keep cards at 8px radius and avoid decorative card nesting.</span></li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Avoid</h3>
+              <ul class="rule-list">
+                <li><span class="dot"></span><span>Do not make the whole public site one continuous dark block.</span></li>
+                <li><span class="dot"></span><span>Do not overuse crimson for decorative elements; reserve it for emphasis and action.</span></li>
+                <li><span class="dot"></span><span>Do not design around a final logo shape until George supplies the brand asset.</span></li>
+                <li><span class="dot"></span><span>Do not put production Vue or Laravel code in the mockups folder.</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,1140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WAAIS App, Dashboard, Admin, Auth Mockups</title>
+    <style>
+      :root {
+        --bg: #050e20;
+        --panel: #0a1833;
+        --panel-2: #0d1f42;
+        --nav: #256f8f;
+        --crimson: #c41e3a;
+        --text: #ffffff;
+        --muted: #94a3b8;
+        --soft: #c7d2fe;
+        --line: rgba(100, 130, 200, 0.14);
+        --line-strong: rgba(148, 163, 184, 0.22);
+        --green: #33d69f;
+        --amber: #f6b84b;
+        --blue: #62b7ff;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 15% 0%, rgba(1, 31, 91, 0.58), transparent 28rem),
+          radial-gradient(circle at 90% 18%, rgba(196, 30, 58, 0.16), transparent 24rem),
+          var(--bg);
+        color: var(--text);
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: color-mix(in srgb, var(--nav), transparent 5%);
+        backdrop-filter: blur(18px);
+      }
+
+      .topbar-inner {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 14px 28px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 24px;
+        align-items: center;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 220px;
+      }
+
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.1);
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .brand-text {
+        display: grid;
+        gap: 1px;
+      }
+
+      .brand-text strong {
+        font-size: 13px;
+        letter-spacing: 0;
+      }
+
+      .brand-text span {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 11px;
+      }
+
+      .main-nav,
+      .actions,
+      .swatches,
+      .tabs,
+      .row,
+      .status-row,
+      .tag-row {
+        display: flex;
+        align-items: center;
+      }
+
+      .main-nav {
+        justify-content: center;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .main-nav button,
+      .page-tab,
+      .ghost-button,
+      .solid-button,
+      .danger-button,
+      .tiny-button {
+        border: 0;
+        color: var(--text);
+        border-radius: 8px;
+      }
+
+      .main-nav button {
+        padding: 9px 12px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 13px;
+      }
+
+      .main-nav button.active,
+      .main-nav button:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+      }
+
+      .actions {
+        gap: 10px;
+        justify-content: end;
+      }
+
+      .avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #ffffff;
+        color: var(--nav);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 12px;
+      }
+
+      .shell {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 26px 28px 44px;
+      }
+
+      .swatch-panel {
+        margin-bottom: 18px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        background: rgba(10, 24, 51, 0.76);
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .swatch-panel p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .swatches {
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .swatch {
+        border: 1px solid var(--line-strong);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 8px 10px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 12px;
+      }
+
+      .swatch.active {
+        border-color: rgba(255, 255, 255, 0.55);
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .swatch-chip {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        gap: 22px;
+        align-items: start;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 82px;
+        border: 1px solid var(--line);
+        background: rgba(10, 24, 51, 0.78);
+        padding: 12px;
+      }
+
+      .sidebar-group + .sidebar-group {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+      }
+
+      .sidebar-label {
+        margin: 0 0 8px;
+        padding: 0 8px;
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+
+      .page-tab {
+        width: 100%;
+        padding: 10px 10px;
+        background: transparent;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+        font-size: 13px;
+      }
+
+      .page-tab.active,
+      .page-tab:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+      }
+
+      .count {
+        min-width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: rgba(196, 30, 58, 0.24);
+        color: #ffd7de;
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+      }
+
+      .canvas {
+        min-width: 0;
+      }
+
+      .page {
+        display: none;
+      }
+
+      .page.active {
+        display: block;
+      }
+
+      .hero-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: end;
+        margin-bottom: 20px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: #ffb7c5;
+        font-size: 12px;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 8px;
+        font-size: clamp(30px, 4vw, 54px);
+        line-height: 1.02;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin-bottom: 14px;
+        font-size: 22px;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin-bottom: 8px;
+        font-size: 15px;
+        letter-spacing: 0;
+      }
+
+      .lede {
+        max-width: 720px;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid.four {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .grid.main {
+        grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+      }
+
+      .card,
+      .metric,
+      .table,
+      .auth-card {
+        border: 1px solid var(--line);
+        background: rgba(10, 24, 51, 0.86);
+      }
+
+      .card,
+      .auth-card {
+        padding: 18px;
+      }
+
+      .metric {
+        padding: 16px;
+      }
+
+      .metric b {
+        display: block;
+        margin-top: 8px;
+        font-size: 28px;
+      }
+
+      .metric span,
+      .meta,
+      .small,
+      label {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .table {
+        overflow: hidden;
+      }
+
+      .table-row {
+        display: grid;
+        grid-template-columns: 1.1fr 0.8fr 0.8fr 0.7fr auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 16px;
+        border-top: 1px solid var(--line);
+        min-height: 68px;
+      }
+
+      .table-row.header {
+        border-top: 0;
+        min-height: 42px;
+        background: rgba(255, 255, 255, 0.035);
+        color: var(--muted);
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .row {
+        gap: 12px;
+      }
+
+      .row.between {
+        justify-content: space-between;
+      }
+
+      .status-row,
+      .tag-row {
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .tag,
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .tag {
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--soft);
+      }
+
+      .status {
+        background: rgba(98, 183, 255, 0.14);
+        color: #bfe4ff;
+      }
+
+      .status.pending {
+        background: rgba(246, 184, 75, 0.16);
+        color: #ffdc9b;
+      }
+
+      .status.good {
+        background: rgba(51, 214, 159, 0.14);
+        color: #aef4dc;
+      }
+
+      .status.danger {
+        background: rgba(196, 30, 58, 0.2);
+        color: #ffc0cb;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--crimson);
+        flex: 0 0 auto;
+      }
+
+      .solid-button,
+      .ghost-button,
+      .danger-button,
+      .tiny-button {
+        min-height: 38px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        white-space: nowrap;
+        font-size: 13px;
+      }
+
+      .solid-button {
+        background: var(--crimson);
+      }
+
+      .ghost-button {
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid var(--line-strong);
+      }
+
+      .danger-button {
+        background: rgba(196, 30, 58, 0.16);
+        border: 1px solid rgba(196, 30, 58, 0.42);
+      }
+
+      .tiny-button {
+        min-height: 30px;
+        padding: 0 10px;
+        background: rgba(255, 255, 255, 0.07);
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+      }
+
+      .field.full {
+        grid-column: 1 / -1;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid var(--line-strong);
+        background: rgba(255, 255, 255, 0.055);
+        color: #fff;
+        border-radius: 8px;
+        padding: 11px 12px;
+        outline: 0;
+      }
+
+      textarea {
+        min-height: 108px;
+        resize: vertical;
+      }
+
+      .auth-wrap {
+        min-height: 670px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 430px;
+        gap: 28px;
+        align-items: center;
+      }
+
+      .auth-panel {
+        padding: 38px 0;
+      }
+
+      .auth-card {
+        padding: 24px;
+      }
+
+      .google-button {
+        width: 100%;
+        margin: 8px 0 16px;
+        min-height: 48px;
+        border-radius: 8px;
+        border: 0;
+        color: #081225;
+        background: #fff;
+        font-weight: 800;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 12px;
+      }
+
+      .timeline-item {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 12px;
+      }
+
+      .timeline-node {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(196, 30, 58, 0.22);
+        color: #ffd7de;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .calendar {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .day {
+        aspect-ratio: 1;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.04);
+        padding: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .day.active {
+        background: rgba(196, 30, 58, 0.2);
+        color: #fff;
+        border-color: rgba(196, 30, 58, 0.5);
+      }
+
+      .preview-shell {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.03);
+        padding: 14px;
+      }
+
+      .mobile-frame {
+        max-width: 330px;
+        margin-left: auto;
+        border: 1px solid var(--line-strong);
+        background: #061226;
+        padding: 12px;
+      }
+
+      .mobile-top {
+        height: 52px;
+        background: var(--nav);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        font-size: 12px;
+      }
+
+      .mobile-card {
+        margin-top: 10px;
+        padding: 12px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+      }
+
+      @media (max-width: 1100px) {
+        .topbar-inner {
+          grid-template-columns: 1fr auto;
+        }
+
+        .main-nav {
+          display: none;
+        }
+
+        .layout,
+        .auth-wrap,
+        .grid.main {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+        }
+
+        .grid.four,
+        .grid.three {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .hero-line {
+          align-items: start;
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topbar-inner,
+        .shell {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+
+        .brand {
+          min-width: 0;
+        }
+
+        .actions .ghost-button {
+          display: none;
+        }
+
+        .swatch-panel {
+          align-items: start;
+          flex-direction: column;
+        }
+
+        .grid.two,
+        .grid.three,
+        .grid.four,
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .table-row,
+        .table-row.header {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 34px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-mark">WA</div>
+          <div class="brand-text">
+            <strong>Wharton Alumni AI Studio</strong>
+            <span>Member platform mockup</span>
+          </div>
+        </div>
+        <nav class="main-nav" aria-label="Primary">
+          <button class="active">Dashboard</button>
+          <button>Events</button>
+          <button>Startups</button>
+          <button>Forum</button>
+          <button>Admin</button>
+        </nav>
+        <div class="actions">
+          <button class="ghost-button">View public site</button>
+          <div class="avatar">GC</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="swatch-panel" aria-label="Navbar color options">
+        <p>
+          Navbar decision: steel water is selected for the app shell. Wharton navy remains
+          available below for comparison.
+        </p>
+        <div class="swatches">
+          <button class="swatch" data-nav="#011F5B" data-name="Wharton navy">
+            <span class="swatch-chip" style="background:#011F5B"></span>
+            Wharton navy
+          </button>
+          <button class="swatch" data-nav="#155E75" data-name="Deep water">
+            <span class="swatch-chip" style="background:#155E75"></span>
+            Deep water
+          </button>
+          <button class="swatch active" data-nav="#256F8F" data-name="Steel water">
+            <span class="swatch-chip" style="background:#256F8F"></span>
+            Steel water
+          </button>
+        </div>
+      </section>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <div class="sidebar-group">
+            <p class="sidebar-label">Authentication</p>
+            <button class="page-tab active" data-page="signin">Sign in</button>
+            <button class="page-tab" data-page="pending">Pending approval</button>
+          </div>
+          <div class="sidebar-group">
+            <p class="sidebar-label">Member dashboard</p>
+            <button class="page-tab" data-page="member-overview">Overview <span class="count">4</span></button>
+            <button class="page-tab" data-page="profile">Profile</button>
+            <button class="page-tab" data-page="my-events">My events <span class="count">2</span></button>
+            <button class="page-tab" data-page="forum-feed">Forum feed</button>
+          </div>
+          <div class="sidebar-group">
+            <p class="sidebar-label">Admin dashboard</p>
+            <button class="page-tab" data-page="admin-overview">Admin overview</button>
+            <button class="page-tab" data-page="approvals">Approvals <span class="count">8</span></button>
+            <button class="page-tab" data-page="users">User management</button>
+            <button class="page-tab" data-page="events-admin">Event management</button>
+            <button class="page-tab" data-page="announcements">Announcements</button>
+          </div>
+        </aside>
+
+        <section class="canvas">
+          <article id="signin" class="page active">
+            <div class="auth-wrap">
+              <div class="auth-panel">
+                <p class="eyebrow">Member access</p>
+                <h1>Sign in to the WAAIS member platform.</h1>
+                <p class="lede">
+                  Approved Wharton alumni can access private events, founder updates,
+                  member profiles, and the Discourse forum with a single Google account.
+                </p>
+                <div class="grid three" style="margin-top:24px">
+                  <div class="metric"><span>Pending approvals</span><b>8</b></div>
+                  <div class="metric"><span>Upcoming events</span><b>12</b></div>
+                  <div class="metric"><span>Forum topics</span><b>146</b></div>
+                </div>
+              </div>
+              <div class="auth-card">
+                <h2>Continue with Google</h2>
+                <p class="small">
+                  New accounts are reviewed by an admin before dashboard and forum access
+                  is enabled.
+                </p>
+                <button class="google-button">Sign in with Google</button>
+                <div class="status-row">
+                  <span class="status pending">Pending by default</span>
+                  <span class="status good">SSO ready</span>
+                </div>
+                <div class="card" style="margin-top:18px">
+                  <h3>Access rules</h3>
+                  <p class="small">Pending users see approval status only. Members get dashboard and forum. Admins get user and event controls.</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article id="pending" class="page">
+            <div class="hero-line">
+              <div>
+                <p class="eyebrow">Registration received</p>
+                <h1>Your account is awaiting approval.</h1>
+                <p class="lede">This is the holding screen after Google OAuth for alumni who have not yet been approved by an admin.</p>
+              </div>
+              <button class="ghost-button">Contact support</button>
+            </div>
+            <div class="grid main">
+              <div class="card">
+                <h2>What happens next</h2>
+                <div class="timeline">
+                  <div class="timeline-item">
+                    <div class="timeline-node">1</div>
+                    <div><h3>Google account verified</h3><p class="small">Your name, email, and profile image are saved securely.</p></div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-node">2</div>
+                    <div><h3>Admin review</h3><p class="small">An admin confirms Wharton alumni status and community fit.</p></div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-node">3</div>
+                    <div><h3>Access enabled</h3><p class="small">You receive dashboard and forum access through the same sign-in.</p></div>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <h2>Account status</h2>
+                <p class="status pending">Pending admin approval</p>
+                <p class="small" style="margin-top:16px">Signed in as george@example.com</p>
+                <button class="ghost-button">Sign out</button>
+              </div>
+            </div>
+          </article>
+
+          <article id="member-overview" class="page">
+            <div class="hero-line">
+              <div>
+                <p class="eyebrow">Member dashboard</p>
+                <h1>Welcome back, George.</h1>
+                <p class="lede">A compact operating home for events, forum activity, founder updates, and personal profile completion.</p>
+              </div>
+              <button class="solid-button">Register for event</button>
+            </div>
+            <div class="grid four">
+              <div class="metric"><span>Profile completion</span><b>82%</b></div>
+              <div class="metric"><span>Upcoming events</span><b>3</b></div>
+              <div class="metric"><span>New forum replies</span><b>14</b></div>
+              <div class="metric"><span>Founder intros</span><b>5</b></div>
+            </div>
+            <div class="grid main" style="margin-top:16px">
+              <div class="card">
+                <div class="row between"><h2>Upcoming events</h2><button class="tiny-button">View all</button></div>
+                <div class="table">
+                  <div class="table-row">
+                    <div><h3>AI Founder Salon</h3><p class="small">New York, members only</p></div>
+                    <div class="status good">Registered</div>
+                    <div class="small">May 14</div>
+                    <div class="small">42 attending</div>
+                    <button class="tiny-button">Details</button>
+                  </div>
+                  <div class="table-row">
+                    <div><h3>Agentic Workflows Roundtable</h3><p class="small">Virtual</p></div>
+                    <div class="status">Open</div>
+                    <div class="small">May 28</div>
+                    <div class="small">18 attending</div>
+                    <button class="tiny-button">Register</button>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <h2>Forum pulse</h2>
+                <div class="timeline">
+                  <div class="timeline-item"><span class="dot"></span><div><h3>Enterprise AI procurement</h3><p class="small">6 new replies in Operators</p></div></div>
+                  <div class="timeline-item"><span class="dot"></span><div><h3>Seed-stage eval tooling</h3><p class="small">3 new replies in Founders</p></div></div>
+                  <div class="timeline-item"><span class="dot"></span><div><h3>Member intro: Maya Chen</h3><p class="small">New in Introductions</p></div></div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article id="profile" class="page">
+            <div class="hero-line">
+              <div>
+                <p class="eyebrow">Member profile</p>
+                <h1>Shape how other alumni discover you.</h1>
+                <p class="lede">Profile fields emphasize expertise, company context, and useful intro signals.</p>
+              </div>
+              <button class="solid-button">Save profile</button>
+            </div>
+            <div class="grid main">
+              <div class="card">
+                <h2>Public member profile</h2>
+                <div class="form-grid">
+                  <div class="field"><label>Name</label><input value="George Chen" /></div>
+                  <div class="field"><label>Wharton affiliation</label><input value="WG'20" /></div>
+                  <div class="field"><label>Company</label><input value="WAAIS" /></div>
+                  <div class="field"><label>Role</label><input value="Founder" /></div>
+                  <div class="field"><label>LinkedIn</label><input value="linkedin.com/in/george" /></div>
+                  <div class="field"><label>Location</label><input value="New York / Paris" /></div>
+                  <div class="field full"><label>Bio</label><textarea>Building the Wharton Alumni AI Studio community for alumni working on applied AI, startups, research, and enterprise adoption.</textarea></div>
+                </div>
+              </div>
+              <div class="card">
+                <h2>Expertise tags</h2>
+                <div class="tag-row">
+                  <span class="tag">AI strategy</span>
+                  <span class="tag">Startups</span>
+                  <span class="tag">Agents</span>
+                  <span class="tag">Community</span>
+                  <span class="tag">Venture</span>
+                </div>
+                <h2 style="margin-top:22px">Visibility</h2>
+                <p class="status good">Visible to members</p>
+                <p class="small" style="margin-top:12px">Admins can hide incomplete or inappropriate profiles.</p>
+              </div>
+            </div>
+          </article>
+
+          <article id="my-events" class="page">
+            <div class="hero-line">
+              <div>
+                <p class="eyebrow">My events</p>
+                <h1>Registered events and recommended sessions.</h1>
+                <p class="lede">A member-facing calendar with registrations, waitlists, and past event artifacts.</p>
+              </div>
+              <button class="solid-button">Browse events</button>
+            </div>
+            <div class="grid main">
+              <div class="card">
+                <h2>Registrations</h2>
+                <div class="table">
+                  <div class="table-row header"><span>Event</span><span>Status</span><span>Date</span><span>Format</span><span></span></div>
+                  <div class="table-row"><div><h3>AI Founder Salon</h3><p class="small">Private dinner</p></div><span class="status good">Confirmed</span><span class="small">May 14</span><span class="small">In person</span><button class="tiny-button">Ticket</button></div>
+                  <div class="table-row"><div><h3>Demo Night</h3><p class="small">Member startup demos</p></div><span class="status pending">Waitlist</span><span class="small">Jun 05</span><span class="small">Hybrid</span><button class="tiny-button">Manage</button></div>
+                </div>
+              </div>
+              <div class="card">
+                <h2>May 2026</h2>
+                <div class="calendar">
+                  <div class="day">1</div><div class="day">2</div><div class="day">3</div><div class="day">4</div><div class="day">5</div><div class="day">6</div><div class="day">7</div>
+                  <div class="day">8</div><div class="day">9</div><div class="day">10</div><div class="day">11</div><div class="day">12</div><div class="day">13</div><div class="day active">14</div>
+                  <div class="day">15</div><div class="day">16</div><div class="day">17</div><div class="day">18</div><div class="day">19</div><div class="day">20</div><div class="day">21</div>
+                  <div class="day">22</div><div class="day">23</div><div class="day">24</div><div class="day">25</div><div class="day">26</div><div class="day">27</div><div class="day active">28</div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article id="forum-feed" class="page">
+            <div class="hero-line">
+              <div>
+                <p class="eyebrow">Forum feed</p>
+                <h1>Recent discussion from Discourse.</h1>
+                <p class="lede">The dashboard shows a lightweight feed. Full posting and moderation remain inside `/forum`.</p>
+              </div>
+              <button class="solid-button">Open forum</button>
+            </div>
+            <div class="card">
+              <div class="table">
+                <div class="table-row header"><span>Topic</span><span>Category</span><span>Replies</span><span>Latest</span><span></span></div>
+                <div class="table-row"><div><h3>How are teams pricing internal AI agents?</h3><p class="small">Started by Nina Park</p></div><span class="tag">Operators</span><span class="small">18</span><span class="small">12 min ago</span><button class="tiny-button">Open</button></div>
+                <div class="table-row"><div><h3>Founders raising in Q2</h3><p class="small">Started by Alex Li</p></div><span class="tag">Founders</span><span class="small">9</span><span class="small">1 hr ago</span><button class="tiny-button">Open</button></div>
+                <div class="table-row"><div><h3>Evaluation tools for regulated workflows</h3><p class="small">Started by Priya Shah</p></div><span class="tag">Research</span><span class="small">22</span><span class="small">Yesterday</span><button class="tiny-button">Open</button></div>
+              </div>
+            </div>
+          </article>
+
+          <article id="admin-overview" class="page">
+            <div class="hero-line">
+              <div>
+                <p class="eyebrow">Admin dashboard</p>
+                <h1>Manage approvals, events, members, and announcements.</h1>
+                <p class="lede">Admin screens are denser and more operational, while keeping the same premium dark visual system.</p>
+              </div>
+              <button class="solid-button">Create announcement</button>
+            </div>
+            <div class="grid four">
+              <div class="metric"><span>Pending approvals</span><b>8</b></div>
+              <div class="metric"><span>Active members</span><b>284</b></div>
+              <div class="metric"><span>Published events</span><b>12</b></div>
+              <div class="metric"><span>Open reports</span><b>3</b></div>
+            </div>
+            <div class="grid main" style="margin-top:16px">
+              <div class="card">
+                <h2>Operational queue</h2>
+                <div class="table">
+                  <div class="table-row"><div><h3>Approve 8 new applicants</h3><p class="small">3 appear to match Wharton emails</p></div><span class="status pending">Needs review</span><span class="small">Today</span><span></span><button class="tiny-button">Review</button></div>
+                  <div class="table-row"><div><h3>Publish Demo Night</h3><p class="small">Draft event missing speaker details</p></div><span class="status">Draft</span><span class="small">This week</span><span></span><button class="tiny-button">Edit</button></div>
+                </div>
+              </div>
+              <div class="card">
+                <h2>Quick actions</h2>
+                <div class="grid">
+                  <button class="ghost-button">Create event</button>
+                  <button class="ghost-button">Invite member</button>
+                  <button class="ghost-button">Open Discourse admin</button>
+                  <button class="danger-button">Review reports</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article id="approvals" class="page">
+            <div class="hero-line">
+              <div>
+                <p class="eyebrow">Approvals queue</p>
+                <h1>Review new member applications.</h1>
+                <p class="lede">Fast review table with alumni signals, role context, and approve/reject controls.</p>
+              </div>
+              <button class="ghost-button">Export CSV</button>
+            </div>
+            <div class="table">
+              <div class="table-row header"><span>Applicant</span><span>Signal</span><span>Submitted</span><span>Status</span><span>Action</span></div>
+              <div class="table-row"><div><h3>Maya Chen</h3><p class="small">maya@wharton.upenn.edu</p></div><span class="tag">Wharton email</span><span class="small">Today</span><span class="status pending">Pending</span><div class="row"><button class="tiny-button">Approve</button><button class="tiny-button">Reject</button></div></div>
+              <div class="table-row"><div><h3>Daniel Reed</h3><p class="small">daniel@startup.ai</p></div><span class="tag">LinkedIn provided</span><span class="small">Yesterday</span><span class="status pending">Pending</span><div class="row"><button class="tiny-button">Approve</button><button class="tiny-button">Reject</button></div></div>
+              <div class="table-row"><div><h3>Priya Shah</h3><p class="small">priya@enterprise.com</p></div><span class="tag">Manual check</span><span class="small">Apr 28</span><span class="status pending">Pending</span><div class="row"><button class="tiny-button">Approve</button><button class="tiny-button">Reject</button></div></div>
+            </div>
+          </article>
+
+          <article id="users" class="page">
+            <div class="hero-line">
+              <div>
+                <p class="eyebrow">User management</p>
+                <h1>Members, admins, and suspended accounts.</h1>
+                <p class="lede">Admin table optimized for search, role changes, suspension, and profile review.</p>
+              </div>
+              <button class="solid-button">Invite user</button>
+            </div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="form-grid">
+                <div class="field"><label>Search</label><input placeholder="Name, email, company" /></div>
+                <div class="field"><label>Role</label><select><option>All roles</option><option>Members</option><option>Admins</option></select></div>
+              </div>
+            </div>
+            <div class="table">
+              <div class="table-row header"><span>User</span><span>Role</span><span>Status</span><span>Last active</span><span>Action</span></div>
+              <div class="table-row"><div><h3>George Chen</h3><p class="small">Founder, WAAIS</p></div><span class="tag">Admin</span><span class="status good">Active</span><span class="small">Now</span><button class="tiny-button">Edit</button></div>
+              <div class="table-row"><div><h3>Nina Park</h3><p class="small">VP AI Strategy</p></div><span class="tag">Member</span><span class="status good">Active</span><span class="small">2 hr ago</span><button class="tiny-button">Edit</button></div>
+              <div class="table-row"><div><h3>Alex Li</h3><p class="small">Founder</p></div><span class="tag">Member</span><span class="status danger">Suspended</span><span class="small">Apr 18</span><button class="tiny-button">Review</button></div>
+            </div>
+          </article>
+
+          <article id="events-admin" class="page">
+            <div class="hero-line">
+              <div>
+                <p class="eyebrow">Event management</p>
+                <h1>Create, publish, and manage member events.</h1>
+                <p class="lede">A practical event editor with status, capacity, visibility, and registration controls.</p>
+              </div>
+              <button class="solid-button">Create event</button>
+            </div>
+            <div class="grid main">
+              <div class="card">
+                <h2>Edit event</h2>
+                <div class="form-grid">
+                  <div class="field full"><label>Title</label><input value="AI Founder Salon" /></div>
+                  <div class="field"><label>Date</label><input value="May 14, 2026" /></div>
+                  <div class="field"><label>Capacity</label><input value="50" /></div>
+                  <div class="field"><label>Status</label><select><option>Published</option><option>Draft</option><option>Cancelled</option></select></div>
+                  <div class="field"><label>Visibility</label><select><option>Members only</option><option>Public</option></select></div>
+                  <div class="field full"><label>Description</label><textarea>Private dinner for AI founders and operators in the WAAIS community.</textarea></div>
+                </div>
+              </div>
+              <div class="card">
+                <h2>Published events</h2>
+                <div class="timeline">
+                  <div class="timeline-item"><span class="dot"></span><div><h3>AI Founder Salon</h3><p class="small">42 / 50 registered</p></div></div>
+                  <div class="timeline-item"><span class="dot"></span><div><h3>Agentic Workflows</h3><p class="small">18 / 100 registered</p></div></div>
+                  <div class="timeline-item"><span class="dot"></span><div><h3>Demo Night</h3><p class="small">Draft, missing speakers</p></div></div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article id="announcements" class="page">
+            <div class="hero-line">
+              <div>
+                <p class="eyebrow">Announcements</p>
+                <h1>Broadcast updates to members or segments.</h1>
+                <p class="lede">Designed for controlled community communication without becoming a marketing CMS.</p>
+              </div>
+              <button class="solid-button">Send test</button>
+            </div>
+            <div class="grid main">
+              <div class="card">
+                <h2>Compose</h2>
+                <div class="form-grid">
+                  <div class="field"><label>Audience</label><select><option>All active members</option><option>Admins only</option><option>Event registrants</option></select></div>
+                  <div class="field"><label>Channel</label><select><option>Email + dashboard</option><option>Dashboard only</option></select></div>
+                  <div class="field full"><label>Subject</label><input value="New WAAIS forum categories are live" /></div>
+                  <div class="field full"><label>Message</label><textarea>We have opened new member discussion spaces for founders, operators, research, jobs, and member introductions.</textarea></div>
+                </div>
+              </div>
+              <div class="preview-shell">
+                <h2>Mobile preview</h2>
+                <div class="mobile-frame">
+                  <div class="mobile-top"><strong>WAAIS</strong><span>Now</span></div>
+                  <div class="mobile-card">
+                    <p class="eyebrow">Announcement</p>
+                    <h3>New WAAIS forum categories are live</h3>
+                    <p class="small">We have opened new member discussion spaces for founders, operators, research, jobs, and member introductions.</p>
+                    <button class="tiny-button">Open dashboard</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const pageButtons = document.querySelectorAll(".page-tab");
+      const pages = document.querySelectorAll(".page");
+      const swatches = document.querySelectorAll(".swatch");
+
+      pageButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const pageId = button.dataset.page;
+          pageButtons.forEach((item) => item.classList.toggle("active", item === button));
+          pages.forEach((page) => page.classList.toggle("active", page.id === pageId));
+        });
+      });
+
+      swatches.forEach((button) => {
+        button.addEventListener("click", () => {
+          document.documentElement.style.setProperty("--nav", button.dataset.nav);
+          swatches.forEach((item) => item.classList.toggle("active", item === button));
+        });
+      });
+    </script>
+  </body>
+</html>

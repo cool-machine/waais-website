@@ -1,0 +1,39 @@
+# macOS
+.DS_Store
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.vite/
+.nuxt/
+.output/
+
+# Laravel / PHP
+vendor/
+storage/*.key
+storage/logs/*.log
+bootstrap/cache/*.php
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDEs
+.idea/
+.vscode/
+
+# Temporary files
+tmp/
+temp/
+
+# Reference-only old website
+legacy/
