@@ -774,10 +774,10 @@
             <div class="auth-wrap">
               <div class="auth-panel">
                 <p class="eyebrow">Member access</p>
-                <h1>Sign in to the WAAIS member platform.</h1>
+                <h1>Sign in to WAAIS.</h1>
                 <p class="lede">
-                  Approved Wharton alumni can access private events, founder updates,
-                  member profiles, and the Discourse forum with a single Google account.
+                  This is the logged-out entry screen. Google verifies the account first;
+                  WAAIS then checks whether the person is approved, pending, or an admin.
                 </p>
                 <div class="grid three" style="margin-top:24px">
                   <div class="metric"><span>Pending approvals</span><b>8</b></div>
@@ -788,17 +788,18 @@
               <div class="auth-card">
                 <h2>Continue with Google</h2>
                 <p class="small">
-                  New accounts are reviewed by an admin before dashboard and forum access
-                  is enabled.
+                  After sign-in, approved members go to the dashboard, admins get admin
+                  tools, and unapproved users see the pending approval page.
                 </p>
                 <button class="google-button">Sign in with Google</button>
+                <button class="solid-button" data-jump-page="member-overview" style="width:100%; margin-top:10px">Preview signed-in member page</button>
                 <div class="status-row">
-                  <span class="status pending">Pending by default</span>
+                  <span class="status pending">Status checked after sign-in</span>
                   <span class="status good">SSO ready</span>
                 </div>
                 <div class="card" style="margin-top:18px">
                   <h3>Access rules</h3>
-                  <p class="small">Pending users see approval status only. Members get dashboard and forum. Admins get user and event controls.</p>
+                  <p class="small">Approved members get dashboard and forum access. Admins also get approvals, user management, events, and public-content controls.</p>
                 </div>
               </div>
             </div>
@@ -1188,6 +1189,14 @@
         button.addEventListener("click", () => {
           document.documentElement.style.setProperty("--nav", button.dataset.nav);
           swatches.forEach((item) => item.classList.toggle("active", item === button));
+        });
+      });
+
+      document.querySelectorAll("[data-jump-page]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const pageId = button.dataset.jumpPage;
+          pageButtons.forEach((item) => item.classList.toggle("active", item.dataset.page === pageId));
+          pages.forEach((page) => page.classList.toggle("active", page.id === pageId));
         });
       });
     </script>
