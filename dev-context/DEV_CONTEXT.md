@@ -186,10 +186,11 @@ Important current implementation state:
 - Public homepage can use white/off-white scroll sections after the dark hero; app/dashboard/admin/auth should remain dark for consistency and focus
 
 **Important implementation status**
-- Current deployed site is **not Vue** and **not PHP/Laravel**. It is static HTML/CSS/JS mockup code.
-- Admin screens are **design-only**. They do not persist data, authenticate admins, or publish real content yet.
-- Membership application, sign-in, pending approval, and gated directory states are **design-only**. Real logic belongs in the future Vue + Laravel build.
-- The GitHub Pages root redirects to `/mockups/public-site.html`; the admin mockup is at `/mockups/app-dashboard-admin-auth.html`.
+- Current GitHub Pages root serves the built Vue frontend preview. It is **not PHP/Laravel** and does not persist data.
+- Root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, and `icons.svg` are generated from `frontend/dist` for GitHub Pages deployment.
+- Admin screens are still **frontend-only/design-only**. They do not authenticate admins, persist data, send email, or publish real content yet.
+- Membership application, sign-in, pending approval, and gated directory states are **frontend-only/design-only**. Real logic belongs in the future Vue + Laravel build.
+- Static mockups remain available under `/mockups/`; the old admin mockup is at `/mockups/app-dashboard-admin-auth.html`.
 
 **Relevant files**
 - `/Users/gg1900/coding/waais-website/legacy/old-react-site/src/pages/` — old page structure to reference
@@ -201,7 +202,7 @@ Important current implementation state:
 - `/Users/gg1900/coding/waais-website/mockups/assets/waais-hero-video.mp4` — local homepage hero video asset
 - `/Users/gg1900/coding/waais-website/mockups/app-dashboard-admin-auth.html` — interactive mockup for auth, member dashboard, and admin dashboard, including admin public-content management
 - `/Users/gg1900/coding/waais-website/dev-context/CURRENT_STATE.md` — concise latest handoff summary
-- `/Users/gg1900/coding/waais-website/index.html` — GitHub Pages redirect to the public-site mockup
+- `/Users/gg1900/coding/waais-website/index.html` — built Vue frontend entry for GitHub Pages
 
 ---
 

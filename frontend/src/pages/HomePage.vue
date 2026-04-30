@@ -6,6 +6,8 @@ import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
 import { events } from '../data/events'
 import { startups } from '../data/startups'
+
+const heroVideoSrc = `${import.meta.env.BASE_URL}assets/waais-hero-video.mp4`
 </script>
 
 <template>
@@ -14,7 +16,7 @@ import { startups } from '../data/startups'
       eyebrow="Wharton alumni building with AI"
       title="Where Wharton alumni working in AI meet, build, and share."
       lede="WAAIS brings together founders, operators, investors, researchers, and executives using artificial intelligence in the real world."
-      video-src="/assets/waais-hero-video.mp4"
+      :video-src="heroVideoSrc"
       poster="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=2200&q=80"
     >
       <div class="hero-actions">

@@ -1,6 +1,6 @@
 # WAAIS — Current State Handoff
 
-Last updated: April 30, 2026
+Last updated: May 1, 2026
 
 This file is the short version of the handoff. Read `DEV_CONTEXT.md` for the full source of truth.
 
@@ -19,7 +19,7 @@ WAAIS is the Wharton Alumni AI Studio platform: a public website, approved-membe
   - `mockups/app-dashboard-admin-auth.html`
 - Added George's licensed hero video locally at `mockups/assets/waais-hero-video.mp4`.
 - Enabled GitHub Pages at `https://cool-machine.github.io/waais-website/`.
-- Changed root `index.html` so the GitHub Pages root redirects to the public-site mockup.
+- Changed GitHub Pages root to serve the Vue frontend preview. Static mockups remain available under `/mockups/`.
 
 ## Design Decisions Locked In
 
@@ -123,29 +123,24 @@ The forum UX target is similar to PyTorch forums or fast.ai forums: simple categ
 
 ## What We Are Doing Now
 
-Vue frontend scaffolding has started on branch `codex/vue-frontend-scaffold`, but implementation was paused because the conversation was reaching the token limit. Read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md` before continuing.
-
-At handoff time, `frontend/` exists locally but is untracked in git. The next LLM/developer must inspect it before staging or committing.
+The Vue frontend scaffold has been merged into `main` and expanded with public detail routes plus frontend-only app/auth/member/admin mockup routes. The GitHub Pages root now serves the built Vue preview from root-level static assets. Read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md` before continuing.
 
 ## Remaining Next Steps
 
-1. Inspect the untracked `/frontend/` scaffold and read `VUE_FRONTEND_HANDOFF.md`.
-2. Clean up the Vue scaffold README/assets as needed.
-3. Re-run `npm run build` in `/frontend/`.
-4. Continue converting the static public mockup into Vue routes/components.
-5. Commit the Vue scaffold once it is clean enough.
-6. Temporarily deploy the Vue frontend to GitHub Pages while backend work is not ready.
-7. Replace placeholder logo/brand mark when George provides it.
-8. Scaffold `/backend/` with Laravel/PHP later.
-9. Implement Google OAuth, pending approval, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO later.
-10. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
+1. Review the Vue GitHub Pages preview after deployment finishes.
+2. Continue polishing the Vue public and app/admin mockup routes.
+3. Replace placeholder logo/brand mark when George provides it.
+4. Decide the canonical backend model for approval status, affiliation type, and permission role before Laravel work.
+5. Scaffold `/backend/` with Laravel/PHP later.
+6. Implement Google OAuth, pending approval, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO later.
+7. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
 
 ## Watch Outs
 
-- The deployed site is static HTML/CSS/JS, not Vue and not PHP.
-- The new Vue scaffold is local and untracked until reviewed/committed.
-- The admin page is reached through `mockups/app-dashboard-admin-auth.html`, not from the public mockup root.
+- The deployed GitHub Pages preview is a built Vue frontend. It is not PHP/Laravel and does not persist data.
+- Root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, and `icons.svg` are generated from `frontend/dist` for GitHub Pages.
+- The old static admin mockup remains available at `mockups/app-dashboard-admin-auth.html` for reference.
 - Browser cache may show an old GitHub Pages version; hard refresh or open the direct mockup URLs.
 - `legacy/` exists locally but is ignored by git.
-- `/frontend/` exists locally and is untracked until reviewed/committed.
+- `/frontend/` exists and is tracked.
 - `/backend/` does not exist yet; that is expected.

@@ -6,24 +6,15 @@ This file captures the exact state where implementation was paused because the c
 
 ## Current Branch
 
-Current branch:
+Current branch after latest deployment work:
 
-`codex/vue-frontend-scaffold`
+`main`
 
 The branch was created from `main` after the static mockup/product review work was finalized.
 
 ## Important Git State
 
-At handoff time, `frontend/` exists locally but is **untracked** in git.
-
-Expected `git status --short --branch`:
-
-```text
-## codex/vue-frontend-scaffold
-?? frontend/
-```
-
-This means the next LLM/developer must inspect `frontend/` before deciding whether to stage/commit it. Do not assume the Vue scaffold has already been committed.
+`frontend/` is tracked in git. The GitHub Pages root is populated from `frontend/dist` using root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, and `icons.svg`.
 
 ## What Was Done
 
