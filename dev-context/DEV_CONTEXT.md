@@ -126,7 +126,7 @@ The design phase is in progress. A first-pass interactive mockup of all 5 main p
 - `/Users/gg1900/coding/waais-website/mockups/public-site.html` — clickable public website prototype
 - `/Users/gg1900/coding/waais-website/mockups/assets/waais-hero-video.mp4` — local homepage hero video asset
 - `/Users/gg1900/coding/waais-website/mockups/app-dashboard-admin-auth.html` — interactive mockup for auth, member dashboard, and admin dashboard; includes navbar color swatches
-- `/Users/gg1900/coding/waais-website/index.html` — GitHub Pages landing page linking to all mockups
+- `/Users/gg1900/coding/waais-website/index.html` — GitHub Pages redirect to the public-site mockup
 
 ---
 
@@ -202,6 +202,7 @@ The design phase is in progress. A first-pass interactive mockup of all 5 main p
 **April 30, 2026 — GitHub Pages prep**
 - Did: added root `/index.html` as a static GitHub Pages landing page linking to the public-site, app/admin/auth, and design-system mockups; added `.nojekyll`
 - Did: created public GitHub repo `https://github.com/cool-machine/waais-website`, pushed `main`, and enabled GitHub Pages from `main` root at `https://cool-machine.github.io/waais-website/`
+- Did: changed root `/index.html` to redirect directly to `/mockups/public-site.html` so the Pages URL opens the video/motion public homepage instead of the static mockup index
 - Left off at: GitHub Pages is enabled; deployment may take a short time to become available after the first push
 - Watch out for: `legacy/` remains ignored and should not be pushed
 
