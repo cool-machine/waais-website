@@ -30,7 +30,7 @@ WAAIS is the Wharton Alumni AI Studio platform: a public website, approved-membe
 - Dashboard, admin, auth, and operational surfaces remain dark.
 - Current logo is a placeholder; George will provide a real club brand mark later.
 - Forum will use `forum.whartonai.studio`, not `whartonai.studio/forum`.
-- Public navigation should include a Forum link. The current mockup links to `https://forum.whartonai.studio`.
+- Public navigation should include a Forum item. The current mockup opens an internal forum preview page because `forum.whartonai.studio` is not installed yet.
 
 ## Membership Flow Now Designed
 

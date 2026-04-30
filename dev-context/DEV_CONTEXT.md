@@ -64,7 +64,7 @@
 - Admins: George + a small group (names TBD)
 - Forum URL decision: use `forum.whartonai.studio`, not `/forum`, to avoid fragile subfolder/reverse-proxy complexity
 - Public site may keep a `/forum` route or nav link that redirects users to `https://forum.whartonai.studio`
-- Public navigation should include a Forum link once the forum exists; current mockup links directly to `https://forum.whartonai.studio`
+- Public navigation should include a Forum item. In mockups, it opens an internal forum preview page so review does not navigate to the not-yet-installed `forum.whartonai.studio`.
 - Forum taxonomy should imitate the current WhatsApp structure with two major category families:
   - Region-based groups: New York, San Francisco, London, etc.
   - Industry-based groups: Finance, Media & Entertainment, etc.
@@ -123,6 +123,7 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [x] Deploy current mockups to GitHub Pages from `main`
 - [ ] Confirm George's design review items before Vue build: membership flow, admin content controls, homepage video/motion, public/dashboard navigation
 - [x] Replace simplified membership form with the current Google Forms questionnaire fields
+- [x] Replace dead external Forum nav link with an internal forum preview page until Discourse is installed
 - [ ] Hand mockup to developer as the visual spec for the Vue build
 
 **Design decisions from mockup review**
