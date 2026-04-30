@@ -13,9 +13,10 @@
   - Old React source (reference only): `/Users/gg1900/coding/waais-website/legacy/old-react-site/src/`
   - Old React app root (reference only): `/Users/gg1900/coding/waais-website/legacy/old-react-site/`
   - Dev context folder: `/Users/gg1900/coding/waais-website/dev-context/`
-  - Vue frontend (to be created): `/Users/gg1900/coding/waais-website/frontend/`
-  - Laravel backend (to be created): `/Users/gg1900/coding/waais-website/backend/`
+  - Vue frontend (to be created; missing is expected): `/Users/gg1900/coding/waais-website/frontend/`
+  - Laravel backend (to be created; missing is expected): `/Users/gg1900/coding/waais-website/backend/`
   - This file: `/Users/gg1900/coding/waais-website/dev-context/DEV_CONTEXT.md`
+- [ ] Also read `/Users/gg1900/coding/waais-website/dev-context/CURRENT_STATE.md` for the latest concise handoff
 - [ ] Read the Session Notes at the bottom — they reflect the most recent state of work
 - [ ] Note anything that has moved or changed, and update this file before starting
 
@@ -66,11 +67,11 @@
 
 | Section | Pages |
 |---|---|
-| Public site | Home, Events, Startups, About / Team, Partners, Get Involved, Contact |
+| Public site | Home, Events, Startups, About / Team, Partners, Membership, Contact |
 | Legal | Privacy Policy, Cookie Policy, GDPR Request |
-| Auth | Sign In, Registration / Pending Approval screen |
+| Auth | Sign In, Membership Application, Pending Approval screen |
 | Member dashboard | Overview, Profile, My Events, Forum Feed |
-| Admin dashboard | Approvals Queue, User Management, Event Management, Announcements |
+| Admin dashboard | Approvals Queue, User Management, Event Management, Public Content Management, Announcements |
 | Forum | `/forum` — Discourse app, not a Vue page |
 
 **Azure cost estimate**
@@ -89,9 +90,9 @@
 
 ## 2. Current Work
 
-**Task: UI design — mockups for all pages**
+**Task: UI design handoff and next Vue implementation**
 
-The design phase is in progress. A first-pass interactive mockup of all 5 main pages has been built and reviewed. The next step is to refine the design before any code is written.
+The design phase has produced first-pass static HTML/CSS/JS prototypes for the public site, auth/member/admin app, and visual design system. The current task is to preserve the session state in Markdown, then move to Vue 3 implementation once George approves the mockup direction.
 
 - [x] Audit existing React codebase
 - [x] Define stack, domain, architecture, design direction
@@ -109,8 +110,10 @@ The design phase is in progress. A first-pass interactive mockup of all 5 main p
 - [x] Add local homepage hero video asset from George's licensed YouTube upload
 - [x] Resolve navbar color: selected steel water blue `#256F8F`
 - [x] Finalise first-pass design system: confirm colors, typography direction, spacing, components, dark/light surface rules
-- [x] Extend mockup to cover Dashboard (member), Dashboard (admin), Sign In, Get Involved
+- [x] Extend mockup to cover Dashboard (member), Dashboard (admin), Sign In, Membership, and application/pending states
 - [ ] George supplies brand/logo asset — drop into mockup
+- [x] Deploy current mockups to GitHub Pages from `main`
+- [ ] Confirm George's design review items before Vue build: membership flow, admin content controls, homepage video/motion, public/dashboard navigation
 - [ ] Hand mockup to developer as the visual spec for the Vue build
 
 **Design decisions from mockup review**
@@ -120,15 +123,22 @@ The design phase is in progress. A first-pass interactive mockup of all 5 main p
 - Forum page (Discourse-style) design approved: category grid + topic list, same dark theme as main site
 - Public homepage can use white/off-white scroll sections after the dark hero; app/dashboard/admin/auth should remain dark for consistency and focus
 
+**Important implementation status**
+- Current deployed site is **not Vue** and **not PHP/Laravel**. It is static HTML/CSS/JS mockup code.
+- Admin screens are **design-only**. They do not persist data, authenticate admins, or publish real content yet.
+- Membership application, sign-in, pending approval, and gated directory states are **design-only**. Real logic belongs in the future Vue + Laravel build.
+- The GitHub Pages root redirects to `/mockups/public-site.html`; the admin mockup is at `/mockups/app-dashboard-admin-auth.html`.
+
 **Relevant files**
 - `/Users/gg1900/coding/waais-website/legacy/old-react-site/src/pages/` — old page structure to reference
 - `/Users/gg1900/coding/waais-website/legacy/old-react-site/src/data/` — events, startups, partners, team data
 - `/Users/gg1900/coding/waais-website/legacy/old-react-site/src/components/` — old components for layout reference
 - `/Users/gg1900/coding/waais-website/legacy/old-react-site/package.json` — old React/Vite dependency manifest, reference only
 - `/Users/gg1900/coding/waais-website/mockups/design-system.html` — visual design system and component rules
-- `/Users/gg1900/coding/waais-website/mockups/public-site.html` — clickable public website prototype
+- `/Users/gg1900/coding/waais-website/mockups/public-site.html` — clickable public website prototype; GitHub Pages root redirects here
 - `/Users/gg1900/coding/waais-website/mockups/assets/waais-hero-video.mp4` — local homepage hero video asset
-- `/Users/gg1900/coding/waais-website/mockups/app-dashboard-admin-auth.html` — interactive mockup for auth, member dashboard, and admin dashboard; includes navbar color swatches
+- `/Users/gg1900/coding/waais-website/mockups/app-dashboard-admin-auth.html` — interactive mockup for auth, member dashboard, and admin dashboard, including admin public-content management
+- `/Users/gg1900/coding/waais-website/dev-context/CURRENT_STATE.md` — concise latest handoff summary
 - `/Users/gg1900/coding/waais-website/index.html` — GitHub Pages redirect to the public-site mockup
 
 ---
@@ -139,23 +149,27 @@ The design phase is in progress. A first-pass interactive mockup of all 5 main p
 - [x] Navbar water blue color decision
 - [x] First-pass visual design system
 - [x] Mockups for: member dashboard, admin dashboard, sign-in page
-- [x] Mockups for: public pages including get involved page
+- [x] Mockups for: public pages including Membership page
+- [x] Mockups for: admin public content management for events, startups, partners, homepage cards
 - [ ] Logo asset from George → place in all mockups
-- [ ] Final design sign-off before dev starts
+- [ ] Final design sign-off before dev starts, especially membership/auth flow and admin content management UX
 
 ### Phase 1 — Public site (Vue frontend)
 - [ ] Scaffold Vue 3 project (Vite + Tailwind + Vue Router + Pinia)
-- [ ] Homepage: hero, mission, stats, events preview, CTA
+- [ ] Convert design-system tokens/components into reusable Vue/Tailwind primitives
+- [ ] Homepage: video hero, scroll motion, mission, stats, events preview, startup preview, partner preview, CTA
 - [ ] Events page: upcoming and past, filters
-- [ ] Startups directory: grid + search
+- [ ] Startups directory: public teaser + gated member-only full directory treatment
 - [ ] About / Team
 - [ ] Partners
-- [ ] Get Involved
+- [ ] Membership landing page: existing-member sign-in, new-applicant application, non-member actions
 - [ ] Contact
+- [ ] Legal pages: Privacy Policy, Cookie Policy, GDPR Request
 
 ### Phase 2 — Auth & accounts (Laravel)
 - [ ] Google OAuth (Laravel Socialite)
 - [ ] User model: name, email, role, status
+- [ ] Membership application data model: Wharton affiliation, year/program, LinkedIn, AI category, join reason
 - [ ] Approval flow: pending → admin approves → active
 - [ ] Session management (Laravel Sanctum)
 - [ ] Discourse SSO relay endpoint
@@ -170,6 +184,9 @@ The design phase is in progress. A first-pass interactive mockup of all 5 main p
 - [ ] Pending approvals queue
 - [ ] User list: view, suspend, promote
 - [ ] Event management: create, edit, publish, cancel
+- [ ] Public content management: create/edit/publish/hide/remove cards for events, startups, partners, homepage modules
+- [ ] Startup listing management: review/approve/update startup cards and member-only profile visibility
+- [ ] Partner listing management: create/edit/publish/hide partner cards
 - [ ] Announcements: broadcast to all or segments
 - [ ] Forum moderation shortcuts
 - [ ] Basic analytics
@@ -202,6 +219,13 @@ The design phase is in progress. A first-pass interactive mockup of all 5 main p
 
 > Newest entry at the top. Update this at the end of every session.
 
+**April 30, 2026 — Session documentation refresh**
+- Did: added `/dev-context/CURRENT_STATE.md` as a concise recovery handoff for the current design/prototype state
+- Did: updated `/dev-context/DEV_CONTEXT.md` to clarify that current outputs are static mockups, not Vue/PHP implementation, and to list membership/admin CMS flows as designed but not functional
+- Did: updated `/mockups/README.md` and `/dev-context/STARTER_PROMPT.md` with direct URLs and instructions to read both context files in future sessions
+- Left off at: documentation now captures the latest steps, what is happening now, and the remaining next steps before Vue/Laravel implementation
+- Watch out for: the next session should start with design review or Vue scaffolding, not backend/admin logic yet
+
 **April 30, 2026 — GitHub Pages prep**
 - Did: added root `/index.html` as a static GitHub Pages landing page linking to the public-site, app/admin/auth, and design-system mockups; added `.nojekyll`
 - Did: created public GitHub repo `https://github.com/cool-machine/waais-website`, pushed `main`, and enabled GitHub Pages from `main` root at `https://cool-machine.github.io/waais-website/`
@@ -216,11 +240,11 @@ The design phase is in progress. A first-pass interactive mockup of all 5 main p
 - Left off at: these are mockup-only flows; real sign-in, admin permissions, CMS persistence, and public card publishing still need Vue/Laravel implementation
 
 **April 30, 2026 — Public site mockup**
-- Did: added `/mockups/public-site.html`, a clickable public website prototype covering Home, Events, Startups, About, Partners, Membership/Get Involved, Contact, and Legal with Privacy/Cookie/GDPR sub-tabs
+- Did: added `/mockups/public-site.html`, a clickable public website prototype covering Home, Events, Startups, About, Partners, Membership, Contact, and Legal with Privacy/Cookie/GDPR sub-tabs
 - Did: added old-site-inspired scroll motion to `/mockups/public-site.html`: reveal-on-scroll sections/cards, left/right converging card motion, staggered delays, count-up metrics, floating topic cluster, hero background parallax, and `prefers-reduced-motion` support
 - Did: extended the homepage length with What We Do, featured startups, community voice/testimonials, newsletter, partners, and CTA-style sections
 - Did: downloaded George's licensed YouTube video into `/mockups/assets/waais-hero-video.mp4` and wired it into the home hero with a dark overlay, poster fallback, and reduced-motion fallback
-- Did: updated public-site top-right CTAs to use `Become a member` linking to Get Involved plus `Member sign in` for existing users; Events remains in the main nav
+- Did: updated public-site top-right CTAs to use `Become a member` linking to the Membership flow plus `Member sign in` for existing users; Events remains in the main nav
 - Left off at: public-site design uses water-blue navbar, video-backed dark home hero, light/off-white content sections, and dark navy CTA bands
 - Watch out for: some page content and team/partner examples still use legacy placeholder data and should be replaced with final WAAIS copy before implementation
 

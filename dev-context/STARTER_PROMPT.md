@@ -20,11 +20,15 @@ Read that file first. It has three sections:
 2. Current work — the feature or task we are in the middle of
 3. Remaining steps — everything left to build, in order
 
+Also read:
+/Users/gg1900/coding/waais-website/dev-context/CURRENT_STATE.md
+
 Before touching anything:
 1. Confirm you have read the file
-2. Check that all file paths mentioned in it still exist on disk
-3. Summarize in 3–4 sentences: what the project is, where we left off, and what comes next
-4. Flag anything that looks outdated, broken, or missing
+2. Confirm you have read CURRENT_STATE.md
+3. Check that all file paths mentioned in both files still exist on disk
+4. Summarize in 3–4 sentences: what the project is, where we left off, and what comes next
+5. Flag anything that looks outdated, broken, or missing
 
 Then wait for my instruction.
 ```
@@ -49,11 +53,15 @@ Read that file first. It has three sections:
 2. Current work — the feature or task we are in the middle of
 3. Remaining steps — everything left to build, in order
 
+Also read:
+/Users/gg1900/coding/waais-website/dev-context/CURRENT_STATE.md
+
 Before touching anything:
 1. Confirm you have read the file
-2. Check that all file paths mentioned in it still exist on disk
-3. Summarize in 3–4 sentences: what the project is, where we left off, and what comes next
-4. Flag anything that looks outdated, broken, or missing
+2. Confirm you have read CURRENT_STATE.md
+3. Check that all file paths mentioned in both files still exist on disk
+4. Summarize in 3–4 sentences: what the project is, where we left off, and what comes next
+5. Flag anything that looks outdated, broken, or missing
 
 Then wait for my instruction.
 ```
