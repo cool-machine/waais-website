@@ -1,4 +1,5 @@
 <script setup>
+import { RouterLink } from 'vue-router'
 import CardGrid from '../components/CardGrid.vue'
 import InfoCard from '../components/InfoCard.vue'
 import PageHero from '../components/PageHero.vue'
@@ -28,7 +29,7 @@ import { events } from '../data/events'
             {{ event.summary }}
             <template #actions>
               <p class="meta">{{ event.registration }} · {{ event.capacity }}</p>
-              <button class="button water" type="button">{{ event.status === 'Recap' ? 'Recap' : 'Register' }}</button>
+              <RouterLink class="button water" :to="`/events/${event.id}`">{{ event.status === 'Recap' ? 'Recap' : 'Details' }}</RouterLink>
             </template>
           </InfoCard>
         </CardGrid>

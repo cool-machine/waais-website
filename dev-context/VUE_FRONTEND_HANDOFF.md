@@ -108,8 +108,9 @@ Not done:
 
 - The Vue pages are not yet a pixel-perfect conversion of the static mockups.
 - Homepage hero video is wired into Vue from `frontend/public/assets/waais-hero-video.mp4`.
-- Scroll animations/count-up/parallax behavior are not yet ported from the static mockup.
-- App/auth/member/admin dashboard pages are not yet converted into Vue.
+- Homepage has a lightweight CSS reveal treatment with reduced-motion fallback; full count-up/parallax behavior is not yet ported from the static mockup.
+- App/auth/member/admin dashboard pages have frontend-only placeholder routes at `/app/sign-in`, `/app/pending`, `/app/dashboard`, and `/app/admin`; full conversion is not done yet.
+- Event, startup, and partner detail route structures exist, but they still use static seed data.
 - Admin role gating is not implemented.
 - Membership form does not submit anywhere yet.
 - Backend APIs do not exist yet.
