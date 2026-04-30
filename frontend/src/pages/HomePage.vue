@@ -34,7 +34,7 @@ import { startups } from '../data/startups'
       </template>
     </PageHero>
 
-    <section class="section paper">
+    <section class="section paper reveal-section">
       <div class="section-inner">
         <div class="section-head">
           <div>
@@ -51,7 +51,7 @@ import { startups } from '../data/startups'
       </div>
     </section>
 
-    <section class="section navy-band">
+    <section class="section navy-band reveal-section">
       <div class="section-inner">
         <div class="grid two">
           <div>
@@ -71,7 +71,7 @@ import { startups } from '../data/startups'
       </div>
     </section>
 
-    <section class="section">
+    <section class="section reveal-section">
       <div class="section-inner">
         <div class="section-head">
           <div>
@@ -84,14 +84,14 @@ import { startups } from '../data/startups'
           <InfoCard v-for="event in events.slice(0, 3)" :key="event.id" :title="event.title" :eyebrow="event.status" :meta="`${event.date} · ${event.location}`" :image="event.image">
             {{ event.summary }}
             <template #actions>
-              <RouterLink class="button water" to="/events">Details</RouterLink>
+              <RouterLink class="button water" :to="`/events/${event.id}`">Details</RouterLink>
             </template>
           </InfoCard>
         </CardGrid>
       </div>
     </section>
 
-    <section class="section paper">
+    <section class="section paper reveal-section">
       <div class="section-inner">
         <div class="section-head">
           <div>
@@ -103,6 +103,9 @@ import { startups } from '../data/startups'
         <CardGrid>
           <InfoCard v-for="startup in startups" :key="startup.id" :title="startup.name" :eyebrow="startup.category" :meta="startup.stage" :image="startup.image">
             {{ startup.summary }}
+            <template #actions>
+              <RouterLink class="button water" :to="`/startups/${startup.id}`">Preview</RouterLink>
+            </template>
           </InfoCard>
         </CardGrid>
       </div>

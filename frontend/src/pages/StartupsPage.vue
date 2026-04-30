@@ -25,6 +25,7 @@ import { startups } from '../data/startups'
             {{ startup.summary }}
             <template #actions>
               <p class="meta">Founder details and contact links unlock after approval.</p>
+              <RouterLink class="button water" :to="`/startups/${startup.id}`">Preview profile</RouterLink>
             </template>
           </InfoCard>
         </CardGrid>

@@ -1,4 +1,5 @@
 <script setup>
+import { RouterLink } from 'vue-router'
 import CardGrid from '../components/CardGrid.vue'
 import InfoCard from '../components/InfoCard.vue'
 import PageHero from '../components/PageHero.vue'
@@ -13,7 +14,10 @@ import { partners } from '../data/partners'
       <div class="section-inner">
         <CardGrid>
           <InfoCard v-for="partner in partners" :key="partner.id" :title="partner.name" :eyebrow="partner.type">
-            Partner detail pages or external partner links will be wired during implementation.
+            {{ partner.summary }}
+            <template #actions>
+              <RouterLink class="button water" :to="`/partners/${partner.id}`">{{ partner.destination }}</RouterLink>
+            </template>
           </InfoCard>
         </CardGrid>
       </div>

@@ -24,13 +24,17 @@ npm run build
 
 - `/`
 - `/events`
+- `/events/:id`
 - `/startups`
+- `/startups/:id`
 - `/about`
 - `/partners`
+- `/partners/:id`
 - `/membership`
 - `/forum`
 - `/contact`
 - `/legal`
+- `/app/:view?`
 
 ## Still Mocked
 

@@ -14,7 +14,7 @@ import PublicLayout from '../components/PublicLayout.vue'
             <span class="tag">Existing members</span>
             <h3>Sign in to your account</h3>
             <p>Google verifies identity first. WAAIS then routes approved members, admins, pending users, or unknown applicants.</p>
-            <a class="button water" href="/mockups/app-dashboard-admin-auth.html">Member sign in</a>
+            <RouterLink class="button water" to="/app/sign-in">Member sign in</RouterLink>
           </article>
           <article class="card">
             <span class="tag">New applicants</span>
