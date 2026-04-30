@@ -147,6 +147,7 @@
         color: rgba(255, 255, 255, 0.82);
         font-size: 13px;
         text-decoration: none;
+        white-space: nowrap;
       }
 
       .main-nav button.active,
@@ -1014,6 +1015,11 @@
           min-height: 680px;
         }
 
+        .hero.compact,
+        .hero.compact .hero-inner {
+          min-height: 360px;
+        }
+
         .grid.two,
         .grid.three,
         .grid.four,
@@ -1585,13 +1591,24 @@
                 <p class="lede">Submission creates a pending application. Admin approval unlocks dashboard and forum access.</p>
               </div>
               <div class="form-grid">
-                <div class="field"><label>Full name</label><input placeholder="Your name" /></div>
-                <div class="field"><label>Email</label><input placeholder="you@example.com" /></div>
-                <div class="field"><label>Wharton status</label><select><option>Alumnus / alumna</option><option>Current student</option><option>Faculty / staff</option><option>Other Wharton affiliation</option></select></div>
-                <div class="field"><label>Program and year</label><input placeholder="e.g. WG'20, W'26, EMBA'18" /></div>
-                <div class="field"><label>LinkedIn</label><input placeholder="linkedin.com/in/..." /></div>
-                <div class="field"><label>AI category</label><select><option>Founder</option><option>Operator</option><option>Investor</option><option>Researcher</option><option>Learner / community member</option></select></div>
-                <div class="field full"><label>Why do you want to join?</label><textarea placeholder="Tell admins what you are building, researching, investing in, or hoping to learn."></textarea></div>
+                <div class="field"><label>Email *</label><input placeholder="you@example.com" /></div>
+                <div class="field"><label>WhatsApp phone number *</label><input placeholder="+1 212 555 0100" /></div>
+                <div class="field"><label>First name *</label><input placeholder="First name" /></div>
+                <div class="field"><label>Last name *</label><input placeholder="Last name" /></div>
+                <div class="field"><label>Are you an alumnus/a? *</label><select><option>Yes</option><option>No</option></select></div>
+                <div class="field"><label>School affiliation *</label><input placeholder="Wharton / Penn school or program" /></div>
+                <div class="field"><label>Graduation year *</label><input placeholder="e.g. 2020, WG'20, W'26" /></div>
+                <div class="field"><label>Primary location *</label><input placeholder="City, region, or country" /></div>
+                <div class="field"><label>Secondary location</label><input placeholder="Optional" /></div>
+                <div class="field"><label>LinkedIn profile *</label><input placeholder="linkedin.com/in/..." /></div>
+                <div class="field full"><label>If invited by a Wharton/Penn alumnus/a, provide their name</label><input placeholder="Inviter name, if applicable" /></div>
+                <div class="field full"><label>1. Experience: industries and roles *</label><textarea placeholder="Tell us about industries you worked in and roles you held."></textarea></div>
+                <div class="field full"><label>2. Expertise *</label><textarea placeholder="Tell us about your expertise."></textarea></div>
+                <div class="field full"><label>3. Industries where you would like to add value *</label><textarea placeholder="Which industries would you like to contribute to?"></textarea></div>
+                <div class="field full"><label>4. Industries where you want to extend your expertise *</label><textarea placeholder="Which industries are you interested in extending your expertise to?"></textarea></div>
+                <div class="field full"><label>5. Availability *</label><textarea placeholder="How much time per month can you dedicate to a potential future project?"></textarea></div>
+                <div class="field"><label>Gender</label><select><option>Prefer not to say</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+                <div class="field"><label>Age</label><select><option>Prefer not to say</option><option>20s</option><option>30s</option><option>40s</option><option>50s</option><option>60s</option><option>70s+</option></select></div>
               </div>
               <div class="row" style="margin-top:16px">
                 <button class="button primary">Submit application</button>

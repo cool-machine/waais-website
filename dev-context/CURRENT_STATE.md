@@ -42,7 +42,7 @@ The Membership page should present:
 - New applicants: Apply for membership.
 - Non-members: Propose a topic, partner with WAAIS, or request a startup listing.
 
-The application form should collect Wharton status, year/program, LinkedIn, AI category/interest, and reason for joining. Wharton status must distinguish alumni from current students because current students may need different access rules from alumni. After submission, the user lands in a pending approval state until an admin approves them.
+The application form should mirror the current Google Forms questionnaire: email, first name, last name, WhatsApp phone, alumnus/a yes/no, school affiliation, graduation year, inviter name for non-alumni, primary/secondary location, LinkedIn, experience, expertise, industries to add value to, industries to extend expertise to, availability, gender, and age. Alumni status must be explicit because non-alumni/current students may need different access rules from alumni. After submission, the user lands in a pending approval state until an admin approves them.
 
 The startup directory is designed as partially gated: public users can see teasers, but full member/startup profiles require approved member access.
 

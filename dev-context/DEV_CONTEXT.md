@@ -122,7 +122,7 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 - [ ] George supplies brand/logo asset — drop into mockup
 - [x] Deploy current mockups to GitHub Pages from `main`
 - [ ] Confirm George's design review items before Vue build: membership flow, admin content controls, homepage video/motion, public/dashboard navigation
-- [x] Separate Wharton status from AI category in the membership form so current students and alumni are not grouped together
+- [x] Replace simplified membership form with the current Google Forms questionnaire fields
 - [ ] Hand mockup to developer as the visual spec for the Vue build
 
 **Design decisions from mockup review**
@@ -178,8 +178,8 @@ The design phase has produced first-pass static HTML/CSS/JS prototypes for the p
 ### Phase 2 — Auth & accounts (Laravel)
 - [ ] Google OAuth (Laravel Socialite)
 - [ ] User model: name, email, role, status
-- [ ] Membership application data model: Wharton affiliation, year/program, LinkedIn, AI category, join reason
-- [ ] Keep Wharton status explicit: alumnus/alumna, current student, faculty/staff, or other Wharton affiliation
+- [ ] Membership application data model should mirror the current Google Form: email, first name, last name, WhatsApp phone, alumnus/a yes/no, school affiliation, graduation year, inviter name for non-alumni, primary/secondary location, LinkedIn, experience, expertise, industries to add value to, industries to extend expertise to, availability, gender, age
+- [ ] Keep alumni status explicit because non-alumni/current students may need different access rules
 - [ ] Approval flow: pending → admin approves → active
 - [ ] Session management (Laravel Sanctum)
 - [ ] Discourse SSO relay endpoint
