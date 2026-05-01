@@ -100,6 +100,13 @@
 - Forum visibility: public users can see some public forum content; approved members should be able to see all member forums.
 - Startup submissions: approved members can submit startup listings; admins review/approve before they are published on the website.
 - Startup directory: every published startup should have a dedicated detail page.
+- **Submission & Admin Review Pattern** — applies to multiple surfaces, not just membership. The same shape (`ApprovalStatus` enum, `submitted_at`/`reviewed_at`/`reviewed_by`/`review_notes` columns, `AuditLog` entry on every admin action, `admin.access` middleware on the admin endpoints) is intended to be reused across:
+  - Membership applications (member submits → admin approves / requests-info / rejects → applicant becomes member or stays pending)
+  - Startup listings (approved member submits a listing → admin approves before it appears on the public website)
+  - Public-discussion requests on the forum (publisher requests public visibility → admin approves)
+  - Topic proposals from non-members on the Membership page (visitor proposes a topic → admin reviews)
+  - Future partner-listing requests if/when members can suggest partners
+  Implementation order: build the membership review slice first as the canonical version of this pattern, then mirror it for startup listings, then extend to other surfaces. Keep the schema and audit-log shape uniform so the admin UI can be consistent.
 - Forum URL decision: use `forum.whartonai.studio`, not `/forum`, to avoid fragile subfolder/reverse-proxy complexity
 - Public site may keep a `/forum` route or nav link that redirects users to `https://forum.whartonai.studio`
 - Public navigation should include a Forum item. In mockups, it opens an internal forum preview page so review does not navigate to the not-yet-installed `forum.whartonai.studio`.
@@ -190,6 +197,9 @@ Important current implementation state:
 - [x] Add Sanctum API auth foundation and member-access middleware
 - [x] Add Google OAuth pending-user creation foundation
 - [x] Add applicant-owned membership application submit/update/reapply endpoints
+- [ ] Add admin membership-application review endpoints (approval queue, approve, reject, request-more-info) using the canonical Submission & Admin Review Pattern
+- [ ] Add member-submitted startup-listing endpoints + admin startup-listing review endpoints, mirroring the same Submission & Admin Review Pattern
+- [ ] Only after the two slices above: super_admin role-management endpoints, then email notifications, then events/partners CMS
 
 **Design decisions from mockup review**
 - Wharton colors (#011F5B navy, #C41E3A crimson) are confirmed — do not change these
@@ -349,6 +359,13 @@ Important current implementation state:
 ## Session Notes
 
 > Newest entry at the top. Update this at the end of every session.
+
+**May 1, 2026 — Submission & Admin Review Pattern named**
+- Did: extracted the reusable submit-then-admin-review concept into a named pattern in `DEV_CONTEXT.md` covering membership applications, startup listings, forum public-discussion requests, topic proposals, and future partner-listing requests
+- Did: rewrote `BACKEND_HANDOFF.md` Next Backend Slices to show ordered slices: (1) membership-application admin review, (2) startup-listing submission + admin review, (3) super-admin role management, (4) emails, (5) events/partners/homepage CMS
+- Did: aligned `CURRENT_STATE.md` and `STARTER_PROMPT.md` with the same ordering and pattern reference
+- Left off at: docs are coherent and ready; next code slice is admin membership-application review endpoints
+- Watch out for: the pattern is documentation only. The shared `admin.access` middleware and the first concrete admin endpoints still need to be implemented in the next slice
 
 **May 1, 2026 — Google OAuth foundation**
 - Did: added Laravel Socialite and Google service/env configuration
