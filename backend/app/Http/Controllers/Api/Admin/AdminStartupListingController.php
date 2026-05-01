@@ -7,6 +7,9 @@ use App\Enums\ContentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\StartupListing;
+use App\Notifications\StartupListingApproved;
+use App\Notifications\StartupListingNeedsMoreInfo;
+use App\Notifications\StartupListingRejected;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -58,6 +61,7 @@ class AdminStartupListingController extends Controller
             'review_notes' => $validated['review_notes'] ?? null,
             'action' => 'startup_listings.approve',
             'listing_timestamp' => 'approved_at',
+            'notification' => StartupListingApproved::class,
         ]);
     }
 
@@ -65,6 +69,7 @@ class AdminStartupListingController extends Controller
     {
         $validated = $request->validate([
             'review_notes' => ['required', 'string'],
+            'send_email' => ['nullable', 'boolean'],
         ]);
 
         return $this->transition($request, $listing, [
@@ -73,6 +78,8 @@ class AdminStartupListingController extends Controller
             'review_notes' => $validated['review_notes'],
             'action' => 'startup_listings.reject',
             'listing_timestamp' => 'rejected_at',
+            // Rejection emails are opt-in.
+            'notification' => ($validated['send_email'] ?? false) ? StartupListingRejected::class : null,
         ]);
     }
 
@@ -88,6 +95,7 @@ class AdminStartupListingController extends Controller
             'review_notes' => $validated['review_notes'],
             'action' => 'startup_listings.request_info',
             'listing_timestamp' => null,
+            'notification' => StartupListingNeedsMoreInfo::class,
         ]);
     }
 
@@ -96,7 +104,7 @@ class AdminStartupListingController extends Controller
      */
     private function transition(Request $request, StartupListing $listing, array $config): JsonResponse
     {
-        return DB::transaction(function () use ($request, $listing, $config): JsonResponse {
+        $response = DB::transaction(function () use ($request, $listing, $config): JsonResponse {
             $admin = $request->user();
 
             $before = [
@@ -144,5 +152,16 @@ class AdminStartupListingController extends Controller
 
             return response()->json(['data' => $listing]);
         });
+
+        // Notifications fire after the DB transaction commits.
+        $notificationClass = $config['notification'] ?? null;
+        if ($notificationClass !== null) {
+            $owner = $listing->owner()->first();
+            if ($owner) {
+                $owner->notify(new $notificationClass($listing->fresh()));
+            }
+        }
+
+        return $response;
     }
 }

@@ -8,8 +8,12 @@ use App\Enums\PermissionRole;
 use App\Http\Controllers\Controller;
 use App\Models\ApplicationRevision;
 use App\Models\MembershipApplication;
+use App\Models\User;
+use App\Notifications\MembershipApplicationReceivedByAdmin;
+use App\Notifications\MembershipApplicationSubmitted;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 
 class MembershipApplicationController extends Controller
@@ -31,6 +35,7 @@ class MembershipApplicationController extends Controller
         $application ??= new MembershipApplication(['applicant_id' => $request->user()->id]);
 
         $this->fillAndSubmit($application, $request, 'submitted');
+        $this->notifyOnSubmission($application, $request->user());
 
         return response()->json(['data' => $application->fresh()], $application->wasRecentlyCreated ? 201 : 200);
     }
@@ -41,6 +46,7 @@ class MembershipApplicationController extends Controller
 
         abort_if($application->approval_status === ApprovalStatus::Approved, 409, 'Approved applications cannot be edited by applicants.');
 
+        // Edits do not fire notifications. Admins see the bumped submitted_at on the queue.
         $this->fillAndSubmit($application, $request, 'updated');
 
         return response()->json(['data' => $application->fresh()]);
@@ -53,6 +59,7 @@ class MembershipApplicationController extends Controller
         abort_unless($application->approval_status === ApprovalStatus::Rejected, 409, 'Only rejected applications can be reapplied.');
 
         $this->fillAndSubmit($application, $request, 'reapplied');
+        $this->notifyOnSubmission($application, $request->user());
 
         return response()->json(['data' => $application->fresh()]);
     }
@@ -111,6 +118,16 @@ class MembershipApplicationController extends Controller
             'permission_role' => PermissionRole::PendingUser,
             'affiliation_type' => $application->affiliation_type,
         ])->save();
+    }
+
+    private function notifyOnSubmission(MembershipApplication $application, User $applicant): void
+    {
+        $applicant->notify(new MembershipApplicationSubmitted($application));
+
+        $admins = User::admins()->get();
+        if ($admins->isNotEmpty()) {
+            Notification::send($admins, new MembershipApplicationReceivedByAdmin($application));
+        }
     }
 
     /**

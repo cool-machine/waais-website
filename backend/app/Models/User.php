@@ -9,6 +9,7 @@ use App\Enums\PermissionRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -95,6 +96,16 @@ class User extends Authenticatable
     public function canManageAdminPrivileges(): bool
     {
         return $this->isSuperAdmin();
+    }
+
+    /**
+     * Approved users with admin-or-higher permissions. Used as the
+     * recipient list for "new submission" admin notifications.
+     */
+    public function scopeAdmins(Builder $query): void
+    {
+        $query->where('approval_status', ApprovalStatus::Approved)
+            ->whereIn('permission_role', [PermissionRole::Admin, PermissionRole::SuperAdmin]);
     }
 
     /**

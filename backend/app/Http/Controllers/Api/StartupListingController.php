@@ -8,8 +8,12 @@ use App\Enums\ContentVisibility;
 use App\Http\Controllers\Controller;
 use App\Models\StartupListing;
 use App\Models\StartupListingRevision;
+use App\Models\User;
+use App\Notifications\StartupListingReceivedByAdmin;
+use App\Notifications\StartupListingSubmitted;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Symfony\Component\HttpFoundation\Response;
 
 class StartupListingController extends Controller
@@ -49,6 +53,7 @@ class StartupListingController extends Controller
         $listing->save();
 
         $this->recordRevision($listing, $request, [], 'submitted');
+        $this->notifyOnSubmission($listing, $request->user());
 
         return response()->json(['data' => $listing->fresh()], 201);
     }
@@ -78,6 +83,7 @@ class StartupListingController extends Controller
         $listing->save();
 
         $this->recordRevision($listing, $request, $before, 'updated');
+        // Edits do not fire notifications. Admins see the bumped submitted_at on the queue.
 
         return response()->json(['data' => $listing->fresh()]);
     }
@@ -88,6 +94,16 @@ class StartupListingController extends Controller
             $listing->owner_id === $request->user()->id,
             Response::HTTP_FORBIDDEN,
         );
+    }
+
+    private function notifyOnSubmission(StartupListing $listing, User $owner): void
+    {
+        $owner->notify(new StartupListingSubmitted($listing));
+
+        $admins = User::admins()->get();
+        if ($admins->isNotEmpty()) {
+            Notification::send($admins, new StartupListingReceivedByAdmin($listing));
+        }
     }
 
     /**
