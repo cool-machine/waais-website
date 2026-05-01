@@ -4,9 +4,17 @@ use App\Http\Controllers\Api\Admin\AdminMembershipApplicationController;
 use App\Http\Controllers\Api\Admin\AdminStartupListingController;
 use App\Http\Controllers\Api\Admin\AdminUserRoleController;
 use App\Http\Controllers\Api\MembershipApplicationController;
+use App\Http\Controllers\Api\PublicStartupListingController;
 use App\Http\Controllers\Api\StartupListingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// Public, anonymous endpoints. Filtered to content_status=published AND
+// visibility=public; anything else is invisible (404 on show).
+Route::prefix('public')->group(function (): void {
+    Route::get('/startup-listings', [PublicStartupListingController::class, 'index']);
+    Route::get('/startup-listings/{listing}', [PublicStartupListingController::class, 'show']);
+});
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/user', function (Request $request): array {
