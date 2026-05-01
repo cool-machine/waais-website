@@ -1,6 +1,6 @@
 # WAAIS Mockups
 
-Design artifacts for review before Vue/Laravel implementation.
+Design artifacts retained as visual/product references for the Vue and Laravel implementation.
 
 - `design-system.html` — visual system, tokens, components, and public/app surface rules.
 - `public-site.html` — clickable public website prototype for Home, Events, Startups, About, Partners, Membership, Contact, and Legal.
@@ -14,9 +14,9 @@ Current deployment:
 - App/admin/auth direct link: `https://cool-machine.github.io/waais-website/mockups/app-dashboard-admin-auth.html`
 - Design system direct link: `https://cool-machine.github.io/waais-website/mockups/design-system.html`
 
-Important: these files are static HTML/CSS/JS prototypes. They are not Vue, not Laravel/PHP, and do not persist data.
+Important: these files are static HTML/CSS/JS prototypes. They are not the production Vue app, not the Laravel/PHP backend, and do not persist data.
 
-Production code should not live here. The planned implementation folders are:
+Production code should not live here. The implementation folders are:
 
 - `/frontend/` for the Vue 3 app.
 - `/backend/` for the Laravel app.

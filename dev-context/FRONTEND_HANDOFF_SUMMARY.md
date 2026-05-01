@@ -6,12 +6,13 @@ This is the quick continuation file for another LLM/developer if the current ses
 
 ## Current State
 
-- Branch: `main`
+- Frontend deployment branch: `main`
+- Current backend scaffold branch: `codex/backend-laravel-scaffold`
 - Repository: `https://github.com/cool-machine/waais-website`
 - GitHub Pages Vue preview: `https://cool-machine.github.io/waais-website/`
-- Local Vue dev URL: `http://127.0.0.1:5174/`
+- Local Vue dev URL when running: `http://127.0.0.1:5174/`
 - Static mockups remain available under `/mockups/`.
-- `/backend/` does not exist yet.
+- `/backend/` exists on the backend scaffold branch and has a draft PR.
 - `/legacy/old-react-site/` is reference-only and ignored by git.
 
 ## What Has Been Implemented
@@ -132,7 +133,7 @@ Note: direct deep links are served through `404.html` as an SPA fallback. GitHub
 
 ## Backend Model Contract
 
-Before Laravel work, follow `dev-context/PLATFORM_MODEL.md`.
+Laravel work has started. Continue to follow `dev-context/PLATFORM_MODEL.md` and `dev-context/BACKEND_HANDOFF.md`.
 
 Do not use one overloaded `role` field. Use separate fields:
 
@@ -144,35 +145,27 @@ The frontend mirrors the same vocabulary in `frontend/src/data/platformModel.js`
 
 ## Recommended Next Step
 
-Start a narrow Laravel backend scaffold.
+Validate the Laravel backend scaffold before adding controllers or OAuth.
 
-Suggested first backend slice:
+Suggested next backend slice:
 
-1. Create `/backend/` with Laravel.
-2. Add basic test setup.
-3. Add migrations/models for:
-   - users
-   - membership applications/profiles
-   - application revisions
-   - audit/activity logs
-4. Encode the constants from `PLATFORM_MODEL.md`.
-5. Add tests for:
-   - pending users cannot access member resources
-   - only super admins can promote/remove admins
-   - rejected applicants can reapply
-   - regular members cannot publish public content
+1. Install or repair PHP 8.3+ and Composer locally.
+2. From `/backend/`, run `composer install`.
+3. Run `php artisan test` and `php artisan migrate:fresh`.
+4. Fix any Laravel 13 compatibility or scaffold issues.
+5. Then add API auth and membership application endpoints.
 
-Do not implement Google OAuth first. Build the model and access-policy foundation first.
+Do not implement Google OAuth until the model, migrations, and access tests run cleanly.
 
 ## Known Gaps
 
-- No Laravel backend yet.
+- Laravel backend exists as a scaffold, but has not been runtime-validated locally.
 - No real Google OAuth.
 - No real form submission.
-- No persistence.
+- No runtime persistence.
 - No transactional email.
-- No admin audit log.
+- Audit-log model exists in the backend scaffold, but no admin audit workflow exists yet.
 - No Discourse SSO.
-- No real CMS publishing workflow.
+- No CMS publishing workflow.
 - The Vue UI still uses static seed data.
 - George still needs to provide the final brand/logo asset.

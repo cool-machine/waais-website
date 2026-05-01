@@ -102,11 +102,11 @@ The admin mockup includes design-only screens for:
 
 The Public Content section is intended to let admins create, edit, publish, draft, hide, or remove cards shown on the public website, including events, startups, partners, homepage modules, and other small content cards.
 
-Important: this is not implemented as working software yet. It is a static HTML prototype only. Real authentication, permissions, database persistence, and publishing logic still need the Vue + Laravel build.
+Important: this is not implemented as working software yet. It is a static HTML prototype only. Real authentication, permissions, database persistence, and publishing logic still need backend/API implementation.
 
 ## Discourse Direction
 
-Discourse should be installed later, not inside this GitHub Pages/static mockup phase. It will run on its own Azure VM using the official Docker-based Discourse install, with DNS pointing `forum.whartonai.studio` to that VM.
+Discourse should be installed later, not inside the GitHub Pages/static frontend preview. It will run on its own Azure VM using the official Docker-based Discourse install, with DNS pointing `forum.whartonai.studio` to that VM.
 
 The forum should imitate the structure people already understand from the WhatsApp groups, with industry-based organization as the primary structure and region-based organization as a secondary structure:
 
@@ -131,12 +131,13 @@ Backend work has started on branch `codex/backend-laravel-scaffold`. `/backend/`
 
 ## Remaining Next Steps
 
-1. Review the Vue GitHub Pages preview after deployment finishes.
-2. Continue polishing the Vue public and app/admin mockup routes.
-3. Replace placeholder logo/brand mark when George provides it.
-4. Run and validate the new Laravel backend scaffold once PHP 8.3+ and Composer are available locally.
-5. Implement Google OAuth, pending approval, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO later.
-6. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
+1. Install or repair PHP 8.3+ and Composer locally.
+2. Run and validate the Laravel backend scaffold: `composer install`, `php artisan test`, and `php artisan migrate:fresh`.
+3. Fix any Laravel 13 compatibility issues found by validation.
+4. Implement Google OAuth, pending approval, membership application submission/review, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO.
+5. Continue frontend polish only as needed while backend APIs take shape.
+6. Replace placeholder logo/brand mark when George provides it.
+7. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
 
 ## Watch Outs
 
