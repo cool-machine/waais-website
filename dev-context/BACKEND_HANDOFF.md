@@ -35,6 +35,12 @@ Last updated: May 1, 2026
   - callback provisions new Google users as `approval_status = submitted` and `permission_role = pending_user`
   - approved members keep member access when signing in again
   - linked-email conflict handling is covered by tests
+- Membership application API foundation:
+  - authenticated applicant endpoint to fetch their current application
+  - submit endpoint for draft/new applications
+  - update endpoint for applicant-owned non-approved applications
+  - reapply endpoint for rejected applications
+  - application revision records for changed fields
 - Database structure for:
   - Google/social identity fields on users.
   - Approval, affiliation, and permission fields on users.
@@ -59,13 +65,12 @@ Results:
 
 - `composer install` completed and generated `composer.lock`.
 - `composer.json` pins Composer platform PHP to `8.3.0` so local PHP 8.5 does not lock PHP 8.4+ dependencies.
-- `php artisan test` passed after Google OAuth foundation: 15 tests, 59 assertions.
+- `php artisan test` passed after membership application API foundation: 19 tests, 79 assertions.
 - `php artisan migrate:fresh` passed against the local SQLite database.
 - Local ignored artifacts now include `.env`, `vendor/`, and `database/database.sqlite`.
 
 ## Next Backend Slice
 
-1. Implement membership application submit/update/reapply endpoints.
-2. Implement admin approval/request-more-info/reject flows.
-3. Add email notifications for new application, applicant thank-you, approval, and request-more-info.
+1. Implement admin approval/request-more-info/reject flows.
+2. Add email notifications for new application, applicant thank-you, approval, and request-more-info.
 4. Add event/startup/content tables and APIs after membership flow is stable.

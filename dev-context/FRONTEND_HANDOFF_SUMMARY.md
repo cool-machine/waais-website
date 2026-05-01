@@ -145,18 +145,17 @@ The frontend mirrors the same vocabulary in `frontend/src/data/platformModel.js`
 
 ## Recommended Next Step
 
-The Laravel backend scaffold has now been validated locally and has Sanctum plus Google OAuth foundation in place. Continue backend application workflows before adding more frontend-only behavior.
+The Laravel backend scaffold has now been validated locally and has Sanctum, Google OAuth, and applicant-owned membership application API foundation in place. Continue backend admin review workflows before adding more frontend-only behavior.
 
 Suggested next backend slice:
 
-1. Add membership application submit/update/reapply endpoints.
-2. Add admin review endpoints.
+1. Add admin review endpoints.
 
-The model, migrations, and access tests are clean as of May 1, 2026: `php artisan test` passed with 15 tests and 59 assertions, and `php artisan migrate:fresh` completed.
+The model, migrations, and access tests are clean as of May 1, 2026: `php artisan test` passed with 19 tests and 79 assertions, and `php artisan migrate:fresh` completed.
 
 ## Known Gaps
 
-- Laravel backend exists as a validated scaffold with Sanctum and Google OAuth foundation, but no real membership application workflows yet.
+- Laravel backend exists as a validated scaffold with Sanctum, Google OAuth, and applicant-owned membership application APIs, but no admin review workflow yet.
 - No real Google OAuth.
 - No real form submission.
 - No runtime persistence.
