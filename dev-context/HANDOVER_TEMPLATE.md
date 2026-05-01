@@ -30,7 +30,7 @@ Before doing anything, run through this:
 **Tech stack**
 - Frontend: [e.g. Vue 3 + Vite + Tailwind]
 - Backend: [e.g. Laravel / PHP]
-- Database: [e.g. MySQL on Azure]
+- Database: [e.g. PostgreSQL on Azure]
 - Auth: [e.g. Google OAuth]
 - Hosting: [e.g. Azure App Service]
 

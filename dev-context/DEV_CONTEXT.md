@@ -47,7 +47,7 @@
 - Auth: **Google OAuth** via Laravel Socialite — new accounts start as `pending`, require admin approval
 - Future auth possibility: PennKey could be ideal for University of Pennsylvania / Wharton affiliation verification, but it likely requires Penn/Wharton IT approval. Do not block the first implementation on PennKey; keep Google OAuth for now and document PennKey as a future institutional integration.
 - Deployment: **Microsoft Azure** non-profit grant (~$2,000/year, ~$167/month cap)
-- Database: **Azure Database for MySQL**
+- Database: **Azure Database for PostgreSQL Flexible Server**
 
 **Design — locked in**
 - Dark mode first — near-black navy background `#050E20`, high contrast
@@ -128,7 +128,7 @@
 **Azure cost estimate**
 - App Service (B2): ~$15–20/mo
 - VM (B2s) for Discourse: ~$15–20/mo
-- MySQL Flexible Server (B1): ~$10–15/mo
+- PostgreSQL Flexible Server (burstable/small tier): ~$10–20/mo
 - Blob Storage: ~$2–5/mo
 - **Total: ~$42–60/month** — well within the $167/month cap
 
@@ -316,7 +316,7 @@ Important current implementation state:
 - [ ] WhatsApp group member invite / migration flow
 
 ### Phase 6 — Deployment & launch
-- [ ] Azure App Service, MySQL, Blob Storage setup
+- [ ] Azure App Service, PostgreSQL, Blob Storage setup
 - [ ] CI/CD: GitHub Actions → Azure
 - [ ] DNS: point `whartonai.studio` to Azure
 - [ ] SSL certificates
