@@ -18,6 +18,7 @@
   - This file: `/Users/gg1900/coding/waais-website/dev-context/DEV_CONTEXT.md`
 - [ ] Also read `/Users/gg1900/coding/waais-website/dev-context/CURRENT_STATE.md` for the latest concise handoff
 - [ ] If Vue implementation is being continued, read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md`
+- [ ] For the current Vue/deployment snapshot, read `/Users/gg1900/coding/waais-website/dev-context/FRONTEND_HANDOFF_SUMMARY.md`
 - [ ] Before backend/Laravel work, read `/Users/gg1900/coding/waais-website/dev-context/PLATFORM_MODEL.md`
 - [ ] Read the Session Notes at the bottom — they reflect the most recent state of work
 - [ ] Note anything that has moved or changed, and update this file before starting

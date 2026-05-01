@@ -2,7 +2,7 @@
 
 Last updated: May 1, 2026
 
-This file is the short version of the handoff. Read `DEV_CONTEXT.md` for the full source of truth.
+This file is the short version of the handoff. Read `DEV_CONTEXT.md` for the full source of truth, then read `FRONTEND_HANDOFF_SUMMARY.md` for the current Vue/deployment snapshot.
 
 ## What This Project Is
 
@@ -125,7 +125,7 @@ The forum UX target is similar to PyTorch forums or fast.ai forums: simple categ
 
 ## What We Are Doing Now
 
-The Vue frontend scaffold has been merged into `main` and expanded with public detail routes plus frontend-only app/auth/member/admin mockup routes. The GitHub Pages root now serves the built Vue preview from root-level static assets. Read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md` before continuing.
+The Vue frontend scaffold has been merged into `main` and expanded with public detail routes plus frontend-only app/auth/member/admin mockup routes. The GitHub Pages root now serves the built Vue preview from root-level static assets. Read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md` and `/Users/gg1900/coding/waais-website/dev-context/FRONTEND_HANDOFF_SUMMARY.md` before continuing.
 
 ## Remaining Next Steps
 
