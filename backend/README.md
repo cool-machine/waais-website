@@ -21,6 +21,7 @@ Implemented in this scaffold:
 - Admin startup-listing review API endpoints (queue filterable by status, single listing detail with revisions, approve / reject / request-info) under `admin.access`, with audit-log entries on every admin action and `ContentStatus` / `ContentVisibility` driving the published lifecycle.
 - Super-admin role-management API endpoints (promote/demote admin, promote/demote super_admin) under a `super_admin.access` middleware backed by `User::canManageAdminPrivileges()`. Strict from/to role guards return 409 on mismatch; `promote-admin` requires the target to be approved; `demote-super-admin` is blocked when the target would be the last super_admin. Each transition writes an audit log row.
 - Public read API for startup listings: anonymous endpoints under `/api/public/startup-listings` (index, paginated) and `/api/public/startup-listings/{id}` (show), filtered strictly to `content_status = published` + `visibility = public`. Anything else is invisible (404 on show). Response shape is documented below.
+- Email notifications via Laravel's `Notification` system on the `mail` channel, fired post-transaction. Surfaces, mirrored across membership applications and startup listings: submitter thank-you on submit/reapply (not on edit), admin "new submission" queue notice to all approved Admin/SuperAdmin users via `User::admins()`, approval email, request-more-info email, and an opt-in rejection email gated by a `send_email` boolean on the reject endpoint. Notification classes live under `App\Notifications\*`. Email provider is intentionally still TBD: dev `.env.example` ships with `MAIL_MAILER=log`.
 - Membership application storage matching the documented v1 questionnaire.
 - Application revision history.
 - Generic audit log storage for role, application, profile, and content changes.
@@ -28,10 +29,10 @@ Implemented in this scaffold:
 
 Not implemented yet:
 
-- Email notifications (applicant thank-you, admin new-submission notice, approval, request-info — across membership applications and startup listings).
-- Email notifications.
+- Frontend wiring of the public startup directory (`frontend/src/data/startups.js` still serves static seed data; needs to call `/api/public/startup-listings`).
 - Event, partner, announcement, or homepage CMS APIs.
 - Discourse SSO relay.
+- Production email provider selection (Azure Communication Services Email or Google Workspace).
 
 ## Local Setup
 
@@ -51,7 +52,7 @@ Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Com
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 65 tests, 265 assertions (after public startup-listing read API slice)
+php artisan test       # last verified: 84 tests, 330 assertions (after the email-notifications slice)
 php artisan migrate:fresh
 ```
 

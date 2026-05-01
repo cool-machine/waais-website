@@ -7,6 +7,9 @@ use App\Enums\PermissionRole;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\MembershipApplication;
+use App\Notifications\MembershipApplicationApproved;
+use App\Notifications\MembershipApplicationNeedsMoreInfo;
+use App\Notifications\MembershipApplicationRejected;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -60,6 +63,7 @@ class AdminMembershipApplicationController extends Controller
             'promote_pending_to_member' => true,
             'sync_affiliation_from_application' => true,
             'user_timestamp' => 'approved_at',
+            'notification' => MembershipApplicationApproved::class,
         ]);
     }
 
@@ -67,6 +71,7 @@ class AdminMembershipApplicationController extends Controller
     {
         $validated = $request->validate([
             'review_notes' => ['required', 'string'],
+            'send_email' => ['nullable', 'boolean'],
         ]);
 
         return $this->transition($request, $application, [
@@ -77,6 +82,8 @@ class AdminMembershipApplicationController extends Controller
             'promote_pending_to_member' => false,
             'sync_affiliation_from_application' => false,
             'user_timestamp' => 'rejected_at',
+            // Rejection emails are opt-in: admin must explicitly request the email.
+            'notification' => ($validated['send_email'] ?? false) ? MembershipApplicationRejected::class : null,
         ]);
     }
 
@@ -94,6 +101,7 @@ class AdminMembershipApplicationController extends Controller
             'promote_pending_to_member' => false,
             'sync_affiliation_from_application' => false,
             'user_timestamp' => null,
+            'notification' => MembershipApplicationNeedsMoreInfo::class,
         ]);
     }
 
@@ -102,7 +110,7 @@ class AdminMembershipApplicationController extends Controller
      */
     private function transition(Request $request, MembershipApplication $application, array $config): JsonResponse
     {
-        return DB::transaction(function () use ($request, $application, $config): JsonResponse {
+        $response = DB::transaction(function () use ($request, $application, $config): JsonResponse {
             $admin = $request->user();
             $applicant = $application->applicant()->lockForUpdate()->first();
 
@@ -173,5 +181,17 @@ class AdminMembershipApplicationController extends Controller
 
             return response()->json(['data' => $application]);
         });
+
+        // Notifications fire after the DB transaction commits so a failed save
+        // never produces a stray email.
+        $notificationClass = $config['notification'] ?? null;
+        if ($notificationClass !== null) {
+            $applicant = $application->applicant()->first();
+            if ($applicant) {
+                $applicant->notify(new $notificationClass($application->fresh()));
+            }
+        }
+
+        return $response;
     }
 }
