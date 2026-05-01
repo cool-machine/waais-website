@@ -127,14 +127,14 @@ The forum UX target is similar to PyTorch forums or fast.ai forums: simple categ
 
 The Vue frontend scaffold has been merged into `main` and expanded with public detail routes plus frontend-only app/auth/member/admin mockup routes. The GitHub Pages root now serves the built Vue preview from root-level static assets.
 
-Backend work has started and the scaffold is now merged to `main`. `/backend/` contains a Laravel scaffold with WAAIS enums, membership application models, audit-log models, migrations, access-rule tests, Sanctum API auth foundation, Google OAuth pending-user provisioning, and applicant-owned membership application submit/update/reapply endpoints. PHP/Composer were repaired locally, Composer dependencies were installed, and the scaffold now passes test and migration validation. Read `/Users/gg1900/coding/waais-website/dev-context/BACKEND_HANDOFF.md` before continuing backend work.
+Backend work has started and the scaffold is now merged to `main`. `/backend/` contains a Laravel scaffold with WAAIS enums, membership application models, audit-log models, migrations, access-rule tests, Sanctum API auth foundation, Google OAuth pending-user provisioning, applicant-owned membership application submit/update/reapply endpoints, and admin membership-application review endpoints (queue, approve, reject, request-more-info) backed by an `admin.access` middleware and audit-log entries. PHP/Composer were repaired locally, Composer dependencies were installed, and the scaffold now passes test and migration validation. Read `/Users/gg1900/coding/waais-website/dev-context/BACKEND_HANDOFF.md` before continuing backend work.
 
 ## Remaining Next Steps
 
 Backend work follows one reusable **Submission & Admin Review Pattern** (see `DEV_CONTEXT.md` and `BACKEND_HANDOFF.md`): the same `ApprovalStatus`, audit log, and `admin.access` middleware serve every surface where members or visitors submit something for admin review. Slices in order:
 
-1. **Membership-application admin review** — admin queue, approve, reject, request-more-info, audit logs.
-2. **Startup-listing submission + admin review** — approved members propose listings, admins approve before they appear publicly. Mirrors the membership review shape.
+1. ~~**Membership-application admin review**~~ — done. Admin queue, approve, reject, request-more-info, audit logs are live as the canonical implementation of the Submission & Admin Review Pattern.
+2. **Startup-listing submission + admin review** (next slice) — approved members propose listings, admins approve before they appear publicly. Mirrors the membership review shape.
 3. **Super-admin role management** — promote/demote admin endpoints with safety rules and audit.
 4. **Email notifications** — applicant thank-you, admin new-application notice, approval, request-more-info; rejection optional.
 5. **Events / partners / homepage CMS APIs** once review patterns are stable.
