@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Build the **homepage CMS backend + frontend** using the events/partners pattern. Homepage cards and announcements are admin-managed CMS content, not member submissions, so use content lifecycle (`draft`, `pending_review`, `published`, `hidden`, `archived`), public anonymous read API filtered to published public/mixed records, explicit allowlist projections, and denylist tests. Add frontend store(s) under `frontend/src/stores/` and wire the homepage sections currently backed by hardcoded content where appropriate. Reuse `getJson()` in `frontend/src/lib/api.js` and follow `frontend/src/stores/README.md`. After this slice: email provider selection/config, then Sanctum auth in the HTTP client (which unblocks all dashboard slices).
+Next likely step is **email provider selection/config**, unless George wants to prioritize frontend auth. The backend notification code already uses Laravel notifications on the `mail` channel and dev defaults to `MAIL_MAILER=log`; pick Azure Communication Services Email or Google Workspace, document the production env vars, and keep code changes minimal unless the chosen provider requires a mail transport package. After that: Sanctum auth in the frontend HTTP client + Google sign-in UI flow, which unblocks membership application UI, member dashboard wiring, and admin dashboard wiring.
 ```
 
 ## Maintenance

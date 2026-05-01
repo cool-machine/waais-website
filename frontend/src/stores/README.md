@@ -15,6 +15,7 @@ One store per (backend resource family) × (access surface). The access surface 
 | `usePublicStartupsStore`         | `/api/public/startup-listings`                   | Anonymous, public site     |
 | `usePublicEventsStore`           | `/api/public/events`                             | Anonymous, public site     |
 | `usePublicPartnersStore`         | `/api/public/partners`                           | Anonymous, public site     |
+| `usePublicHomepageCardsStore`    | `/api/public/homepage-cards`                     | Anonymous, public site     |
 | `useMyStartupsStore` (planned)   | `/api/startup-listings`                          | Authenticated member       |
 | `useAdminStartupQueueStore` (planned) | `/api/admin/startup-listings`                | Authenticated admin        |
 

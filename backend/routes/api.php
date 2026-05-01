@@ -1,21 +1,23 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AdminEventController;
+use App\Http\Controllers\Api\Admin\AdminHomepageCardController;
 use App\Http\Controllers\Api\Admin\AdminMembershipApplicationController;
 use App\Http\Controllers\Api\Admin\AdminPartnerController;
 use App\Http\Controllers\Api\Admin\AdminStartupListingController;
 use App\Http\Controllers\Api\Admin\AdminUserRoleController;
 use App\Http\Controllers\Api\MembershipApplicationController;
 use App\Http\Controllers\Api\PublicEventController;
+use App\Http\Controllers\Api\PublicHomepageCardController;
 use App\Http\Controllers\Api\PublicPartnerController;
 use App\Http\Controllers\Api\PublicStartupListingController;
 use App\Http\Controllers\Api\StartupListingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Public, anonymous endpoints. Filtered to content_status=published AND
-// visibility=public (events also accept visibility=mixed); cancelled
-// events are invisible. Anything else is invisible (404 on show).
+// Public, anonymous endpoints. Filtered to content_status=published and
+// the visibility allowed by each public projection. Anything else is
+// invisible (404 on show); cancelled events are also invisible.
 Route::prefix('public')->group(function (): void {
     Route::get('/startup-listings', [PublicStartupListingController::class, 'index']);
     Route::get('/startup-listings/{listing}', [PublicStartupListingController::class, 'show']);
@@ -25,6 +27,9 @@ Route::prefix('public')->group(function (): void {
 
     Route::get('/partners', [PublicPartnerController::class, 'index']);
     Route::get('/partners/{partner}', [PublicPartnerController::class, 'show']);
+
+    Route::get('/homepage-cards', [PublicHomepageCardController::class, 'index']);
+    Route::get('/homepage-cards/{homepageCard}', [PublicHomepageCardController::class, 'show']);
 });
 
 Route::middleware('auth:sanctum')->group(function (): void {
@@ -87,6 +92,14 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/partners/{partner}/publish', [AdminPartnerController::class, 'publish']);
         Route::post('/partners/{partner}/hide', [AdminPartnerController::class, 'hide']);
         Route::post('/partners/{partner}/archive', [AdminPartnerController::class, 'archive']);
+
+        Route::get('/homepage-cards', [AdminHomepageCardController::class, 'index']);
+        Route::post('/homepage-cards', [AdminHomepageCardController::class, 'store']);
+        Route::get('/homepage-cards/{homepageCard}', [AdminHomepageCardController::class, 'show']);
+        Route::patch('/homepage-cards/{homepageCard}', [AdminHomepageCardController::class, 'update']);
+        Route::post('/homepage-cards/{homepageCard}/publish', [AdminHomepageCardController::class, 'publish']);
+        Route::post('/homepage-cards/{homepageCard}/hide', [AdminHomepageCardController::class, 'hide']);
+        Route::post('/homepage-cards/{homepageCard}/archive', [AdminHomepageCardController::class, 'archive']);
 
         Route::middleware('super_admin.access')->group(function (): void {
             Route::post('/users/{user}/promote-admin', [AdminUserRoleController::class, 'promoteAdmin']);

@@ -7,9 +7,47 @@ import InfoCard from '../components/InfoCard.vue'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
 import { usePublicEventsStore } from '../stores/publicEvents'
+import { usePublicHomepageCardsStore } from '../stores/publicHomepageCards'
 import { usePublicStartupsStore } from '../stores/publicStartups'
 
 const heroVideoSrc = `${import.meta.env.BASE_URL}assets/waais-hero-video.mp4`
+
+const DEFAULT_WHAT_WE_DO_CARDS = [
+  {
+    id: 'fallback-events',
+    eyebrow: 'Programs',
+    title: 'Events with memory',
+    body: 'Host salons, roundtables, workshops, startup demo nights, and recap pages for what members learn.',
+  },
+  {
+    id: 'fallback-startups',
+    eyebrow: 'Directory',
+    title: 'Startup discovery',
+    body: 'Connect alumni founders with operators, investors, mentors, customers, and partners.',
+  },
+  {
+    id: 'fallback-forum',
+    eyebrow: 'Discourse',
+    title: 'Persistent forum memory',
+    body: 'Move high-value conversation from WhatsApp into searchable industry-first Discourse categories.',
+  },
+]
+
+const DEFAULT_ACCESS_FLOW_CARDS = [
+  { id: 'fallback-sign-in', title: 'Google sign in', body: 'New accounts start as pending.' },
+  { id: 'fallback-approval', title: 'Admin approval', body: 'Approved alumni, students, or invited guests receive the correct access role.' },
+  { id: 'fallback-forum', title: 'Forum access', body: 'Discourse opens through the same account at forum.whartonai.studio.' },
+]
+
+const homepageCardsStore = usePublicHomepageCardsStore()
+const whatWeDoCards = computed(() => {
+  const cards = homepageCardsStore.bySection('what_we_do')
+  return cards.length > 0 ? cards : DEFAULT_WHAT_WE_DO_CARDS
+})
+const accessFlowCards = computed(() => {
+  const cards = homepageCardsStore.bySection('access_flow')
+  return cards.length > 0 ? cards : DEFAULT_ACCESS_FLOW_CARDS
+})
 
 // Featured startups on the homepage share the public listings store
 // with /startups, so navigating between them won't refetch.
@@ -22,6 +60,7 @@ const { list: events, listLoading: eventsLoading, listError: eventsError } = sto
 const selectedEvents = computed(() => events.value.slice(0, 3))
 
 onMounted(() => {
+  homepageCardsStore.loadList({ perPage: 48 }).catch(() => {})
   startupsStore.loadList({ perPage: 48 }).catch(() => {})
   eventsStore.loadList({ time: 'upcoming', perPage: 3 }).catch(() => {})
 })
@@ -76,9 +115,18 @@ function formatEventDate(value) {
           <RouterLink class="button water" to="/membership">Apply for access</RouterLink>
         </div>
         <CardGrid>
-          <InfoCard title="Events with memory" eyebrow="Programs">Host salons, roundtables, workshops, startup demo nights, and recap pages for what members learn.</InfoCard>
-          <InfoCard title="Startup discovery" eyebrow="Directory">Connect alumni founders with operators, investors, mentors, customers, and partners.</InfoCard>
-          <InfoCard title="Persistent forum memory" eyebrow="Discourse">Move high-value conversation from WhatsApp into searchable industry-first Discourse categories.</InfoCard>
+          <InfoCard
+            v-for="card in whatWeDoCards"
+            :key="card.id"
+            :title="card.title"
+            :eyebrow="card.eyebrow"
+          >
+            {{ card.body }}
+            <template #actions v-if="card.link_url && card.link_label">
+              <RouterLink v-if="card.link_url.startsWith('/')" class="button water" :to="card.link_url">{{ card.link_label }}</RouterLink>
+              <a v-else class="button water" :href="card.link_url" target="_blank" rel="noopener noreferrer">{{ card.link_label }}</a>
+            </template>
+          </InfoCard>
         </CardGrid>
       </div>
     </section>
@@ -94,9 +142,13 @@ function formatEventDate(value) {
           <div class="card">
             <h3>Access flow</h3>
             <div class="timeline">
-              <div class="timeline-item"><div class="timeline-node">1</div><div><h3>Google sign in</h3><p class="small">New accounts start as pending.</p></div></div>
-              <div class="timeline-item"><div class="timeline-node">2</div><div><h3>Admin approval</h3><p class="small">Approved alumni, students, or invited guests receive the correct access role.</p></div></div>
-              <div class="timeline-item"><div class="timeline-node">3</div><div><h3>Forum access</h3><p class="small">Discourse opens through the same account at forum.whartonai.studio.</p></div></div>
+              <div v-for="(card, index) in accessFlowCards" :key="card.id" class="timeline-item">
+                <div class="timeline-node">{{ index + 1 }}</div>
+                <div>
+                  <h3>{{ card.title }}</h3>
+                  <p class="small">{{ card.body }}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

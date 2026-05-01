@@ -31,10 +31,11 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Public startup directory (`/startups`, `/startups/:id`) and the homepage's "Featured startups" section read from the live Laravel API via a Pinia store.
 - Public events calendar (`/events`, `/events/:id`) and the homepage's "Selected events" section read from the live Laravel API via a Pinia store. The list filter calls the public events API with `time = all | upcoming | past`.
 - Public partners directory (`/partners`, `/partners/:id`) reads from the live Laravel API via a Pinia store.
+- Homepage CMS cards (`what_we_do`, `access_flow`) read from the live Laravel API via a Pinia store, with frontend fallback copy when the CMS is empty.
 - Other public surfaces (forum preview) still serve static seed data and will be wired in subsequent slices.
 - HTTP client at `frontend/src/lib/api.js` — single `getJson()` wrapper, base URL via `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`), `Accept: application/json`, throws `ApiError` on non-2xx.
 - Pinia store at `frontend/src/stores/publicStartups.js` — `loadList`, `loadOne`, in-memory TTL cache so back-navigation between list and detail doesn't refetch. Convention for adding future stores (one per backend resource × access surface) is documented in `frontend/src/stores/README.md`.
-- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 39 specs across `lib/api`, `stores/publicStartups`, `stores/publicEvents`, and `stores/publicPartners`.
+- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 47 specs across `lib/api`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
 - Build deployed to GitHub Pages via root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg` copied from `frontend/dist`. Deploy steps live in `frontend/README.md`.
 
 ### Backend (live, validated locally)
@@ -52,9 +53,10 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Email notifications wired through Laravel's `Notification` system on the `mail` channel, fired after the DB transaction commits so a failed save never produces a stray email. Surfaces (mirrored across membership applications and startup listings): submitter thank-you on submission/reapply (not on edit), admin "new submission in queue" notice sent to all approved Admins/SuperAdmins via the `User::admins()` query scope, approval email, request-more-info email, and an opt-in rejection email gated by a `send_email` boolean on the reject endpoint payload (default false). All five notification classes per surface live under `App\Notifications\*`. Each notification carries the underlying model (`MembershipApplication` / `StartupListing`); the mail body uses the applicant first name or owner display name, includes reviewer notes when present, and points back to the relevant dashboard URL via `config('app.url')`. Email provider is intentionally still TBD — the dev `.env.example` ships with `MAIL_MAILER=log` semantics so we don't block on provider choice. Production target is likely Azure Communication Services Email or Google Workspace.
 - Events backend: admin-managed content (no Submission & Admin Review pattern). `events` table has `content_status`/`visibility` plus event-specific fields (`starts_at`, `ends_at`, `location`, `format`, `image_url`, `registration_url`, `capacity_limit`, `waitlist_open`, `recap_content`, `reminder_days_before` default 2, `cancelled_at`, `cancellation_note`). Admin endpoints under `/api/admin/events` (index filterable by `content_status`/`visibility`/`time`, store, show, update, publish, hide, archive, cancel) audit-log every state-changing action. Cancellation is a separate axis from `content_status`: cancelled events stay visible to admins but are filtered from every public surface. Public read API at `/api/public/events` (index + show) filters to `content_status = published` AND `visibility IN (public, mixed)` AND `cancelled_at IS NULL`, with `time = upcoming|past|all` (default `upcoming`) and an explicit allowlist projection that adds a derived `status` ("upcoming" / "past" / "recap").
 - Partners backend: admin-managed content (no Submission & Admin Review pattern). `partners` table has `content_status`/`visibility`, lifecycle timestamps, `name`, `partner_type`, `summary`, `description`, `website_url`, `logo_url`, and `sort_order`. Admin endpoints under `/api/admin/partners` (index filterable by `content_status`/`visibility`, store, show, update, publish, hide, archive) audit-log every state-changing action. Public read API at `/api/public/partners` (index + show) filters to `content_status = published` AND `visibility IN (public, mixed)` with an explicit allowlist projection.
+- Homepage CMS cards backend: admin-managed content (no Submission & Admin Review pattern). `homepage_cards` table has `content_status`/`visibility`, lifecycle timestamps, `section`, `eyebrow`, `title`, `body`, optional link fields, and `sort_order`. Admin endpoints under `/api/admin/homepage-cards` (index filterable by `section`/`content_status`/`visibility`, store, show, update, publish, hide, archive) audit-log every state-changing action. Public read API at `/api/public/homepage-cards` (index + show) filters to `content_status = published` AND `visibility IN (public, mixed)` with an explicit allowlist projection.
 - Super-admin role-management API: `super_admin.access` middleware backed by `User::canManageAdminPrivileges()`. Routes under `/api/admin/users/{user}` for `promote-admin`, `demote-admin`, `promote-super-admin`, `demote-super-admin`. Each transition is a row-locked update with strict from/to role guards (returns 409 on role mismatch). `promote-admin` additionally requires the target to be `approval_status = approved`. `demote-super-admin` is blocked when the target is the last `SuperAdmin` in the system (covers self-demotion and any path that would empty the role). Every transition writes one `AuditLog` row keyed on `User` with `role.promote_admin` / `role.demote_admin` / `role.promote_super_admin` / `role.demote_super_admin` plus before/after `permission_role` plus IP and user-agent.
 - Public read API for startup listings: anonymous (no auth) routes under `/api/public/startup-listings` (index, paginated) and `/api/public/startup-listings/{listing}` (show). Both filter strictly to `content_status = published` AND `visibility = public`; anything else is invisible (404 on show). The response uses an explicit allowlist projection: `id`, `name`, `tagline`, `description`, `website_url`, `logo_url`, `industry`, `stage`, `location`, `founders`, `linkedin_url`, `approved_at` (ISO 8601). Internal fields — `review_notes`, `submitter_role`, `owner_id`, `reviewed_by`, `reviewed_at`, `submitted_at`, `rejected_at`, `approval_status`, `content_status`, `visibility`, `revisions`, `created_at`, `updated_at` — never appear, enforced by a denylist test. Default `per_page = 12`, capped at 48.
-- Test suite: 121 passing / 521 assertions after the partners backend + frontend slice. `php artisan migrate:fresh` passes against local SQLite.
+- Test suite: 135 passing / 601 assertions after the homepage CMS slice. `php artisan migrate:fresh` passes against local SQLite.
 
 ### Production database decision
 
@@ -64,20 +66,19 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **partners backend + frontend**. Partners are now admin-managed CMS content with `/api/admin/partners` lifecycle routes and `/api/public/partners` anonymous read routes. `/partners` and `/partners/:id` consume `usePublicPartnersStore`; `frontend/src/data/partners.js` is deleted. Frontend suite is 39 passing specs, route smoke passes, and production build is clean. Backend validation is clean at 121 passing tests / 521 assertions, with `composer validate --strict` and `php artisan migrate:fresh` passing.
+No slice in progress. Last shipped slice: **homepage CMS backend + frontend**. Homepage cards are now admin-managed CMS content with `/api/admin/homepage-cards` lifecycle routes and `/api/public/homepage-cards` anonymous read routes. The homepage's "What we do" cards and access-flow timeline consume `usePublicHomepageCardsStore` with fallback copy when the CMS is empty. Frontend suite is 47 passing specs, route smoke passes, and production build is clean. Backend validation is clean at 135 passing tests / 601 assertions, with `composer validate --strict` and `php artisan migrate:fresh` passing.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Homepage CMS backend + frontend.** Configurable cards / announcements / featured content. Mirror the admin-managed CMS/public-read/store pattern used by events and partners.
-2. **Email provider selection.** Pick Azure Communication Services Email or Google Workspace, configure transactional sender, swap `MAIL_MAILER` in production. No code change should be needed beyond config.
-3. **Sanctum auth in the frontend HTTP client + Google sign-in UI flow.** Foundational for everything below.
-4. **Membership application UI on the public site** (form, draft, submitted, needs-more-info, approved/rejected views).
-5. **Member dashboard frontend wiring.** Each surface gets its own store (`useMyStartupsStore`, etc.) per the convention in `frontend/src/stores/README.md`.
-6. **Admin dashboard frontend wiring** (approvals queue, user management, event management, public content, announcements). Multiple sub-slices.
-7. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
-8. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
-9. **Brand/logo asset replacement** when George provides it.
-10. **Azure deployment** of app + backend, plus Discourse on Azure VM.
+1. **Email provider selection.** Pick Azure Communication Services Email or Google Workspace, configure transactional sender, swap `MAIL_MAILER` in production. No code change should be needed beyond config.
+2. **Sanctum auth in the frontend HTTP client + Google sign-in UI flow.** Foundational for everything below.
+3. **Membership application UI on the public site** (form, draft, submitted, needs-more-info, approved/rejected views).
+4. **Member dashboard frontend wiring.** Each surface gets its own store (`useMyStartupsStore`, etc.) per the convention in `frontend/src/stores/README.md`.
+5. **Admin dashboard frontend wiring** (approvals queue, user management, event management, public content, announcements). Multiple sub-slices.
+6. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
+7. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
+8. **Brand/logo asset replacement** when George provides it.
+9. **Azure deployment** of app + backend, plus Discourse on Azure VM.
 
 ## Working Rules
 
@@ -91,6 +92,17 @@ No slice in progress. Last shipped slice: **partners backend + frontend**. Partn
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 1, 2026 — Homepage CMS backend + frontend**
+- Did: added `homepage_cards` migration and `App\Models\HomepageCard` with shared content lifecycle (`content_status`, `visibility`, `published_at`, `hidden_at`, `archived_at`) plus CMS card content (`section`, `eyebrow`, `title`, `body`, `link_label`, `link_url`, `sort_order`)
+- Did: added `App\Http\Controllers\Api\Admin\AdminHomepageCardController` and routes under `/api/admin/homepage-cards` for index (filterable by `section`, `content_status`, and `visibility`), store, show, update, publish, hide, and archive. Every state-changing action writes one `AuditLog` row keyed on `HomepageCard`
+- Did: added `App\Http\Controllers\Api\PublicHomepageCardController` and anonymous routes at `/api/public/homepage-cards` (index + show). Public queries filter strictly to `content_status = published` AND `visibility IN (public, mixed)`. Projection is allowlisted to `id`, `section`, `eyebrow`, `title`, `body`, `link_label`, `link_url`, `visibility`, `published_at`; internal fields are denied by test
+- Did: added 14 backend feature tests across `AdminHomepageCardApiTest` and `PublicHomepageCardApiTest`, covering admin gating, create/update lifecycle audit logs, filtering, sorting, 404 behavior for non-public records, projection denylist, and pagination validation
+- Did: added `frontend/src/stores/publicHomepageCards.js`, backed by `/api/public/homepage-cards`, with `loadList({ section, page, perPage, force, signal })`, `invalidate()`, a 60-second TTL cache keyed by `section/page/perPage`, and a `bySection(section)` getter
+- Did: rewired the homepage's "What we do" cards and access-flow timeline to the CMS store. The frontend keeps fallback copy for those sections so an empty CMS or API outage does not blank out the landing page
+- Did: updated `backend/README.md`, `frontend/README.md`, `frontend/src/stores/README.md`, this file, and `STARTER_PROMPT.md`. Frontend checks: `npm test` 47/47, `npm run build` clean, `npm run test:routes` clean. Backend checks required by project rules: `composer validate --strict` clean, `php artisan test` 135 passed / 601 assertions, `php artisan migrate:fresh` clean
+- Left off at: ready for the next slice — email provider selection/config, unless George wants to prioritize Sanctum auth in the frontend first
+- Watch out for: root-level GitHub Pages build artifacts were refreshed from `frontend/dist`, but the preview will only load live API data once `VITE_API_BASE_URL` points at a deployed backend. There are no event/partner/homepage CMS smoke seeders yet, so local non-empty CMS views require creating/publishing rows through API calls or tinker
 
 **May 1, 2026 — Partners backend + frontend**
 - Did: added `partners` migration and `App\Models\Partner` with shared content lifecycle (`content_status`, `visibility`, `published_at`, `hidden_at`, `archived_at`) plus partner content (`name`, `partner_type`, `summary`, `description`, `website_url`, `logo_url`, `sort_order`)
