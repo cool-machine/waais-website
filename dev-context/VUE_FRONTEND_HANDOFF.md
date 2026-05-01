@@ -1,22 +1,22 @@
 # WAAIS Vue Frontend Handoff
 
-Last updated: April 30, 2026
+Last updated: May 1, 2026
 
-This file captures the exact state where implementation was paused because the conversation was reaching the token limit.
+This file is the historical frontend handoff. For the current full-project state, read `CURRENT_STATE.md`, `FRONTEND_HANDOFF_SUMMARY.md`, and `BACKEND_HANDOFF.md`.
 
 ## Current Branch
 
-Current branch after latest deployment work:
+Frontend deployment branch after latest deployment work:
 
 `main`
 
-The branch was created from `main` after the static mockup/product review work was finalized.
+Current backend work is on `codex/backend-laravel-scaffold`.
 
 ## Important Git State
 
 `frontend/` is tracked in git. The GitHub Pages root is populated from `frontend/dist` using root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, and `icons.svg`.
 
-Before backend work, read `dev-context/PLATFORM_MODEL.md`. Frontend constants mirroring that vocabulary live in `frontend/src/data/platformModel.js`.
+For backend work, read `dev-context/PLATFORM_MODEL.md` and `dev-context/BACKEND_HANDOFF.md`. Frontend constants mirroring that vocabulary live in `frontend/src/data/platformModel.js`.
 
 ## What Was Done
 
@@ -87,7 +87,7 @@ The Vue dev server was also started successfully at:
 
 `http://127.0.0.1:5174/`
 
-At the latest handoff, it was left running for local review after an escalated port bind approval.
+It may not still be running in a later session; restart it with `npm run dev -- --host 127.0.0.1 --port 5174` if local review is needed.
 
 The previous static mockup server may still be available at:
 
@@ -95,55 +95,38 @@ The previous static mockup server may still be available at:
 
 ## What Is Not Done Yet
 
-Do not treat this as a finished frontend. It is only the first scaffold.
+Do not treat this as a finished production app. It is the current frontend preview, but it is still backed by static seed data.
 
 Not done:
 
-- The Vue pages are not yet a pixel-perfect conversion of the static mockups.
-- Homepage hero video is wired into Vue from `frontend/public/assets/waais-hero-video.mp4`.
-- Homepage has a lightweight CSS reveal treatment with reduced-motion fallback; full count-up/parallax behavior is not yet ported from the static mockup.
-- App/auth/member/admin dashboard pages have frontend-only placeholder routes at `/app/sign-in`, `/app/pending`, `/app/dashboard`, and `/app/admin`; full conversion is not done yet.
+- The Vue pages are not intended to be pixel-perfect copies of the static mockups; they are the current production-frontend preview using static seed data.
+- Full count-up/parallax behavior is not yet ported from the static mockup.
+- App/auth/member/admin dashboard pages are frontend-only routes. They do not authenticate users or persist changes yet.
 - Event, startup, and partner detail route structures exist, but they still use static seed data.
 - Admin role gating is not implemented.
 - Membership form does not submit anywhere yet.
-- Backend APIs do not exist yet.
-- Laravel backend has not been scaffolded.
-- Authentication, database, email, CMS, audit log, and Discourse SSO are not implemented.
-- Generic Vite generated files/assets may still need cleanup.
-- `frontend/README.md` still contains the default Vite text and should be rewritten.
+- Backend API endpoints are not implemented yet.
+- Laravel backend has been scaffolded, but PHP/Composer validation has not run locally.
+- Authentication, database-backed workflows, email, CMS APIs, audit-log workflows, and Discourse SSO are not implemented.
 
 ## Next Recommended Steps
 
-1. Inspect `frontend/` carefully.
-2. Decide whether to keep the scaffold as-is or refine before first commit.
-3. Rewrite `frontend/README.md` for WAAIS.
-4. Remove unused Vite starter assets if they are not needed:
-   - `frontend/src/assets/vite.svg`
-   - `frontend/src/assets/vue.svg`
-   - possibly `frontend/src/assets/hero.png`
-5. Confirm `frontend/.gitignore` is compatible with root `.gitignore`.
-6. Re-run:
+1. Re-run frontend checks if frontend files change:
 
 ```text
 cd /Users/gg1900/coding/waais-website/frontend
+npm run test:routes
 npm run build
 ```
 
-7. Start local dev server if needed:
+2. Start local dev server if needed:
 
 ```text
 cd /Users/gg1900/coding/waais-website/frontend
 npm run dev -- --host 127.0.0.1 --port 5174
 ```
 
-8. Continue converting the static public mockup to Vue, prioritizing:
-   - homepage video hero
-   - public navigation
-   - events page/detail route structure
-   - startups page/detail route structure
-   - membership form
-   - forum preview
-9. Commit the frontend scaffold once it is clean enough.
+3. Keep frontend changes aligned with `FRONTEND_HANDOFF_SUMMARY.md`.
 
 ## Source Mockups To Use
 
@@ -161,4 +144,4 @@ Design system reference:
 
 ## Key Constraint
 
-The current implementation phase should stay frontend-only until the Vue structure is stable. Azure, Discourse, and Laravel database access are not needed yet.
+The frontend structure is stable enough for backend scaffolding. Azure deployment, Discourse installation, and production database access are still later phases.

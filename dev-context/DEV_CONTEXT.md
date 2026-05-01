@@ -14,12 +14,13 @@
   - Old React app root (reference only): `/Users/gg1900/coding/waais-website/legacy/old-react-site/`
   - Dev context folder: `/Users/gg1900/coding/waais-website/dev-context/`
   - Vue frontend (created and tracked): `/Users/gg1900/coding/waais-website/frontend/`
-  - Laravel backend (to be created; missing is expected): `/Users/gg1900/coding/waais-website/backend/`
+  - Laravel backend scaffold: `/Users/gg1900/coding/waais-website/backend/`
   - This file: `/Users/gg1900/coding/waais-website/dev-context/DEV_CONTEXT.md`
 - [ ] Also read `/Users/gg1900/coding/waais-website/dev-context/CURRENT_STATE.md` for the latest concise handoff
 - [ ] If Vue implementation is being continued, read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md`
 - [ ] For the current Vue/deployment snapshot, read `/Users/gg1900/coding/waais-website/dev-context/FRONTEND_HANDOFF_SUMMARY.md`
 - [ ] Before backend/Laravel work, read `/Users/gg1900/coding/waais-website/dev-context/PLATFORM_MODEL.md`
+- [ ] If backend work is being continued, read `/Users/gg1900/coding/waais-website/dev-context/BACKEND_HANDOFF.md`
 - [ ] Read the Session Notes at the bottom — they reflect the most recent state of work
 - [ ] Note anything that has moved or changed, and update this file before starting
 
@@ -36,7 +37,7 @@
 - API at `whartonai.studio/api` — exact subdomain vs. path still TBD
 - Old broken site: `https://cool-machine.github.io/waais-v2/` — reference only
 - New design mockup repo: `https://github.com/cool-machine/waais-website`
-- GitHub Pages mockup URL: `https://cool-machine.github.io/waais-website/`
+- GitHub Pages Vue preview URL: `https://cool-machine.github.io/waais-website/`
 - Old React app isolated in `/legacy/old-react-site/` for content, copy, and page structure reference
 
 **Tech stack**
@@ -140,16 +141,16 @@
 
 ## 2. Current Work
 
-**Task: Vue frontend scaffold started, paused for handoff**
+**Task: Laravel backend scaffold validated; next backend slice is auth/API foundation**
 
-The design phase has produced static HTML/CSS/JS prototypes for the public site, auth/member/admin app, and visual design system. George reviewed the key product flows and access rules. Vue frontend scaffolding has started on branch `codex/vue-frontend-scaffold`, but implementation was paused due to token limits.
+The design phase produced static HTML/CSS/JS prototypes for the public site, auth/member/admin app, and visual design system. The Vue frontend has been scaffolded, expanded, merged to `main`, and deployed through GitHub Pages as a static preview. Backend work has started on branch `codex/backend-laravel-scaffold`.
 
 Important current implementation state:
-- `frontend/` exists locally and is untracked in git.
-- `frontend/` was generated with Vite/Vue and then modified into a first WAAIS route/component scaffold.
-- `npm run build` passed inside `/frontend/`.
-- The Vue dev server was started on `http://127.0.0.1:5174/` and then stopped before handoff.
-- Read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md` before continuing implementation.
+- `frontend/` exists, is tracked, and is the source for the GitHub Pages preview.
+- Root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, and `icons.svg` are generated from `frontend/dist`.
+- `/backend/` exists on branch `codex/backend-laravel-scaffold` and contains a Laravel scaffold with WAAIS enums, membership application models, audit-log models, migrations, and access-rule tests.
+- PHP and Composer were repaired locally. `composer install`, `php artisan test`, and `php artisan migrate:fresh` now pass inside `/backend/`.
+- Read `/Users/gg1900/coding/waais-website/dev-context/BACKEND_HANDOFF.md` before continuing backend implementation.
 
 - [x] Audit existing React codebase
 - [x] Define stack, domain, architecture, design direction
@@ -169,7 +170,7 @@ Important current implementation state:
 - [x] Finalise first-pass design system: confirm colors, typography direction, spacing, components, dark/light surface rules
 - [x] Extend mockup to cover Dashboard (member), Dashboard (admin), Sign In, Membership, and application/pending states
 - [ ] George supplies brand/logo asset — drop into mockup
-- [x] Deploy current mockups to GitHub Pages from `main`
+- [x] Deploy mockups to GitHub Pages from `main`; later changed root to the built Vue preview
 - [x] Confirm George's design review items before Vue build: membership flow, admin content controls, homepage video/motion, public/dashboard navigation
 - [x] Replace simplified membership form with the current Google Forms questionnaire fields
 - [x] Replace dead external Forum nav link with an internal forum preview page until Discourse is installed
@@ -179,7 +180,13 @@ Important current implementation state:
 - [x] Install Vue Router, Pinia, Tailwind, and Tailwind Vite plugin
 - [x] Add first-pass public Vue route/component scaffold
 - [x] Verify frontend build with `npm run build`
-- [ ] Review, clean, stage, and commit `/frontend/`
+- [x] Review, clean, stage, and commit `/frontend/`
+- [x] Deploy the built Vue frontend preview through GitHub Pages
+- [x] Create branch `codex/backend-laravel-scaffold`
+- [x] Add initial `/backend/` Laravel scaffold
+- [x] Add WAAIS backend enums, user access helpers, membership application models, migrations, audit log, and access-rule tests
+- [x] Install/repair PHP 8.3+ and Composer
+- [x] Run `composer install`, `php artisan test`, and `php artisan migrate:fresh` inside `/backend/`
 
 **Design decisions from mockup review**
 - Wharton colors (#011F5B navy, #C41E3A crimson) are confirmed — do not change these
@@ -192,7 +199,7 @@ Important current implementation state:
 - Current GitHub Pages root serves the built Vue frontend preview. It is **not PHP/Laravel** and does not persist data.
 - Root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, and `icons.svg` are generated from `frontend/dist` for GitHub Pages deployment.
 - Admin screens are still **frontend-only/design-only**. They do not authenticate admins, persist data, send email, or publish real content yet.
-- Membership application, sign-in, pending approval, and gated directory states are **frontend-only/design-only**. Real logic belongs in the future Vue + Laravel build.
+- Membership application, sign-in, pending approval, and gated directory states are **frontend-only/design-only**. Real logic belongs in the Laravel backend/API implementation.
 - Static mockups remain available under `/mockups/`; the old admin mockup is at `/mockups/app-dashboard-admin-auth.html`.
 
 **Relevant files**
@@ -201,11 +208,12 @@ Important current implementation state:
 - `/Users/gg1900/coding/waais-website/legacy/old-react-site/src/components/` — old components for layout reference
 - `/Users/gg1900/coding/waais-website/legacy/old-react-site/package.json` — old React/Vite dependency manifest, reference only
 - `/Users/gg1900/coding/waais-website/mockups/design-system.html` — visual design system and component rules
-- `/Users/gg1900/coding/waais-website/mockups/public-site.html` — clickable public website prototype; GitHub Pages root redirects here
+- `/Users/gg1900/coding/waais-website/mockups/public-site.html` — clickable public website prototype; GitHub Pages root now serves the Vue preview, while mockups remain available under `/mockups/`
 - `/Users/gg1900/coding/waais-website/mockups/assets/waais-hero-video.mp4` — local homepage hero video asset
 - `/Users/gg1900/coding/waais-website/mockups/app-dashboard-admin-auth.html` — interactive mockup for auth, member dashboard, and admin dashboard, including admin public-content management
 - `/Users/gg1900/coding/waais-website/dev-context/CURRENT_STATE.md` — concise latest handoff summary
 - `/Users/gg1900/coding/waais-website/index.html` — built Vue frontend entry for GitHub Pages
+- `/Users/gg1900/coding/waais-website/backend/` — Laravel backend scaffold on branch `codex/backend-laravel-scaffold`
 
 ---
 
@@ -221,21 +229,27 @@ Important current implementation state:
 - [x] Final design sign-off before dev starts, especially membership/auth flow and admin content management UX
 
 ### Phase 1 — Public site (Vue frontend)
-- [x] Scaffold Vue 3 project (Vite + Tailwind + Vue Router + Pinia) locally; not committed yet
-- [ ] Convert design-system tokens/components into reusable Vue/Tailwind primitives
-- [ ] Homepage: video hero, scroll motion, mission, stats, events preview, startup preview, partner preview, CTA
-- [ ] Events page: upcoming and past, filters, clickable event cards, event detail pages, and past-event recap pages
-- [ ] Startups directory: public teaser + gated member-only full directory treatment, member startup submissions, admin approval, clickable startup cards, and startup detail pages
-- [ ] About / Team
-- [ ] Partners with clickable partner cards leading to partner detail pages or external partner websites
-- [ ] Membership landing page: existing-member sign-in, new-applicant application, non-member actions
-- [ ] Contact
-- [ ] Legal pages: Privacy Policy, Cookie Policy, GDPR Request
+- [x] Scaffold Vue 3 project (Vite + Tailwind + Vue Router + Pinia)
+- [x] Convert first-pass design tokens/components into Vue/CSS primitives
+- [x] Homepage: video hero, mission, stats, events preview, startup preview, partner preview, CTA
+- [x] Events page: upcoming and past, filters, clickable event cards, event detail pages, and past-event recap pages
+- [x] Startups directory: public teaser + gated member-only full directory treatment, clickable startup cards, and startup detail pages
+- [x] About / Team
+- [x] Partners with clickable partner cards leading to partner detail pages or external partner websites
+- [x] Membership landing page: existing-member sign-in, new-applicant application, non-member actions
+- [x] Contact
+- [x] Legal pages: Privacy Policy, Cookie Policy, GDPR Request
+- [ ] Replace placeholder copy/data where George provides final content
 
 ### Phase 2 — Auth & accounts (Laravel)
+- [x] Scaffold Laravel backend foundation
+- [x] Add backend enums for `approval_status`, `affiliation_type`, `permission_role`, `content_status`, and `visibility`
+- [x] Add first-pass user, membership application, application revision, and audit-log models/migrations
+- [x] Add first-pass access-rule tests
+- [ ] Install/repair PHP 8.3+ and Composer locally
+- [ ] Run Composer install, Laravel tests, and migrations
 - [ ] Google OAuth (Laravel Socialite)
-- [ ] User model: name, email, role, status
-- [ ] Role/status model must support anonymous visitor, pending, member, student, partner/guest, admin, and super_admin
+- [ ] User model/API must keep `approval_status`, `affiliation_type`, and `permission_role` separate
 - [ ] Pending users must not appear in directory or forum
 - [ ] Only super_admin users can promote another user to admin or remove admin privileges
 - [ ] Limit super_admin users to George plus at most two designated others
@@ -333,33 +347,55 @@ Important current implementation state:
 
 > Newest entry at the top. Update this at the end of every session.
 
+**May 1, 2026 — Backend runtime validation**
+- Did: repaired Homebrew PHP/Composer by installing PHP 8.5.5 and Composer 2.9.7, then reinstalling `fontconfig` and completing `brew postinstall php`
+- Did: ran `composer install` in `/backend`, generating `composer.lock`
+- Did: pinned Composer platform PHP to `8.3.0` so the lockfile remains compatible with the documented PHP 8.3+ target instead of drifting to PHP 8.4+ dependencies under local PHP 8.5
+- Did: created local ignored `.env`, generated `APP_KEY`, and validated Laravel with `php artisan test` passing 7 tests / 17 assertions
+- Did: ran `php artisan migrate:fresh`; users, cache, jobs, membership applications, application revisions, and audit logs migrated successfully against local SQLite
+- Left off at: backend scaffold is runtime-validated; next slice is API/auth foundation, starting with Sanctum or the selected auth package
+- Watch out for: `.env`, `vendor/`, and `database/database.sqlite` are local ignored artifacts; `backend/composer.lock` should be committed
+
+**May 1, 2026 — Markdown coherence cleanup**
+- Did: audited Markdown handoff files for stale frontend/backend state and updated `DEV_CONTEXT.md`, `CURRENT_STATE.md`, `FRONTEND_HANDOFF_SUMMARY.md`, `VUE_FRONTEND_HANDOFF.md`, and `mockups/README.md`
+- Did: clarified that Vue is deployed from `main`, `/backend/` exists on branch `codex/backend-laravel-scaffold`, and backend validation is blocked until PHP/Composer are available
+- Left off at: documentation is aligned with the current backend scaffold PR and no longer describes `/backend/` as missing
+- Watch out for: backend Laravel commands still have not run locally
+
+**May 1, 2026 — Laravel backend scaffold**
+- Did: created branch `codex/backend-laravel-scaffold`
+- Did: added `/backend/` Laravel scaffold plus WAAIS enums, user access helpers, membership application models, application revision history, audit log, migrations, tests, and backend README
+- Did: added `dev-context/BACKEND_HANDOFF.md` and opened draft PR `https://github.com/cool-machine/waais-website/pull/6`
+- Left off at: historical note; backend runtime validation was blocked at the time of this scaffold
+- Watch out for: this blocker was resolved in the newer May 1 backend runtime validation note above
+
 **April 30, 2026 — Vue frontend scaffold started**
 - Did: created branch `codex/vue-frontend-scaffold`
 - Did: generated `/frontend/` with Vite/Vue, installed dependencies, added Vue Router, Pinia, Tailwind, and first WAAIS public route/component scaffold
 - Did: added Vue pages for Home, Events, Startups, About, Partners, Membership, Forum Preview, Contact, and Legal, plus reusable layout/card/hero components and static data files
 - Did: verified `npm run build` succeeds inside `/frontend/`
-- Left off at: `/frontend/` exists locally but is untracked; implementation paused for handoff before cleanup/commit
-- Watch out for: default Vite README/assets may still need cleanup; Vue pages are not pixel-perfect mockup conversions yet; backend/Laravel not started
+- Left off at: historical note only; this frontend scaffold was later cleaned up, committed, merged, expanded, and deployed
+- Watch out for: current implementation state is described in `CURRENT_STATE.md`, not this historical note
 
 **April 30, 2026 — Product review decisions finalized**
 - Did: reviewed and documented membership/auth, role model, application form, admin content governance, event rules, startup directory rules, Discourse/forum behavior, data ownership, audit trail, and email/notification requirements
 - Did: updated `/mockups/public-site.html` membership form to use the Google Forms question set with optional phone associated with WhatsApp account, optional gender, optional age, yes/no alumni status, and free-text school affiliation
 - Did: confirmed `forum.whartonai.studio` as the future Discourse subdomain; current mockup uses an internal Forum preview page until Discourse is installed
-- Did: verified key context/mockup paths exist; `/frontend/` and `/backend/` are still intentionally missing until implementation begins
+- Did: verified key context/mockup paths existed before implementation began
 - Left off at: ready to scaffold Vue frontend from the static mockups
-- Watch out for: current GitHub Pages deployment is still static HTML/CSS/JS, not Vue/PHP
+- Watch out for: historical note only; GitHub Pages now serves the built Vue preview
 
 **April 30, 2026 — Session documentation refresh**
 - Did: added `/dev-context/CURRENT_STATE.md` as a concise recovery handoff for the current design/prototype state
-- Did: updated `/dev-context/DEV_CONTEXT.md` to clarify that current outputs are static mockups, not Vue/PHP implementation, and to list membership/admin CMS flows as designed but not functional
+- Did: updated `/dev-context/DEV_CONTEXT.md` to clarify that the then-current outputs were static mockups, and to list membership/admin CMS flows as designed but not functional
 - Did: updated `/mockups/README.md` and `/dev-context/STARTER_PROMPT.md` with direct URLs and instructions to read both context files in future sessions
-- Left off at: documentation now captures the latest steps, what is happening now, and the remaining next steps before Vue/Laravel implementation
-- Watch out for: the next session should start with design review or Vue scaffolding, not backend/admin logic yet
+- Left off at: historical note only; later handoff files now capture the active Vue deployment and Laravel scaffold state
+- Watch out for: historical note only; active next steps are now backend validation and API implementation
 
 **April 30, 2026 — GitHub Pages prep**
 - Did: added root `/index.html` as a static GitHub Pages landing page linking to the public-site, app/admin/auth, and design-system mockups; added `.nojekyll`
 - Did: created public GitHub repo `https://github.com/cool-machine/waais-website`, pushed `main`, and enabled GitHub Pages from `main` root at `https://cool-machine.github.io/waais-website/`
-- Did: changed root `/index.html` to redirect directly to `/mockups/public-site.html` so the Pages URL opens the video/motion public homepage instead of the static mockup index
+- Did: changed root `/index.html` to redirect directly to `/mockups/public-site.html` so the Pages URL opened the video/motion public homepage instead of the static mockup index; this was later replaced by the Vue preview deployment
 - Left off at: GitHub Pages is enabled; deployment may take a short time to become available after the first push
 - Watch out for: `legacy/` remains ignored and should not be pushed
 
@@ -401,15 +437,15 @@ Important current implementation state:
 
 **April 30, 2026 — Legacy site isolation**
 - Did: moved the old React/Vite website out of the project root and into `/legacy/old-react-site/`; added a legacy README; updated this context file so future work references the isolated old app instead of `/src/`
-- Left off at: root is now clear for the planned Vue frontend and Laravel backend folders; no new frontend/backend scaffolding has been created yet
-- Watch out for: `/frontend/` and `/backend/` are still intentionally missing until scaffolded; `/tmp/waais-v2` no longer exists because it was a temporary clone
-- Watch out for: `.git` still contains lock/temp files from the prior partial init, so inspect git state carefully before staging or committing
+- Left off at: historical note only; root was cleared for planned Vue and Laravel folders, which have since been scaffolded
+- Watch out for: historical note only; `/frontend/` and `/backend/` have since been scaffolded, and `/tmp/waais-v2` no longer exists because it was a temporary clone
+- Watch out for: historical note only; later git work proceeded normally
 
 **April 30, 2026 — Design mockups**
 - Did: built full interactive mockup (Home, Events, Startups, About, Forum) with Wharton colors and dark theme; George reviewed and approved overall direction; confirmed page inventory (~20 pages); created HANDOVER_TEMPLATE.md and STARTER_PROMPT.md in dev-context/
-- Left off at: one pending design change — George wants to try a water blue (lighter steel blue) on the navbar/CTA band instead of the current Wharton navy. Not implemented yet. Offer 2–3 color swatches at the start of the next design session before touching anything
+- Left off at: historical note only; water blue `#256F8F` was later selected for the navbar/top shell
 - Watch out for: logo is a placeholder — George will supply the club's custom brand asset; do not design around a specific logo shape yet
-- Watch out for: the `/waais-website/` folder has a partial `.git` init that could not be cleaned up — original source was cloned to `/tmp/waais-v2` and key files were copied over manually
+- Watch out for: historical note only; git was later reinitialized cleanly
 
 **April 30, 2026 — Project setup**
 - Did: cloned repo from https://github.com/cool-machine/waais-v2, audited existing React site, defined full stack and architecture, confirmed domain (whartonai.studio), created dev-context folder with DEV_CONTEXT.md
@@ -417,4 +453,4 @@ Important current implementation state:
 
 ---
 
-*Last updated: April 30, 2026*
+*Last updated: May 1, 2026*

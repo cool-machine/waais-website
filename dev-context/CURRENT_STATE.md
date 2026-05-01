@@ -102,11 +102,11 @@ The admin mockup includes design-only screens for:
 
 The Public Content section is intended to let admins create, edit, publish, draft, hide, or remove cards shown on the public website, including events, startups, partners, homepage modules, and other small content cards.
 
-Important: this is not implemented as working software yet. It is a static HTML prototype only. Real authentication, permissions, database persistence, and publishing logic still need the Vue + Laravel build.
+Important: this is not implemented as working software yet. It is a static HTML prototype only. Real authentication, permissions, database persistence, and publishing logic still need backend/API implementation.
 
 ## Discourse Direction
 
-Discourse should be installed later, not inside this GitHub Pages/static mockup phase. It will run on its own Azure VM using the official Docker-based Discourse install, with DNS pointing `forum.whartonai.studio` to that VM.
+Discourse should be installed later, not inside the GitHub Pages/static frontend preview. It will run on its own Azure VM using the official Docker-based Discourse install, with DNS pointing `forum.whartonai.studio` to that VM.
 
 The forum should imitate the structure people already understand from the WhatsApp groups, with industry-based organization as the primary structure and region-based organization as a secondary structure:
 
@@ -125,17 +125,18 @@ The forum UX target is similar to PyTorch forums or fast.ai forums: simple categ
 
 ## What We Are Doing Now
 
-The Vue frontend scaffold has been merged into `main` and expanded with public detail routes plus frontend-only app/auth/member/admin mockup routes. The GitHub Pages root now serves the built Vue preview from root-level static assets. Read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md` and `/Users/gg1900/coding/waais-website/dev-context/FRONTEND_HANDOFF_SUMMARY.md` before continuing.
+The Vue frontend scaffold has been merged into `main` and expanded with public detail routes plus frontend-only app/auth/member/admin mockup routes. The GitHub Pages root now serves the built Vue preview from root-level static assets.
+
+Backend work has started on branch `codex/backend-laravel-scaffold`. `/backend/` contains a Laravel scaffold with WAAIS enums, membership application models, audit-log models, migrations, and access-rule tests. PHP/Composer were repaired locally, Composer dependencies were installed, and the scaffold now passes the first test and migration validation. Read `/Users/gg1900/coding/waais-website/dev-context/BACKEND_HANDOFF.md` before continuing backend work.
 
 ## Remaining Next Steps
 
-1. Review the Vue GitHub Pages preview after deployment finishes.
-2. Continue polishing the Vue public and app/admin mockup routes.
-3. Replace placeholder logo/brand mark when George provides it.
-4. Decide the canonical backend model for approval status, affiliation type, and permission role before Laravel work.
-5. Scaffold `/backend/` with Laravel/PHP later.
-6. Implement Google OAuth, pending approval, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO later.
-7. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
+1. Commit the backend validation outputs that should be tracked, especially `backend/composer.lock`.
+2. Add Sanctum or the selected API auth package.
+3. Implement Google OAuth, pending approval, membership application submission/review, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO.
+4. Continue frontend polish only as needed while backend APIs take shape.
+5. Replace placeholder logo/brand mark when George provides it.
+6. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
 
 ## Watch Outs
 
@@ -145,4 +146,4 @@ The Vue frontend scaffold has been merged into `main` and expanded with public d
 - Browser cache may show an old GitHub Pages version; hard refresh or open the direct mockup URLs.
 - `legacy/` exists locally but is ignored by git.
 - `/frontend/` exists and is tracked.
-- `/backend/` does not exist yet; that is expected.
+- `/backend/` now exists as a Laravel scaffold with WAAIS enums, membership application models, audit-log models, and access-rule tests. Initial validation passed locally with `composer install`, `php artisan test`, and `php artisan migrate:fresh`. Read `dev-context/BACKEND_HANDOFF.md` before continuing backend work.
