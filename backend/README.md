@@ -11,6 +11,8 @@ Implemented in this scaffold:
 - `approval_status`, `affiliation_type`, and `permission_role` as separate enum vocabularies.
 - User identity and access fields for Google OAuth, approval state, affiliation, and permissions.
 - Sanctum API authentication foundation.
+- Google OAuth redirect/callback routes using Laravel Socialite.
+- Google identity provisioning that creates pending users and preserves approved member access.
 - Authenticated `/api/user` endpoint returning access-model flags.
 - Member-only API route middleware backed by `canAccessMemberAreas()`.
 - Membership application storage matching the documented v1 questionnaire.
@@ -20,7 +22,6 @@ Implemented in this scaffold:
 
 Not implemented yet:
 
-- Google OAuth login.
 - Membership application submit/review controllers.
 - Admin approval, role-management, event, startup, partner, announcement, or CMS APIs.
 - Email notifications.
