@@ -131,10 +131,17 @@ Backend work has started and the scaffold is now merged to `main`. `/backend/` c
 
 ## Remaining Next Steps
 
-1. Implement admin review, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO.
-3. Continue frontend polish only as needed while backend APIs take shape.
-4. Replace placeholder logo/brand mark when George provides it.
-5. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
+Backend work follows one reusable **Submission & Admin Review Pattern** (see `DEV_CONTEXT.md` and `BACKEND_HANDOFF.md`): the same `ApprovalStatus`, audit log, and `admin.access` middleware serve every surface where members or visitors submit something for admin review. Slices in order:
+
+1. **Membership-application admin review** — admin queue, approve, reject, request-more-info, audit logs.
+2. **Startup-listing submission + admin review** — approved members propose listings, admins approve before they appear publicly. Mirrors the membership review shape.
+3. **Super-admin role management** — promote/demote admin endpoints with safety rules and audit.
+4. **Email notifications** — applicant thank-you, admin new-application notice, approval, request-more-info; rejection optional.
+5. **Events / partners / homepage CMS APIs** once review patterns are stable.
+6. **Discourse SSO relay** when Discourse is provisioned at `forum.whartonai.studio`.
+7. Continue frontend polish only as needed while backend APIs take shape.
+8. Replace placeholder logo/brand mark when George provides it.
+9. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
 
 ## Watch Outs
 

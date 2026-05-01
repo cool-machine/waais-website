@@ -56,7 +56,7 @@ Before doing any work:
 5. Wait for my instruction unless I explicitly ask you to continue implementation.
 
 Likely next immediate step:
-Implement admin review flows and the next database-backed workflows.
+Implement the **membership-application admin review** slice (admin queue, approve, reject, request-more-info, audit logs). Use it as the canonical implementation of the **Submission & Admin Review Pattern** described in `DEV_CONTEXT.md`. The next slice after that mirrors the same pattern for **startup-listing submissions + admin review** (approved members propose listings, admins approve before public). After those two slices come super-admin role management, email notifications, then events/partners/homepage CMS APIs. Do not collapse the pattern into a single mega-slice — keep each surface (membership, startups, etc.) in its own focused slice and reuse the schema/audit shape.
 ```
 
 ## Context File Roles
