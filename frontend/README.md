@@ -11,6 +11,7 @@ This is the first production-frontend pass converted from the static mockups in 
 - Vue Router
 - Pinia
 - Tailwind CSS v4 via `@tailwindcss/vite`
+- Vitest + @vue/test-utils + jsdom for unit/component tests
 
 ## Commands
 
@@ -18,8 +19,28 @@ This is the first production-frontend pass converted from the static mockups in 
 npm install
 npm run dev -- --host 127.0.0.1 --port 5174
 npm run build
+npm test          # vitest run — unit/component tests
+npm run test:watch
 npm run test:routes
 ```
+
+## API Integration
+
+The public site reads live data from the Laravel API via a Pinia store. The HTTP client lives at `src/lib/api.js`. The base URL resolves from `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`, which is Laravel's `php artisan serve` default).
+
+Local dev workflow when you need real data on `/startups`:
+
+```sh
+# in /backend
+php artisan migrate:fresh
+php artisan db:seed --class=SmokeStartupSeeder --force
+php artisan serve --host=127.0.0.1 --port=8000
+
+# in /frontend (separate terminal)
+npm run dev -- --host 127.0.0.1 --port 5174
+```
+
+Pages must not call `fetch` directly. They consume Pinia stores under `src/stores/`. The convention for naming and structuring stores — and when to add a new store vs. extend an existing one — is documented in `src/stores/README.md`.
 
 ## Deploy to GitHub Pages
 
@@ -64,7 +85,9 @@ Live preview: `https://cool-machine.github.io/waais-website/`
 - Membership application submission
 - Member dashboard and admin dashboard
 - Admin/super-admin permission gating
-- CMS publishing workflow
-- Email and dashboard notifications
+- CMS publishing workflow for events, partners, announcements, homepage
+- Email and dashboard notifications (UI side — the backend ships them)
 - Discourse SSO and forum installation
-- Laravel API integration
+- Events, partners, and forum-preview pages still serve static seed data (`src/data/events.js`, `src/data/partners.js`, `src/data/forum.js`) — wiring them to the Laravel API is queued in subsequent slices
+
+The startup directory (`/startups`, `/startups/:id`, and the homepage's "Featured startups" section) is the first surface to read from the live API.

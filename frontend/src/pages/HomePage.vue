@@ -1,13 +1,25 @@
 <script setup>
+import { computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
 import CardGrid from '../components/CardGrid.vue'
 import InfoCard from '../components/InfoCard.vue'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
 import { events } from '../data/events'
-import { startups } from '../data/startups'
+import { usePublicStartupsStore } from '../stores/publicStartups'
 
 const heroVideoSrc = `${import.meta.env.BASE_URL}assets/waais-hero-video.mp4`
+
+// Featured startups on the homepage share the public listings store
+// with /startups, so navigating between them won't refetch.
+const startupsStore = usePublicStartupsStore()
+const { list: startups } = storeToRefs(startupsStore)
+const featuredStartups = computed(() => startups.value.slice(0, 3))
+
+onMounted(() => {
+  startupsStore.loadList({ perPage: 48 }).catch(() => {})
+})
 </script>
 
 <template>
@@ -93,18 +105,26 @@ const heroVideoSrc = `${import.meta.env.BASE_URL}assets/waais-hero-video.mp4`
       </div>
     </section>
 
-    <section class="section paper reveal-section">
+    <section v-if="featuredStartups.length > 0" class="section paper reveal-section">
       <div class="section-inner">
         <div class="section-head">
           <div>
             <p class="eyebrow">Featured startups</p>
-            <h2>Public teaser, member directory later.</h2>
+            <h2>Approved member submissions, public teasers.</h2>
           </div>
           <RouterLink class="button water" to="/startups">Open directory</RouterLink>
         </div>
         <CardGrid>
-          <InfoCard v-for="startup in startups" :key="startup.id" :title="startup.name" :eyebrow="startup.category" :meta="startup.stage" :image="startup.image">
-            {{ startup.summary }}
+          <InfoCard
+            v-for="startup in featuredStartups"
+            :key="startup.id"
+            :title="startup.name"
+            :eyebrow="startup.industry"
+            :meta="startup.stage"
+            :image="startup.logo_url || ''"
+            :image-alt="`${startup.name} logo`"
+          >
+            {{ startup.tagline }}
             <template #actions>
               <RouterLink class="button water" :to="`/startups/${startup.id}`">Preview</RouterLink>
             </template>
