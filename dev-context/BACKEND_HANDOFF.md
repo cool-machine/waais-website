@@ -23,6 +23,12 @@ Last updated: May 1, 2026
   - `canAccessMemberAreas()`
   - `canPublishPublicContent()`
   - `canManageAdminPrivileges()`
+- Sanctum auth foundation:
+  - API route loading in `bootstrap/app.php`
+  - Sanctum config and personal access token migration
+  - `HasApiTokens` on `User`
+  - authenticated `/api/user` endpoint
+  - `member.access` middleware for member-only API routes
 - Database structure for:
   - Google/social identity fields on users.
   - Approval, affiliation, and permission fields on users.
@@ -47,15 +53,14 @@ Results:
 
 - `composer install` completed and generated `composer.lock`.
 - `composer.json` pins Composer platform PHP to `8.3.0` so local PHP 8.5 does not lock PHP 8.4+ dependencies.
-- `php artisan test` passed: 7 tests, 17 assertions.
+- `php artisan test` passed after auth foundation: 11 tests, 23 assertions.
 - `php artisan migrate:fresh` passed against the local SQLite database.
 - Local ignored artifacts now include `.env`, `vendor/`, and `database/database.sqlite`.
 
 ## Next Backend Slice
 
-1. Add Sanctum or the selected API auth package.
-2. Implement Google OAuth identity creation and pending-user creation.
-3. Implement membership application submit/update/reapply endpoints.
-4. Implement admin approval/request-more-info/reject flows.
-5. Add email notifications for new application, applicant thank-you, approval, and request-more-info.
-6. Add event/startup/content tables and APIs after membership flow is stable.
+1. Implement Google OAuth identity creation and pending-user creation.
+2. Implement membership application submit/update/reapply endpoints.
+3. Implement admin approval/request-more-info/reject flows.
+4. Add email notifications for new application, applicant thank-you, approval, and request-more-info.
+5. Add event/startup/content tables and APIs after membership flow is stable.

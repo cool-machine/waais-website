@@ -10,6 +10,9 @@ Implemented in this scaffold:
 
 - `approval_status`, `affiliation_type`, and `permission_role` as separate enum vocabularies.
 - User identity and access fields for Google OAuth, approval state, affiliation, and permissions.
+- Sanctum API authentication foundation.
+- Authenticated `/api/user` endpoint returning access-model flags.
+- Member-only API route middleware backed by `canAccessMemberAreas()`.
 - Membership application storage matching the documented v1 questionnaire.
 - Application revision history.
 - Generic audit log storage for role, application, profile, and content changes.
@@ -18,7 +21,6 @@ Implemented in this scaffold:
 Not implemented yet:
 
 - Google OAuth login.
-- Sanctum/API authentication.
 - Membership application submit/review controllers.
 - Admin approval, role-management, event, startup, partner, announcement, or CMS APIs.
 - Email notifications.
@@ -42,7 +44,7 @@ Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Com
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # passed: 7 tests, 17 assertions
+php artisan test       # passed: 11 tests, 23 assertions
 php artisan migrate:fresh
 ```
 

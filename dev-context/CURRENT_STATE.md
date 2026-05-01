@@ -127,16 +127,15 @@ The forum UX target is similar to PyTorch forums or fast.ai forums: simple categ
 
 The Vue frontend scaffold has been merged into `main` and expanded with public detail routes plus frontend-only app/auth/member/admin mockup routes. The GitHub Pages root now serves the built Vue preview from root-level static assets.
 
-Backend work has started on branch `codex/backend-laravel-scaffold`. `/backend/` contains a Laravel scaffold with WAAIS enums, membership application models, audit-log models, migrations, and access-rule tests. PHP/Composer were repaired locally, Composer dependencies were installed, and the scaffold now passes the first test and migration validation. Read `/Users/gg1900/coding/waais-website/dev-context/BACKEND_HANDOFF.md` before continuing backend work.
+Backend work has started and the scaffold is now merged to `main`. `/backend/` contains a Laravel scaffold with WAAIS enums, membership application models, audit-log models, migrations, access-rule tests, and a Sanctum API auth foundation. PHP/Composer were repaired locally, Composer dependencies were installed, and the scaffold now passes test and migration validation. Read `/Users/gg1900/coding/waais-website/dev-context/BACKEND_HANDOFF.md` before continuing backend work.
 
 ## Remaining Next Steps
 
-1. Commit the backend validation outputs that should be tracked, especially `backend/composer.lock`.
-2. Add Sanctum or the selected API auth package.
-3. Implement Google OAuth, pending approval, membership application submission/review, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO.
-4. Continue frontend polish only as needed while backend APIs take shape.
-5. Replace placeholder logo/brand mark when George provides it.
-6. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
+1. Implement Google OAuth and pending-user creation.
+2. Implement membership application submission/review, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO.
+3. Continue frontend polish only as needed while backend APIs take shape.
+4. Replace placeholder logo/brand mark when George provides it.
+5. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
 
 ## Watch Outs
 
