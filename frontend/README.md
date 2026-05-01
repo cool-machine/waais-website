@@ -18,6 +18,7 @@ This is the first production-frontend pass converted from the static mockups in 
 npm install
 npm run dev -- --host 127.0.0.1 --port 5174
 npm run build
+npm run test:routes
 ```
 
 ## Implemented Routes
