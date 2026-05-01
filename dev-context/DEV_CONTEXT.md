@@ -44,7 +44,8 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Member-side startup-listing API: approved members only via `member.access`. Routes under `/api/startup-listings`: list own, show own, create, update. Submission stamps `approval_status = submitted` and `content_status = pending_review`. Owner cannot show or edit another member's listing. Approved listings cannot be self-edited (returns 409). Edits re-submit and clear reviewer fields. `startup_listing_revisions` rows are written on submit and update with the changed-fields diff.
 - Admin startup-listing review API: routes under `/api/admin/startup-listings` mirror the membership review shape (queue filterable by `status`, show with revisions, approve, reject, request-info). Approve sets `approval_status = approved` + `content_status = published` + `approved_at`. Reject sets `approval_status = rejected` + `content_status = hidden` + `rejected_at` and requires `review_notes`. Request-info sets `approval_status = needs_more_info` + `content_status = draft` and requires `review_notes`. Each transition writes one `AuditLog` row keyed on `StartupListing` with before/after state plus IP and user-agent. `ContentVisibility` defaults to `public`.
 - Super-admin role-management API: `super_admin.access` middleware backed by `User::canManageAdminPrivileges()`. Routes under `/api/admin/users/{user}` for `promote-admin`, `demote-admin`, `promote-super-admin`, `demote-super-admin`. Each transition is a row-locked update with strict from/to role guards (returns 409 on role mismatch). `promote-admin` additionally requires the target to be `approval_status = approved`. `demote-super-admin` is blocked when the target is the last `SuperAdmin` in the system (covers self-demotion and any path that would empty the role). Every transition writes one `AuditLog` row keyed on `User` with `role.promote_admin` / `role.demote_admin` / `role.promote_super_admin` / `role.demote_super_admin` plus before/after `permission_role` plus IP and user-agent.
-- Test suite: 57 passing (211 assertions). `php artisan migrate:fresh` passes against local SQLite.
+- Public read API for startup listings: anonymous (no auth) routes under `/api/public/startup-listings` (index, paginated) and `/api/public/startup-listings/{listing}` (show). Both filter strictly to `content_status = published` AND `visibility = public`; anything else is invisible (404 on show). The response uses an explicit allowlist projection: `id`, `name`, `tagline`, `description`, `website_url`, `logo_url`, `industry`, `stage`, `location`, `founders`, `linkedin_url`, `approved_at` (ISO 8601). Internal fields — `review_notes`, `submitter_role`, `owner_id`, `reviewed_by`, `reviewed_at`, `submitted_at`, `rejected_at`, `approval_status`, `content_status`, `visibility`, `revisions`, `created_at`, `updated_at` — never appear, enforced by a denylist test. Default `per_page = 12`, capped at 48.
+- Test suite: 65 passing (265 assertions). `php artisan migrate:fresh` passes against local SQLite.
 
 ### Production database decision
 
@@ -54,17 +55,17 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **super-admin role management** — promote/demote endpoints under `super_admin.access`, with last-super-admin protection and per-transition audit logs. Backend test suite at 57 passing / 211 assertions.
+No slice in progress. Last shipped slice: **public read API for startup listings** — anonymous index/show endpoints filtered to published+public, with an explicit allowlist projection. Backend test suite at 65 passing / 265 assertions.
 
 ## 3. Future — Ordered Next Slices
 
 Backend slices follow the **Submission & Admin Review Pattern** documented in `PRODUCT.md`.
 
-1. **Public read API for published startup listings + events.** Public listing/detail endpoints filtered by `content_status = published` and `visibility = public`. Required before frontend wiring is meaningful.
-2. **Email notifications.** Applicant thank-you on submission, admin new-application notice, approval, request-more-info; rejection email is optional and admin-triggered. Same notification surfaces for startup listings.
-3. **Events / partners / homepage CMS APIs.** After review patterns are stable.
+1. **Email notifications.** Applicant thank-you on submission, admin new-application notice, approval, request-more-info; rejection email is optional and admin-triggered. Same notification surfaces for startup listings. Email provider still TBD — start with Laravel's mail facade and a log driver in dev so we don't block on provider choice.
+2. **Frontend wiring of the public startup directory.** Replace the static seed data in `frontend/src/data/startups.js` with calls to `/api/public/startup-listings`. Keep the existing `StartupsPage.vue` shape; just swap the data source. Surfaces the API publicly and proves the public projection is sufficient.
+3. **Events / partners / homepage CMS APIs.** Same Submission & Admin Review Pattern, plus an event-specific lifecycle (capacity, waitlist, cancellation, recap, reminders).
 4. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
-5. **Frontend wiring** of the live API endpoints onto the existing Vue routes.
+5. **Member dashboard + admin dashboard frontend wiring** of the authenticated APIs.
 6. **Brand/logo asset replacement** when George provides it.
 7. **Azure deployment** of app + backend, plus Discourse on Azure VM.
 
@@ -80,6 +81,15 @@ Backend slices follow the **Submission & Admin Review Pattern** documented in `P
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 1, 2026 — Public read API for startup listings**
+- Did: added `App\Http\Controllers\Api\PublicStartupListingController` with `index` (paginated) and `show`. Both go through a single `publicQuery()` that filters strictly to `content_status = published` AND `visibility = public`; the show endpoint uses `findOrFail` so anything outside that bucket — draft, pending_review, hidden, archived, members_only, mixed — returns 404
+- Did: response uses an explicit allowlist projection (`id`, `name`, `tagline`, `description`, `website_url`, `logo_url`, `industry`, `stage`, `location`, `founders`, `linkedin_url`, `approved_at`). Internal review/ownership fields (`review_notes`, `submitter_role`, `owner_id`, `reviewed_by`, `reviewed_at`, `submitted_at`, `rejected_at`, `approval_status`, `content_status`, `visibility`, `revisions`, `created_at`, `updated_at`) are never serialized
+- Did: routes registered as `Route::prefix('public')` outside the `auth:sanctum` group so anonymous callers reach them
+- Did: pagination — default `per_page = 12`, capped at 48 by validation; `per_page=0` and `per_page=999` both return 422
+- Did: 8 new feature tests in `PublicStartupListingApiTest`, including a denylist assertion that diffs the actual projection key set against the documented allowlist so future drift fails the build. Suite at 65 passed (265 assertions). `composer validate --strict` clean, `migrate:fresh` clean
+- Left off at: ready to start the email-notifications slice, or alternatively do the frontend wiring of the public directory next (replacing the static seed in `frontend/src/data/startups.js`). Either is unblocked
+- Watch out for: the projection allowlist is now load-bearing for callers. Adding a new public field means updating both the controller projection and the test allowlist in the same commit. The denylist test will catch accidental leaks but won't catch missing-field regressions
 
 **May 1, 2026 — Super-admin role management**
 - Did: added `EnsureSuperAdminAccess` middleware backed by `User::canManageAdminPrivileges()`, registered as the `super_admin.access` route alias in `bootstrap/app.php`

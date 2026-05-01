@@ -20,6 +20,7 @@ Implemented in this scaffold:
 - Member-submitted startup-listing API endpoints (list own, show, create, update) gated by `member.access`, with revision history and a 409 on self-edit of approved listings.
 - Admin startup-listing review API endpoints (queue filterable by status, single listing detail with revisions, approve / reject / request-info) under `admin.access`, with audit-log entries on every admin action and `ContentStatus` / `ContentVisibility` driving the published lifecycle.
 - Super-admin role-management API endpoints (promote/demote admin, promote/demote super_admin) under a `super_admin.access` middleware backed by `User::canManageAdminPrivileges()`. Strict from/to role guards return 409 on mismatch; `promote-admin` requires the target to be approved; `demote-super-admin` is blocked when the target would be the last super_admin. Each transition writes an audit log row.
+- Public read API for startup listings: anonymous endpoints under `/api/public/startup-listings` (index, paginated) and `/api/public/startup-listings/{id}` (show), filtered strictly to `content_status = published` + `visibility = public`. Anything else is invisible (404 on show). Response shape is documented below.
 - Membership application storage matching the documented v1 questionnaire.
 - Application revision history.
 - Generic audit log storage for role, application, profile, and content changes.
@@ -27,7 +28,7 @@ Implemented in this scaffold:
 
 Not implemented yet:
 
-- Public read API for published startup listings (filtered by `content_status = published` + `visibility = public`).
+- Email notifications (applicant thank-you, admin new-submission notice, approval, request-info — across membership applications and startup listings).
 - Email notifications.
 - Event, partner, announcement, or homepage CMS APIs.
 - Discourse SSO relay.
@@ -50,7 +51,7 @@ Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Com
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 57 tests, 211 assertions (after super-admin role management slice)
+php artisan test       # last verified: 65 tests, 265 assertions (after public startup-listing read API slice)
 php artisan migrate:fresh
 ```
 
@@ -70,3 +71,30 @@ Do not collapse access back into one overloaded `role` field. Laravel policies a
 - `approval_status` for application/account review state.
 - `affiliation_type` for Wharton/Penn/community relationship.
 - `permission_role` for product permissions.
+
+## Public Startup Listing API Shape
+
+The frontend public startup directory consumes these endpoints. Both are anonymous (no auth required) and filter strictly to `content_status = published` AND `visibility = public`.
+
+`GET /api/public/startup-listings` — paginated index. Default `per_page = 12`, capped at 48. Returns Laravel's standard pagination envelope (`data`, `current_page`, `last_page`, `per_page`, `total`, links). Each `data[*]` element follows the projection below. Sorted by `approved_at DESC, id DESC`.
+
+`GET /api/public/startup-listings/{id}` — single listing in `{ "data": {...} }`. Returns 404 if the listing is not in (published, public) — including any draft / pending_review / hidden / archived state, or any members_only / mixed visibility.
+
+Listing projection (load-bearing — drift is enforced by `PublicStartupListingApiTest::projection_excludes_internal_fields`):
+
+```text
+id            integer
+name          string
+tagline       string
+description   string
+website_url   string|null
+logo_url      string|null
+industry      string
+stage         string|null
+location      string|null
+founders      string[]|null
+linkedin_url  string|null
+approved_at   ISO-8601 string|null
+```
+
+Internal fields (`review_notes`, `submitter_role`, `owner_id`, `reviewed_*`, `submitted_at`, `rejected_at`, `approval_status`, `content_status`, `visibility`, `revisions`, `created_at`, `updated_at`) are intentionally never present. Adding a public field requires updating both the controller projection and the test allowlist in the same commit.
