@@ -17,6 +17,8 @@ Implemented in this scaffold:
 - Member-only API route middleware backed by `canAccessMemberAreas()`.
 - Applicant-owned membership application API endpoints for show, submit, update, and rejected-applicant reapply.
 - Admin membership application review API endpoints for queue (filterable), single application detail with revisions, approve, reject, and request-more-info, with audit-log entries on every admin action and an `admin.access` middleware backed by `User::isAdmin()`.
+- Member-submitted startup-listing API endpoints (list own, show, create, update) gated by `member.access`, with revision history and a 409 on self-edit of approved listings.
+- Admin startup-listing review API endpoints (queue filterable by status, single listing detail with revisions, approve / reject / request-info) under `admin.access`, with audit-log entries on every admin action and `ContentStatus` / `ContentVisibility` driving the published lifecycle.
 - Membership application storage matching the documented v1 questionnaire.
 - Application revision history.
 - Generic audit log storage for role, application, profile, and content changes.
@@ -24,7 +26,7 @@ Implemented in this scaffold:
 
 Not implemented yet:
 
-- Member-submitted startup-listing endpoints and the parallel admin startup-listing review (mirror of the membership review pattern).
+- Public read API for published startup listings (filtered by `content_status = published` + `visibility = public`).
 - Super-admin role-management endpoints (promote/demote admin).
 - Email notifications.
 - Event, partner, announcement, or homepage CMS APIs.
@@ -48,7 +50,7 @@ Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Com
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 28 tests, 119 assertions (after admin membership review slice)
+php artisan test       # last verified: 43 tests, 183 assertions (after startup-listing review slice)
 php artisan migrate:fresh
 ```
 

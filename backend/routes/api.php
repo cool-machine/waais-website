@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AdminMembershipApplicationController;
+use App\Http\Controllers\Api\Admin\AdminStartupListingController;
 use App\Http\Controllers\Api\MembershipApplicationController;
+use App\Http\Controllers\Api\StartupListingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,11 +31,24 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::patch('/membership-application', [MembershipApplicationController::class, 'update']);
     Route::post('/membership-application/reapply', [MembershipApplicationController::class, 'reapply']);
 
+    Route::middleware('member.access')->group(function (): void {
+        Route::get('/startup-listings', [StartupListingController::class, 'index']);
+        Route::post('/startup-listings', [StartupListingController::class, 'store']);
+        Route::get('/startup-listings/{listing}', [StartupListingController::class, 'show']);
+        Route::patch('/startup-listings/{listing}', [StartupListingController::class, 'update']);
+    });
+
     Route::middleware('admin.access')->prefix('admin')->group(function (): void {
         Route::get('/applications', [AdminMembershipApplicationController::class, 'index']);
         Route::get('/applications/{application}', [AdminMembershipApplicationController::class, 'show']);
         Route::post('/applications/{application}/approve', [AdminMembershipApplicationController::class, 'approve']);
         Route::post('/applications/{application}/reject', [AdminMembershipApplicationController::class, 'reject']);
         Route::post('/applications/{application}/request-info', [AdminMembershipApplicationController::class, 'requestInfo']);
+
+        Route::get('/startup-listings', [AdminStartupListingController::class, 'index']);
+        Route::get('/startup-listings/{listing}', [AdminStartupListingController::class, 'show']);
+        Route::post('/startup-listings/{listing}/approve', [AdminStartupListingController::class, 'approve']);
+        Route::post('/startup-listings/{listing}/reject', [AdminStartupListingController::class, 'reject']);
+        Route::post('/startup-listings/{listing}/request-info', [AdminStartupListingController::class, 'requestInfo']);
     });
 });

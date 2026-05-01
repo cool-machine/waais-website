@@ -41,7 +41,9 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Google OAuth via Socialite: `/auth/google/redirect` and `/auth/google/callback`. New users → `submitted` / `pending_user`. Existing unlinked users link by email. Approved members are not downgraded on re-sign-in. Email already linked to a different `google_id` returns 409.
 - Applicant-owned membership application API: `GET/POST/PATCH /api/membership-application`, `POST /api/membership-application/reapply`. Rejected applicants can reapply. Field changes write `application_revisions` rows.
 - Admin membership-application review API: `admin.access` middleware backed by `User::isAdmin()`. Routes under `/api/admin/applications`: queue (filterable by `status`), single-application detail with revisions, approve, reject, request-info. Approve promotes pending applicants to Member without downgrading existing Admin/SuperAdmin and syncs `affiliation_type` from the application. Reject and request-info both require `review_notes`. Each transition writes one `AuditLog` row capturing application + applicant before/after state plus IP and user-agent. This is the canonical implementation of the **Submission & Admin Review Pattern** (described in `PRODUCT.md`).
-- Test suite: 28 passing (119 assertions). `php artisan migrate:fresh` passes against local SQLite.
+- Member-side startup-listing API: approved members only via `member.access`. Routes under `/api/startup-listings`: list own, show own, create, update. Submission stamps `approval_status = submitted` and `content_status = pending_review`. Owner cannot show or edit another member's listing. Approved listings cannot be self-edited (returns 409). Edits re-submit and clear reviewer fields. `startup_listing_revisions` rows are written on submit and update with the changed-fields diff.
+- Admin startup-listing review API: routes under `/api/admin/startup-listings` mirror the membership review shape (queue filterable by `status`, show with revisions, approve, reject, request-info). Approve sets `approval_status = approved` + `content_status = published` + `approved_at`. Reject sets `approval_status = rejected` + `content_status = hidden` + `rejected_at` and requires `review_notes`. Request-info sets `approval_status = needs_more_info` + `content_status = draft` and requires `review_notes`. Each transition writes one `AuditLog` row keyed on `StartupListing` with before/after state plus IP and user-agent. `ContentVisibility` defaults to `public`.
+- Test suite: 43 passing (183 assertions). `php artisan migrate:fresh` passes against local SQLite.
 
 ### Production database decision
 
@@ -51,15 +53,15 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **dev-context consolidation** (this commit). Backend `main` last advanced at `20135b8` for the admin membership-application review slice; this slice changes documentation only and adds no code.
+No slice in progress. Last shipped slice: **startup-listing submission + admin review** — the second implementation of the Submission & Admin Review Pattern. Backend test suite at 43 passing / 183 assertions.
 
 ## 3. Future — Ordered Next Slices
 
 Backend slices follow the **Submission & Admin Review Pattern** documented in `PRODUCT.md`.
 
-1. **Startup-listing submission + admin review** (next slice). Approved members can submit startup listings; admins review/approve/reject/request-info before publication. Mirrors the membership review shape — same `ApprovalStatus` enum, same `admin.access` middleware, same `AuditLog` shape — and adds `ContentStatus` / `ContentVisibility` for the published lifecycle. Reference implementation: `app/Http/Controllers/Api/Admin/AdminMembershipApplicationController.php` and `tests/Feature/AdminMembershipApplicationApiTest.php`.
-2. **Super-admin role management.** Promote/demote admin endpoints. Prevent self-demotion of the last super_admin. Audit-log every change.
-3. **Email notifications.** Applicant thank-you on submission, admin new-application notice, approval, request-more-info; rejection email is optional and admin-triggered.
+1. **Super-admin role management.** Promote/demote admin endpoints. Prevent self-demotion of the last super_admin. Audit-log every change.
+2. **Email notifications.** Applicant thank-you on submission, admin new-application notice, approval, request-more-info; rejection email is optional and admin-triggered. Same notification surfaces for startup listings.
+3. **Public read API for published startup listings + events.** Public listing/detail endpoints filtered by `content_status = published` and `visibility = public`. Required before frontend wiring is meaningful.
 4. **Events / partners / homepage CMS APIs.** After review patterns are stable.
 5. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
 6. **Frontend wiring** of the live API endpoints onto the existing Vue routes.
@@ -78,6 +80,17 @@ Backend slices follow the **Submission & Admin Review Pattern** documented in `P
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 1, 2026 — Startup-listing submission + admin review**
+- Did: added `startup_listings` and `startup_listing_revisions` migrations carrying both review fields (`approval_status`, `submitted_at`, `reviewed_at`, `reviewed_by`, `review_notes`, `approved_at`, `rejected_at`) and content-lifecycle fields (`content_status`, `visibility`)
+- Did: lean v1 listing fields — `name`, `tagline`, `description`, `website_url`, `logo_url`, `industry`, `stage`, `location`, `founders` (json array), `submitter_role`, `linkedin_url`
+- Did: `App\Models\StartupListing` and `StartupListingRevision` with proper enum casts (`ApprovalStatus`, `ContentStatus`, `ContentVisibility`); `User::startupListings()` HasMany relationship
+- Did: member-side `App\Http\Controllers\Api\StartupListingController` (`index` / `show` / `store` / `update`) gated by `member.access`. Owner-only show/update. Approved listings reject self-edit with 409. Submit and update both stamp `submitted_at`, set `approval_status = submitted`, `content_status = pending_review`, and clear reviewer fields. Revision rows track changed fields with old/new values
+- Did: admin-side `App\Http\Controllers\Api\Admin\AdminStartupListingController` (`index` / `show` / `approve` / `reject` / `requestInfo`) gated by `admin.access`. Approve → `Approved` + `Published` + `approved_at`. Reject → `Rejected` + `Hidden` + `rejected_at`, requires `review_notes`. Request-info → `NeedsMoreInfo` + `Draft`, requires `review_notes`. Each transition writes one `AuditLog` row keyed on `StartupListing` with IP and user-agent
+- Did: routes wired under `/api/startup-listings` (member.access) and `/api/admin/startup-listings` (admin.access)
+- Did: 15 new feature tests across `StartupListingApiTest` and `AdminStartupListingApiTest`. Suite at 43 passed (183 assertions). `composer validate --strict` clean, `migrate:fresh` clean against local SQLite
+- Left off at: ready for the next slice — super-admin role management
+- Watch out for: nothing breaking. The `submitter_role` field captures the submitter's role at the company; if we later split "founder member submitting" from "non-founder member submitting on behalf of a portfolio company", we may want a separate `relationship_to_company` field. Public read API for published listings is not yet implemented — frontend can't read approved listings via the API yet
 
 **May 1, 2026 — Dev-context consolidation**
 - Did: collapsed `dev-context/` from eight files to four — `PRODUCT.md` (stable description), `PLATFORM_MODEL.md` (data/access contract, unchanged), `DEV_CONTEXT.md` (past/present/future/session log, this file), `STARTER_PROMPT.md` (handover prompt, trimmed read list)

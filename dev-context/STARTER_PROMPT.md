@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Implement the **startup-listing submission + admin review** slice. Approved members can submit a startup listing; admins review and approve, reject, or request more info before publication. Mirror the membership-application admin review pattern: same ApprovalStatus enum, same admin.access middleware, same AuditLog shape, plus ContentStatus / ContentVisibility for the published lifecycle. The canonical reference implementation lives in backend/app/Http/Controllers/Api/Admin/AdminMembershipApplicationController.php and backend/tests/Feature/AdminMembershipApplicationApiTest.php.
+Implement the **super-admin role management** slice. Add admin promote/demote endpoints under super-admin gating: only `super_admin` users can promote a `member` to `admin`, demote an `admin` back to `member`, or promote/demote between `admin` and `super_admin`. Prevent self-demotion of the last `super_admin` (so the role is never lost). Audit-log every transition (`role.promote_admin`, `role.demote_admin`, `role.promote_super_admin`, `role.demote_super_admin`) with before/after `permission_role` plus IP and user-agent. Reuse `User::canManageAdminPrivileges()` for the gate; add a `super_admin.access` middleware if it makes the routes cleaner. After this slice, the next priority is the public read API for published startup listings (filtered by `content_status = published` + `visibility = public`) so the frontend can finally start wiring real data.
 ```
 
 ## Maintenance
