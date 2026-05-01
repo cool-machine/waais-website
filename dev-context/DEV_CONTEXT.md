@@ -188,6 +188,7 @@ Important current implementation state:
 - [x] Install/repair PHP 8.3+ and Composer
 - [x] Run `composer install`, `php artisan test`, and `php artisan migrate:fresh` inside `/backend/`
 - [x] Add Sanctum API auth foundation and member-access middleware
+- [x] Add Google OAuth pending-user creation foundation
 
 **Design decisions from mockup review**
 - Wharton colors (#011F5B navy, #C41E3A crimson) are confirmed — do not change these
@@ -348,12 +349,20 @@ Important current implementation state:
 
 > Newest entry at the top. Update this at the end of every session.
 
+**May 1, 2026 — Google OAuth foundation**
+- Did: added Laravel Socialite and Google service/env configuration
+- Did: added `/auth/google/redirect` and `/auth/google/callback`; callback logs users in and routes approved members to `/app/dashboard`, others to `/app/pending`
+- Did: added Google identity provisioning so new OAuth users become submitted pending users, unlinked users can be linked by email, approved members are not downgraded, and conflicting Google IDs fail cleanly
+- Did: added feature tests for new pending-user creation, existing email linking, approved-member sign-in, and linked-email conflict handling
+- Left off at: Google OAuth backend foundation is in place; next backend slice is membership application submit/update/reapply endpoints
+- Watch out for: this still needs real Google OAuth credentials and frontend sign-in wiring before manual browser testing is meaningful
+
 **May 1, 2026 — Backend auth foundation**
 - Did: added Laravel Sanctum, API route loading, `HasApiTokens` on `User`, Sanctum config, and personal access token migration
 - Did: added authenticated `/api/user` endpoint exposing approval/permission flags and a `member.access` middleware for member-only API routes
 - Did: added feature tests proving unauthenticated API requests are rejected, pending users cannot access member routes, and approved members can
-- Left off at: Sanctum/API foundation is in place; next backend slice is Google OAuth identity creation and pending-user creation
-- Watch out for: this does not implement Google OAuth, sessions from the Vue app, or membership application submission yet
+- Left off at: Sanctum/API foundation is in place; the later Google OAuth foundation note above builds on it
+- Watch out for: this does not implement frontend sessions from the Vue app or membership application submission yet
 
 **May 1, 2026 — Backend runtime validation**
 - Did: repaired Homebrew PHP/Composer by installing PHP 8.5.5 and Composer 2.9.7, then reinstalling `fontconfig` and completing `brew postinstall php`
