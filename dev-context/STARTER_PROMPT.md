@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Next likely step is **email provider selection/config**, unless George wants to prioritize frontend auth. The backend notification code already uses Laravel notifications on the `mail` channel and dev defaults to `MAIL_MAILER=log`; pick Azure Communication Services Email or Google Workspace, document the production env vars, and keep code changes minimal unless the chosen provider requires a mail transport package. After that: Sanctum auth in the frontend HTTP client + Google sign-in UI flow, which unblocks membership application UI, member dashboard wiring, and admin dashboard wiring.
+Build **Sanctum auth in the frontend HTTP client + Google sign-in UI flow**. The backend already has Google OAuth routes (`/auth/google/redirect`, `/auth/google/callback`), Sanctum auth, and `/api/user`. Extend `frontend/src/lib/api.js` in one place for authenticated requests/credentials, add an auth/user store, and wire the public sign-in surfaces so users can start Google sign-in, see pending/approved state where the backend exposes it, and preserve the public stores' anonymous behavior. This unblocks membership application UI, member dashboard wiring, and admin dashboard wiring.
 ```
 
 ## Maintenance

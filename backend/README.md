@@ -24,7 +24,7 @@ Implemented:
 - Events backend: admin-managed content (no Submission & Admin Review pattern — events are not user-submitted). Migration adds `events` table with `content_status`/`visibility` plus event-specific fields (`starts_at`, `ends_at`, `location`, `format`, `image_url`, `registration_url`, `capacity_limit`, `waitlist_open`, `recap_content`, `reminder_days_before` default 2, `cancelled_at`, `cancellation_note`). Admin endpoints under `/api/admin/events` (index filterable by `content_status`/`visibility`/`time`, store, show, update, publish, hide, archive, cancel) write one `AuditLog` row per state-changing action. Cancellation is independent of `content_status`: a cancelled event remains visible to admins but is filtered out of every public surface. Public read API at `/api/public/events` (index + show) filters strictly to `content_status = published` AND `visibility IN (public, mixed)` AND `cancelled_at IS NULL`. Index supports `time = upcoming|past|all` (default `upcoming`); upcoming sorts ASC by `starts_at`, past sorts DESC. Response shape is documented below.
 - Partners backend: admin-managed content (no Submission & Admin Review pattern). Migration adds `partners` table with `content_status`/`visibility`, lifecycle timestamps, `name`, `partner_type`, `summary`, `description`, `website_url`, `logo_url`, and `sort_order`. Admin endpoints under `/api/admin/partners` (index filterable by `content_status`/`visibility`, store, show, update, publish, hide, archive) write one `AuditLog` row per state-changing action. Public read API at `/api/public/partners` (index + show) filters strictly to `content_status = published` AND `visibility IN (public, mixed)`. Response shape is documented below.
 - Homepage CMS cards backend: admin-managed content (no Submission & Admin Review pattern). Migration adds `homepage_cards` table with `content_status`/`visibility`, lifecycle timestamps, `section`, `eyebrow`, `title`, `body`, optional link fields, and `sort_order`. Admin endpoints under `/api/admin/homepage-cards` (index filterable by `section`/`content_status`/`visibility`, store, show, update, publish, hide, archive) write one `AuditLog` row per state-changing action. Public read API at `/api/public/homepage-cards` (index + show) filters strictly to `content_status = published` AND `visibility IN (public, mixed)`. Response shape is documented below.
-- Email notifications via Laravel's `Notification` system on the `mail` channel, fired post-transaction. Surfaces, mirrored across membership applications and startup listings: submitter thank-you on submit/reapply (not on edit), admin "new submission" queue notice to all approved Admin/SuperAdmin users via `User::admins()`, approval email, request-more-info email, and an opt-in rejection email gated by a `send_email` boolean on the reject endpoint. Notification classes live under `App\Notifications\*`. Email provider is intentionally still TBD: dev `.env.example` ships with `MAIL_MAILER=log`.
+- Email notifications via Laravel's `Notification` system on the `mail` channel, fired post-transaction. Surfaces, mirrored across membership applications and startup listings: submitter thank-you on submit/reapply (not on edit), admin "new submission" queue notice to all approved Admin/SuperAdmin users via `User::admins()`, approval email, request-more-info email, and an opt-in rejection email gated by a `send_email` boolean on the reject endpoint. Notification classes live under `App\Notifications\*`. Local dev uses `MAIL_MAILER=log`; production target is Azure Communication Services Email over SMTP via the `azure_communication_services` mailer in `config/mail.php`.
 - Membership application storage matching the documented v1 questionnaire.
 - Application revision history.
 - Generic audit log storage for role, application, profile, and content changes.
@@ -34,7 +34,6 @@ Not implemented yet:
 
 - Announcement APIs.
 - Discourse SSO relay.
-- Production email provider selection (Azure Communication Services Email or Google Workspace).
 - Event reminder dispatch (the `reminder_days_before` field is stored but no scheduled job sends the reminders yet).
 
 ## Local Setup
@@ -62,6 +61,44 @@ php artisan migrate:fresh
 The local `.env`, `vendor/`, and SQLite database are ignored development artifacts. Commit `composer.lock` with backend dependency changes.
 
 `composer.json` pins Composer's platform PHP to `8.3.0`. Keep that guard unless the production target changes; otherwise Composer on a newer local PHP can lock dependencies that require PHP 8.4+.
+
+## Production Email Provider
+
+Production email target: **Azure Communication Services Email over SMTP**.
+
+Reasoning:
+
+- The platform is already targeting Azure for hosting and database infrastructure.
+- Azure Communication Services Email supports custom verified domains and SMTP sending.
+- Laravel already supports SMTP through Symfony Mailer, so no provider-specific package is required for the current notification flow.
+- Local development remains provider-independent with `MAIL_MAILER=log`.
+
+Production environment variables:
+
+```env
+MAIL_MAILER=azure_communication_services
+ACS_MAIL_HOST=smtp.azurecomm.net
+ACS_MAIL_PORT=587
+ACS_MAIL_USERNAME=...
+ACS_MAIL_PASSWORD=...
+MAIL_FROM_ADDRESS=noreply@whartonai.studio
+MAIL_FROM_NAME="${APP_NAME}"
+MAIL_EHLO_DOMAIN=whartonai.studio
+```
+
+Operational setup still required outside the repo:
+
+- Create an Azure Communication Email Resource.
+- Provision and verify the sending domain for `whartonai.studio`.
+- Connect the Email Resource to an Azure Communication Services Resource.
+- Create SMTP credentials using a Microsoft Entra application with access to the Communication Services Resource.
+- Store the SMTP username and Entra application client secret as production secrets.
+
+References:
+
+- [Microsoft Learn: Azure Communication Services Email overview](https://learn.microsoft.com/en-us/azure/communication-services/concepts/email/email-overview) — custom domains, SMTP support, and pay-as-you-go sending.
+- [Microsoft Learn: Send email using SMTP](https://learn.microsoft.com/en-us/azure/communication-services/quickstarts/email/send-email-smtp/send-email-smtp) — host `smtp.azurecomm.net`, port `587`, SSL/TLS enabled, Entra-backed SMTP credentials.
+- [Laravel 11 Mail documentation](https://laravel.com/docs/11.x/mail) — SMTP is supported through Laravel's mail configuration.
 
 ## Model Contract
 

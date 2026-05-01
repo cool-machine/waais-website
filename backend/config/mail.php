@@ -49,6 +49,17 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        'azure_communication_services' => [
+            'transport' => 'smtp',
+            'scheme' => env('ACS_MAIL_SCHEME'),
+            'host' => env('ACS_MAIL_HOST', 'smtp.azurecomm.net'),
+            'port' => env('ACS_MAIL_PORT', 587),
+            'username' => env('ACS_MAIL_USERNAME'),
+            'password' => env('ACS_MAIL_PASSWORD'),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],
