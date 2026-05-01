@@ -21,6 +21,27 @@ npm run build
 npm run test:routes
 ```
 
+## Deploy to GitHub Pages
+
+GitHub Pages serves the built Vue preview from the repository root (branch `main`, path `/`). To refresh the deployed preview after frontend changes, build and copy the artifacts to the repo root:
+
+```sh
+cd /Users/gg1900/coding/waais-website/frontend
+npm run build
+cd ..
+rm -rf assets
+mkdir -p assets
+cp frontend/dist/index.html index.html
+cp frontend/dist/index.html 404.html
+cp -R frontend/dist/assets/. assets/
+cp frontend/dist/favicon.svg favicon.svg
+cp frontend/dist/icons.svg icons.svg
+```
+
+Then commit the updated root-level files and push `main`. Direct deep links are served via `404.html` as an SPA fallback — GitHub may return HTTP 404 internally, but the browser renders the Vue app.
+
+Live preview: `https://cool-machine.github.io/waais-website/`
+
 ## Implemented Routes
 
 - `/`
