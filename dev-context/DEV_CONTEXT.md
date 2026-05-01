@@ -197,7 +197,7 @@ Important current implementation state:
 - [x] Add Sanctum API auth foundation and member-access middleware
 - [x] Add Google OAuth pending-user creation foundation
 - [x] Add applicant-owned membership application submit/update/reapply endpoints
-- [ ] Add admin membership-application review endpoints (approval queue, approve, reject, request-more-info) using the canonical Submission & Admin Review Pattern
+- [x] Add admin membership-application review endpoints (approval queue, approve, reject, request-more-info) using the canonical Submission & Admin Review Pattern
 - [ ] Add member-submitted startup-listing endpoints + admin startup-listing review endpoints, mirroring the same Submission & Admin Review Pattern
 - [ ] Only after the two slices above: super_admin role-management endpoints, then email notifications, then events/partners CMS
 
@@ -359,6 +359,16 @@ Important current implementation state:
 ## Session Notes
 
 > Newest entry at the top. Update this at the end of every session.
+
+**May 1, 2026 — Admin membership-application review (canonical pattern implementation)**
+- Did: added `EnsureAdminAccess` middleware backed by `User::isAdmin()` and registered it as the `admin.access` route alias in `bootstrap/app.php`
+- Did: added `App\Http\Controllers\Api\Admin\AdminMembershipApplicationController` with index (filterable queue), show, approve, reject, and requestInfo actions; on approve the applicant is promoted from `PendingUser` to `Member` (existing `Admin`/`SuperAdmin` are not downgraded), `affiliation_type` syncs from the application, `approved_at` is stamped; reject and request-info require `review_notes`
+- Did: each admin transition writes one `AuditLog` row capturing both application and applicant before/after state plus `ip_address`/`user_agent`
+- Did: registered `/api/admin/applications` routes inside the `auth:sanctum` group with `admin.access`
+- Did: added 9 feature tests in `tests/Feature/AdminMembershipApplicationApiTest.php` covering forbidden access for pending and member users, queue filtering, single-application detail, approve/reject/request-info paths, super_admin not downgraded by approve, and required `review_notes` on reject and request-info
+- Did: updated `backend/README.md`, `BACKEND_HANDOFF.md`, and `CURRENT_STATE.md` so this slice is marked complete and the next slice is startup-listing submission + admin review
+- Left off at: code is written but not yet validated locally; next concrete step is `composer validate --strict`, `php artisan test`, and `php artisan migrate:fresh` on George's Mac, then commit/push/merge
+- Watch out for: this sandbox cannot run PHP. The three validation commands must run on the local machine before the slice is merged
 
 **May 1, 2026 — Submission & Admin Review Pattern named**
 - Did: extracted the reusable submit-then-admin-review concept into a named pattern in `DEV_CONTEXT.md` covering membership applications, startup listings, forum public-discussion requests, topic proposals, and future partner-listing requests

@@ -41,6 +41,14 @@ Last updated: May 1, 2026
   - update endpoint for applicant-owned non-approved applications
   - reapply endpoint for rejected applications
   - application revision records for changed fields
+- Admin membership-application review (canonical first implementation of the Submission & Admin Review Pattern):
+  - `admin.access` middleware backed by `User::isAdmin()` (admins and super_admins both pass)
+  - `GET /api/admin/applications` filterable approval queue
+  - `GET /api/admin/applications/{application}` single-application detail with reviewer and revisions
+  - `POST /api/admin/applications/{application}/approve` — application + applicant become approved, pending applicants are promoted to `Member`, existing `Admin`/`SuperAdmin` are not downgraded, applicant's `affiliation_type` synced from the application, `approved_at` stamped
+  - `POST /api/admin/applications/{application}/reject` — `review_notes` required, applicant stays `PendingUser`, `rejected_at` stamped
+  - `POST /api/admin/applications/{application}/request-info` — `review_notes` required, applicant becomes `NeedsMoreInfo` and stays `PendingUser`
+  - every admin action writes one `AuditLog` row capturing both the application and applicant before/after state, plus `ip_address` and `user_agent`
 - Database structure for:
   - Google/social identity fields on users.
   - Approval, affiliation, and permission fields on users.
@@ -65,7 +73,7 @@ Results:
 
 - `composer install` completed and generated `composer.lock`.
 - `composer.json` pins Composer platform PHP to `8.3.0` so local PHP 8.5 does not lock PHP 8.4+ dependencies.
-- `php artisan test` passed after membership application API foundation: 19 tests, 79 assertions.
+- `php artisan test` passed after the admin membership review slice: 28 tests, 119 assertions (9 new feature tests in `tests/Feature/AdminMembershipApplicationApiTest.php`).
 - `php artisan migrate:fresh` passed against the local SQLite database.
 - Local ignored artifacts now include `.env`, `vendor/`, and `database/database.sqlite`.
 
@@ -73,20 +81,14 @@ Results:
 
 The backend uses one reusable **Submission & Admin Review Pattern** (see `DEV_CONTEXT.md`): the same `ApprovalStatus` enum, the same `submitted_at`/`reviewed_at`/`reviewed_by`/`review_notes` columns, the same `AuditLog` entries, and the same `admin.access` middleware are intended to serve every surface where members or visitors submit something for admin review. Slice the work so the membership-review slice becomes the canonical implementation, then mirror it.
 
-1. **Membership-application admin review** (next slice):
-   - `admin.access` middleware backed by `User::isAdmin()`.
-   - `GET /api/admin/applications` — filterable approval queue.
-   - `GET /api/admin/applications/{application}` — single application with revisions.
-   - `POST /api/admin/applications/{application}/approve` — sets application + applicant to approved, applicant's `permission_role` becomes `Member` (never downgrades existing Admin/SuperAdmin), syncs `affiliation_type` from the application, stamps `approved_at`.
-   - `POST /api/admin/applications/{application}/reject` — requires `review_notes`, stamps `rejected_at`, applicant stays `PendingUser`.
-   - `POST /api/admin/applications/{application}/request-info` — requires `review_notes`, applicant becomes `NeedsMoreInfo`.
-   - Each admin action writes one `AuditLog` row.
-2. **Startup-listing submission + admin review** (after membership review):
+1. ~~**Membership-application admin review**~~ — done in this slice. Implementation lives in `app/Http/Controllers/Api/Admin/AdminMembershipApplicationController.php` and `app/Http/Middleware/EnsureAdminAccess.php`; tests in `tests/Feature/AdminMembershipApplicationApiTest.php`. This is the canonical first implementation of the Submission & Admin Review Pattern that later slices should mirror.
+2. **Startup-listing submission + admin review** (next slice):
    - Member-submitted startup listing endpoints (approved members only): create draft, update own draft/submitted listing, submit for review, withdraw before review.
    - Admin review endpoints mirroring the membership review shape: queue, approve (publishes), reject (with notes), request-info.
    - Reuse the same `ApprovalStatus` vocabulary plus `ContentStatus`/`ContentVisibility` for published lifecycle.
+   - Reuse `admin.access` middleware. Reuse audit-log shape (`actions: startup_listings.approve` / `.reject` / `.request_info` / `.publish`).
 3. **Super-admin role management** (small follow-up): promote/demote admin, prevent self-demotion of the last super_admin, audit-log every change.
-4. **Email notifications** (after admin review works): applicant thank-you, admin new-application notice, approval, request-more-info; rejection optional.
+4. **Email notifications** (after the two review slices work): applicant thank-you, admin new-application notice, approval, request-more-info; rejection optional.
 5. **Events / partners / homepage CMS APIs** after the patterns above are stable.
 
 Outside the API surface, the same Submission & Admin Review Pattern will eventually be reused for forum public-discussion requests and topic proposals from non-members; both are documented in `DEV_CONTEXT.md` and not in scope for the current slices.

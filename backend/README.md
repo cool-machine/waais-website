@@ -16,6 +16,7 @@ Implemented in this scaffold:
 - Authenticated `/api/user` endpoint returning access-model flags.
 - Member-only API route middleware backed by `canAccessMemberAreas()`.
 - Applicant-owned membership application API endpoints for show, submit, update, and rejected-applicant reapply.
+- Admin membership application review API endpoints for queue (filterable), single application detail with revisions, approve, reject, and request-more-info, with audit-log entries on every admin action and an `admin.access` middleware backed by `User::isAdmin()`.
 - Membership application storage matching the documented v1 questionnaire.
 - Application revision history.
 - Generic audit log storage for role, application, profile, and content changes.
@@ -23,9 +24,10 @@ Implemented in this scaffold:
 
 Not implemented yet:
 
-- Admin membership application review controllers.
-- Admin approval, role-management, event, startup, partner, announcement, or CMS APIs.
+- Member-submitted startup-listing endpoints and the parallel admin startup-listing review (mirror of the membership review pattern).
+- Super-admin role-management endpoints (promote/demote admin).
 - Email notifications.
+- Event, partner, announcement, or homepage CMS APIs.
 - Discourse SSO relay.
 
 ## Local Setup
@@ -46,7 +48,7 @@ Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Com
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # passed: 19 tests, 79 assertions
+php artisan test       # last verified: 28 tests, 119 assertions (after admin membership review slice)
 php artisan migrate:fresh
 ```
 
