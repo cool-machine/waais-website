@@ -21,6 +21,7 @@ Implemented in this scaffold:
 - Admin startup-listing review API endpoints (queue filterable by status, single listing detail with revisions, approve / reject / request-info) under `admin.access`, with audit-log entries on every admin action and `ContentStatus` / `ContentVisibility` driving the published lifecycle.
 - Super-admin role-management API endpoints (promote/demote admin, promote/demote super_admin) under a `super_admin.access` middleware backed by `User::canManageAdminPrivileges()`. Strict from/to role guards return 409 on mismatch; `promote-admin` requires the target to be approved; `demote-super-admin` is blocked when the target would be the last super_admin. Each transition writes an audit log row.
 - Public read API for startup listings: anonymous endpoints under `/api/public/startup-listings` (index, paginated) and `/api/public/startup-listings/{id}` (show), filtered strictly to `content_status = published` + `visibility = public`. Anything else is invisible (404 on show). Response shape is documented below.
+- Events backend: admin-managed content (no Submission & Admin Review pattern — events are not user-submitted). Migration adds `events` table with `content_status`/`visibility` plus event-specific fields (`starts_at`, `ends_at`, `location`, `format`, `image_url`, `registration_url`, `capacity_limit`, `waitlist_open`, `recap_content`, `reminder_days_before` default 2, `cancelled_at`, `cancellation_note`). Admin endpoints under `/api/admin/events` (index filterable by `content_status`/`visibility`/`time`, store, show, update, publish, hide, archive, cancel) write one `AuditLog` row per state-changing action. Cancellation is independent of `content_status`: a cancelled event remains visible to admins but is filtered out of every public surface. Public read API at `/api/public/events` (index + show) filters strictly to `content_status = published` AND `visibility IN (public, mixed)` AND `cancelled_at IS NULL`. Index supports `time = upcoming|past|all` (default `upcoming`); upcoming sorts ASC by `starts_at`, past sorts DESC. Response shape is documented below.
 - Email notifications via Laravel's `Notification` system on the `mail` channel, fired post-transaction. Surfaces, mirrored across membership applications and startup listings: submitter thank-you on submit/reapply (not on edit), admin "new submission" queue notice to all approved Admin/SuperAdmin users via `User::admins()`, approval email, request-more-info email, and an opt-in rejection email gated by a `send_email` boolean on the reject endpoint. Notification classes live under `App\Notifications\*`. Email provider is intentionally still TBD: dev `.env.example` ships with `MAIL_MAILER=log`.
 - Membership application storage matching the documented v1 questionnaire.
 - Application revision history.
@@ -29,10 +30,11 @@ Implemented in this scaffold:
 
 Not implemented yet:
 
-- Frontend wiring of the public startup directory (`frontend/src/data/startups.js` still serves static seed data; needs to call `/api/public/startup-listings`).
-- Event, partner, announcement, or homepage CMS APIs.
+- Frontend wiring of the public events directory (`frontend/src/data/events.js` still serves static seed data; needs to call `/api/public/events` via a sibling Pinia store).
+- Partner, announcement, or homepage CMS APIs.
 - Discourse SSO relay.
 - Production email provider selection (Azure Communication Services Email or Google Workspace).
+- Event reminder dispatch (the `reminder_days_before` field is stored but no scheduled job sends the reminders yet).
 
 ## Local Setup
 
@@ -52,7 +54,7 @@ Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Com
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 84 tests, 330 assertions (after the email-notifications slice)
+php artisan test       # last verified: 106 tests, 441 assertions (after the events backend slice)
 php artisan migrate:fresh
 ```
 
@@ -99,3 +101,34 @@ approved_at   ISO-8601 string|null
 ```
 
 Internal fields (`review_notes`, `submitter_role`, `owner_id`, `reviewed_*`, `submitted_at`, `rejected_at`, `approval_status`, `content_status`, `visibility`, `revisions`, `created_at`, `updated_at`) are intentionally never present. Adding a public field requires updating both the controller projection and the test allowlist in the same commit.
+
+## Public Events API Shape
+
+Both endpoints are anonymous. They filter strictly to `content_status = published` AND `visibility IN (public, mixed)` AND `cancelled_at IS NULL`.
+
+`GET /api/public/events` — paginated index. Default `per_page = 12`, capped at 48. Query parameter `time = upcoming | past | all` (default `upcoming`). Upcoming events sort ASC by `starts_at`; past events sort DESC.
+
+`GET /api/public/events/{id}` — single event in `{ "data": {...} }`. Returns 404 for any non-published / non-public-or-mixed / cancelled event, including draft, pending_review, hidden, archived, and members_only.
+
+Event projection (load-bearing — drift is enforced by `PublicEventApiTest::projection_excludes_internal_fields`):
+
+```text
+id                    integer
+title                 string
+summary               string
+description           string
+starts_at             ISO-8601 string
+ends_at               ISO-8601 string|null
+location              string|null
+format                string|null
+image_url             string|null
+registration_url      string|null
+capacity_limit        integer|null
+waitlist_open         boolean
+visibility            "public" | "mixed"
+recap_content         string|null
+status                "upcoming" | "past" | "recap"   (derived; cancelled never reaches the public projection)
+published_at          ISO-8601 string|null
+```
+
+Internal fields (`created_by`, `creator`, `content_status`, `cancelled_at`, `cancellation_note`, `reminder_days_before`, `hidden_at`, `archived_at`, `created_at`, `updated_at`) are intentionally never present.

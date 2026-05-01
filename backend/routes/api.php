@@ -1,19 +1,25 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminEventController;
 use App\Http\Controllers\Api\Admin\AdminMembershipApplicationController;
 use App\Http\Controllers\Api\Admin\AdminStartupListingController;
 use App\Http\Controllers\Api\Admin\AdminUserRoleController;
 use App\Http\Controllers\Api\MembershipApplicationController;
+use App\Http\Controllers\Api\PublicEventController;
 use App\Http\Controllers\Api\PublicStartupListingController;
 use App\Http\Controllers\Api\StartupListingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public, anonymous endpoints. Filtered to content_status=published AND
-// visibility=public; anything else is invisible (404 on show).
+// visibility=public (events also accept visibility=mixed); cancelled
+// events are invisible. Anything else is invisible (404 on show).
 Route::prefix('public')->group(function (): void {
     Route::get('/startup-listings', [PublicStartupListingController::class, 'index']);
     Route::get('/startup-listings/{listing}', [PublicStartupListingController::class, 'show']);
+
+    Route::get('/events', [PublicEventController::class, 'index']);
+    Route::get('/events/{event}', [PublicEventController::class, 'show']);
 });
 
 Route::middleware('auth:sanctum')->group(function (): void {
@@ -59,6 +65,15 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/startup-listings/{listing}/approve', [AdminStartupListingController::class, 'approve']);
         Route::post('/startup-listings/{listing}/reject', [AdminStartupListingController::class, 'reject']);
         Route::post('/startup-listings/{listing}/request-info', [AdminStartupListingController::class, 'requestInfo']);
+
+        Route::get('/events', [AdminEventController::class, 'index']);
+        Route::post('/events', [AdminEventController::class, 'store']);
+        Route::get('/events/{event}', [AdminEventController::class, 'show']);
+        Route::patch('/events/{event}', [AdminEventController::class, 'update']);
+        Route::post('/events/{event}/publish', [AdminEventController::class, 'publish']);
+        Route::post('/events/{event}/hide', [AdminEventController::class, 'hide']);
+        Route::post('/events/{event}/archive', [AdminEventController::class, 'archive']);
+        Route::post('/events/{event}/cancel', [AdminEventController::class, 'cancel']);
 
         Route::middleware('super_admin.access')->group(function (): void {
             Route::post('/users/{user}/promote-admin', [AdminUserRoleController::class, 'promoteAdmin']);
