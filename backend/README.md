@@ -1,10 +1,10 @@
 # WAAIS Backend
 
-Laravel backend scaffold for the Wharton Alumni AI Studio platform.
+Laravel API for the Wharton Alumni AI Studio platform.
 
 ## Current Scope
 
-This directory contains the Laravel API for WAAIS. It started as the backend foundation, but now includes the access model, Google/Sanctum auth foundations, membership application workflows, startup-listing workflows, public read APIs, email notifications, role management, and admin-managed events.
+This directory contains the Laravel API for WAAIS. It started as the backend foundation, but now includes the access model, Google/Sanctum auth foundations, membership application workflows, startup-listing workflows, public read APIs, email notifications, role management, admin-managed events, and admin-managed partners.
 
 Implemented:
 
@@ -22,6 +22,7 @@ Implemented:
 - Super-admin role-management API endpoints (promote/demote admin, promote/demote super_admin) under a `super_admin.access` middleware backed by `User::canManageAdminPrivileges()`. Strict from/to role guards return 409 on mismatch; `promote-admin` requires the target to be approved; `demote-super-admin` is blocked when the target would be the last super_admin. Each transition writes an audit log row.
 - Public read API for startup listings: anonymous endpoints under `/api/public/startup-listings` (index, paginated) and `/api/public/startup-listings/{id}` (show), filtered strictly to `content_status = published` + `visibility = public`. Anything else is invisible (404 on show). Response shape is documented below.
 - Events backend: admin-managed content (no Submission & Admin Review pattern — events are not user-submitted). Migration adds `events` table with `content_status`/`visibility` plus event-specific fields (`starts_at`, `ends_at`, `location`, `format`, `image_url`, `registration_url`, `capacity_limit`, `waitlist_open`, `recap_content`, `reminder_days_before` default 2, `cancelled_at`, `cancellation_note`). Admin endpoints under `/api/admin/events` (index filterable by `content_status`/`visibility`/`time`, store, show, update, publish, hide, archive, cancel) write one `AuditLog` row per state-changing action. Cancellation is independent of `content_status`: a cancelled event remains visible to admins but is filtered out of every public surface. Public read API at `/api/public/events` (index + show) filters strictly to `content_status = published` AND `visibility IN (public, mixed)` AND `cancelled_at IS NULL`. Index supports `time = upcoming|past|all` (default `upcoming`); upcoming sorts ASC by `starts_at`, past sorts DESC. Response shape is documented below.
+- Partners backend: admin-managed content (no Submission & Admin Review pattern). Migration adds `partners` table with `content_status`/`visibility`, lifecycle timestamps, `name`, `partner_type`, `summary`, `description`, `website_url`, `logo_url`, and `sort_order`. Admin endpoints under `/api/admin/partners` (index filterable by `content_status`/`visibility`, store, show, update, publish, hide, archive) write one `AuditLog` row per state-changing action. Public read API at `/api/public/partners` (index + show) filters strictly to `content_status = published` AND `visibility IN (public, mixed)`. Response shape is documented below.
 - Email notifications via Laravel's `Notification` system on the `mail` channel, fired post-transaction. Surfaces, mirrored across membership applications and startup listings: submitter thank-you on submit/reapply (not on edit), admin "new submission" queue notice to all approved Admin/SuperAdmin users via `User::admins()`, approval email, request-more-info email, and an opt-in rejection email gated by a `send_email` boolean on the reject endpoint. Notification classes live under `App\Notifications\*`. Email provider is intentionally still TBD: dev `.env.example` ships with `MAIL_MAILER=log`.
 - Membership application storage matching the documented v1 questionnaire.
 - Application revision history.
@@ -30,7 +31,7 @@ Implemented:
 
 Not implemented yet:
 
-- Partner, announcement, or homepage CMS APIs.
+- Announcement or homepage CMS APIs.
 - Discourse SSO relay.
 - Production email provider selection (Azure Communication Services Email or Google Workspace).
 - Event reminder dispatch (the `reminder_days_before` field is stored but no scheduled job sends the reminders yet).
@@ -53,7 +54,7 @@ Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Com
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 106 tests, 441 assertions (after the events backend slice)
+php artisan test       # last verified: 121 tests, 521 assertions (after the partners backend + frontend slice)
 php artisan migrate:fresh
 ```
 
@@ -131,3 +132,27 @@ published_at          ISO-8601 string|null
 ```
 
 Internal fields (`created_by`, `creator`, `content_status`, `cancelled_at`, `cancellation_note`, `reminder_days_before`, `hidden_at`, `archived_at`, `created_at`, `updated_at`) are intentionally never present.
+
+## Public Partners API Shape
+
+Both endpoints are anonymous. They filter strictly to `content_status = published` AND `visibility IN (public, mixed)`.
+
+`GET /api/public/partners` — paginated index. Default `per_page = 12`, capped at 48. Partners sort by `sort_order ASC, name ASC, id ASC`.
+
+`GET /api/public/partners/{id}` — single partner in `{ "data": {...} }`. Returns 404 for any non-published / non-public-or-mixed partner, including draft, pending_review, hidden, archived, and members_only.
+
+Partner projection (load-bearing — drift is enforced by `PublicPartnerApiTest::projection_excludes_internal_fields`):
+
+```text
+id              integer
+name            string
+partner_type    string|null
+summary         string
+description     string
+website_url     string|null
+logo_url        string|null
+visibility      "public" | "mixed"
+published_at    ISO-8601 string|null
+```
+
+Internal fields (`created_by`, `creator`, `content_status`, `hidden_at`, `archived_at`, `sort_order`, `created_at`, `updated_at`) are intentionally never present.

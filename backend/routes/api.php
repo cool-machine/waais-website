@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\Api\Admin\AdminEventController;
 use App\Http\Controllers\Api\Admin\AdminMembershipApplicationController;
+use App\Http\Controllers\Api\Admin\AdminPartnerController;
 use App\Http\Controllers\Api\Admin\AdminStartupListingController;
 use App\Http\Controllers\Api\Admin\AdminUserRoleController;
 use App\Http\Controllers\Api\MembershipApplicationController;
 use App\Http\Controllers\Api\PublicEventController;
+use App\Http\Controllers\Api\PublicPartnerController;
 use App\Http\Controllers\Api\PublicStartupListingController;
 use App\Http\Controllers\Api\StartupListingController;
 use Illuminate\Http\Request;
@@ -20,6 +22,9 @@ Route::prefix('public')->group(function (): void {
 
     Route::get('/events', [PublicEventController::class, 'index']);
     Route::get('/events/{event}', [PublicEventController::class, 'show']);
+
+    Route::get('/partners', [PublicPartnerController::class, 'index']);
+    Route::get('/partners/{partner}', [PublicPartnerController::class, 'show']);
 });
 
 Route::middleware('auth:sanctum')->group(function (): void {
@@ -74,6 +79,14 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/events/{event}/hide', [AdminEventController::class, 'hide']);
         Route::post('/events/{event}/archive', [AdminEventController::class, 'archive']);
         Route::post('/events/{event}/cancel', [AdminEventController::class, 'cancel']);
+
+        Route::get('/partners', [AdminPartnerController::class, 'index']);
+        Route::post('/partners', [AdminPartnerController::class, 'store']);
+        Route::get('/partners/{partner}', [AdminPartnerController::class, 'show']);
+        Route::patch('/partners/{partner}', [AdminPartnerController::class, 'update']);
+        Route::post('/partners/{partner}/publish', [AdminPartnerController::class, 'publish']);
+        Route::post('/partners/{partner}/hide', [AdminPartnerController::class, 'hide']);
+        Route::post('/partners/{partner}/archive', [AdminPartnerController::class, 'archive']);
 
         Route::middleware('super_admin.access')->group(function (): void {
             Route::post('/users/{user}/promote-admin', [AdminUserRoleController::class, 'promoteAdmin']);
