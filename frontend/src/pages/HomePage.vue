@@ -6,7 +6,7 @@ import CardGrid from '../components/CardGrid.vue'
 import InfoCard from '../components/InfoCard.vue'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
-import { events } from '../data/events'
+import { usePublicEventsStore } from '../stores/publicEvents'
 import { usePublicStartupsStore } from '../stores/publicStartups'
 
 const heroVideoSrc = `${import.meta.env.BASE_URL}assets/waais-hero-video.mp4`
@@ -17,9 +17,27 @@ const startupsStore = usePublicStartupsStore()
 const { list: startups } = storeToRefs(startupsStore)
 const featuredStartups = computed(() => startups.value.slice(0, 3))
 
+const eventsStore = usePublicEventsStore()
+const { list: events, listLoading: eventsLoading, listError: eventsError } = storeToRefs(eventsStore)
+const selectedEvents = computed(() => events.value.slice(0, 3))
+
 onMounted(() => {
   startupsStore.loadList({ perPage: 48 }).catch(() => {})
+  eventsStore.loadList({ time: 'upcoming', perPage: 3 }).catch(() => {})
 })
+
+function formatEventDate(value) {
+  if (!value) return 'Date TBD'
+  try {
+    return new Date(value).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  } catch {
+    return 'Date TBD'
+  }
+}
 </script>
 
 <template>
@@ -94,8 +112,30 @@ onMounted(() => {
           </div>
           <RouterLink class="button water" to="/events">View all events</RouterLink>
         </div>
-        <CardGrid>
-          <InfoCard v-for="event in events.slice(0, 3)" :key="event.id" :title="event.title" :eyebrow="event.status" :meta="`${event.date} · ${event.location}`" :image="event.image">
+
+        <div v-if="eventsLoading && selectedEvents.length === 0" class="card">
+          <p class="meta">Loading events…</p>
+        </div>
+
+        <div v-else-if="eventsError" class="card">
+          <p class="eyebrow">Events unavailable.</p>
+          <p class="small">The public events API didn't respond. The full calendar will return when the API is available.</p>
+        </div>
+
+        <div v-else-if="selectedEvents.length === 0" class="card">
+          <p class="eyebrow">No upcoming public events yet.</p>
+          <p class="small">Published public and mixed-visibility events will appear here automatically.</p>
+        </div>
+
+        <CardGrid v-else>
+          <InfoCard
+            v-for="event in selectedEvents"
+            :key="event.id"
+            :title="event.title"
+            :eyebrow="event.status === 'recap' ? 'Recap' : 'Upcoming'"
+            :meta="[formatEventDate(event.starts_at), event.location].filter(Boolean).join(' · ')"
+            :image="event.image_url || ''"
+          >
             {{ event.summary }}
             <template #actions>
               <RouterLink class="button water" :to="`/events/${event.id}`">Details</RouterLink>

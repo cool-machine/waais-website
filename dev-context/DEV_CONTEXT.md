@@ -28,10 +28,12 @@ Project root: `/Users/gg1900/coding/waais-website`
 ### Frontend (live)
 
 - Vue 3 scaffold with public + app/admin routes (see `frontend/src/router/index.js`).
-- Public startup directory (`/startups`, `/startups/:id`) and the homepage's "Featured startups" section read from the live Laravel API via a Pinia store. Other public surfaces (events, partners, forum preview) still serve static seed data and will be wired in subsequent slices.
+- Public startup directory (`/startups`, `/startups/:id`) and the homepage's "Featured startups" section read from the live Laravel API via a Pinia store.
+- Public events calendar (`/events`, `/events/:id`) and the homepage's "Selected events" section read from the live Laravel API via a Pinia store. The list filter calls the public events API with `time = all | upcoming | past`.
+- Other public surfaces (partners, forum preview) still serve static seed data and will be wired in subsequent slices.
 - HTTP client at `frontend/src/lib/api.js` — single `getJson()` wrapper, base URL via `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`), `Accept: application/json`, throws `ApiError` on non-2xx.
 - Pinia store at `frontend/src/stores/publicStartups.js` — `loadList`, `loadOne`, in-memory TTL cache so back-navigation between list and detail doesn't refetch. Convention for adding future stores (one per backend resource × access surface) is documented in `frontend/src/stores/README.md`.
-- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 18 specs across `lib/api` and `stores/publicStartups`.
+- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 29 specs across `lib/api`, `stores/publicStartups`, and `stores/publicEvents`.
 - Build deployed to GitHub Pages via root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg` copied from `frontend/dist`. Deploy steps live in `frontend/README.md`.
 
 ### Backend (live, validated locally)
@@ -60,22 +62,21 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **events backend**. Admin-managed events (no Submission & Admin Review pattern — events are not user-submitted) with full content lifecycle (draft/pending_review/published/hidden/archived), separate cancellation axis, recap content, and admin-configurable reminder timing. Admin CRUD at `/api/admin/events`, public read at `/api/public/events`. 22 new tests; backend suite at 106 passing / 441 assertions.
+No slice in progress. Last shipped slice: **events frontend wiring**. The public events calendar now consumes `/api/public/events` through `usePublicEventsStore`; `/events`, `/events/:id`, and the homepage's "Selected events" section no longer use static seed data. The event list filter calls the backend with `time = all | upcoming | past`. Frontend suite is 29 passing specs, route smoke passes, and production build is clean. Backend validation remains clean at 106 passing tests / 441 assertions, with `composer validate --strict` and `php artisan migrate:fresh` passing.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Events frontend wiring.** Add `frontend/src/stores/publicEvents.js` (sibling of `publicStartups.js` — `loadList`, `loadOne`, TTL cache). Wire `EventsPage.vue` and `EventDetailPage.vue` to the store. Replace `frontend/src/data/events.js` static seed. Update the homepage's "Selected events" section to consume the same store. Surface the `time=upcoming|past` filter in the UI (the existing filter buttons "All / Upcoming / Past / Workshops" become functional).
-2. **Partners backend + frontend.** Mirror the events shape: admin-managed CMS content, public read API, then a sibling `usePublicPartnersStore`.
-3. **Homepage CMS backend + frontend.** Configurable cards / announcements / featured content. Same pattern.
-4. **Email provider selection.** Pick Azure Communication Services Email or Google Workspace, configure transactional sender, swap `MAIL_MAILER` in production. No code change should be needed beyond config.
-5. **Sanctum auth in the frontend HTTP client + Google sign-in UI flow.** Foundational for everything below.
-6. **Membership application UI on the public site** (form, draft, submitted, needs-more-info, approved/rejected views).
-7. **Member dashboard frontend wiring.** Each surface gets its own store (`useMyStartupsStore`, etc.) per the convention in `frontend/src/stores/README.md`.
-8. **Admin dashboard frontend wiring** (approvals queue, user management, event management, public content, announcements). Multiple sub-slices.
-9. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
-10. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
-11. **Brand/logo asset replacement** when George provides it.
-12. **Azure deployment** of app + backend, plus Discourse on Azure VM.
+1. **Partners backend + frontend.** Mirror the events shape: admin-managed CMS content, public read API, then a sibling `usePublicPartnersStore`. Replace `frontend/src/data/partners.js` after the API ships and wire `/partners`, `/partners/:id`, and any homepage partner surface to the live store.
+2. **Homepage CMS backend + frontend.** Configurable cards / announcements / featured content. Same pattern.
+3. **Email provider selection.** Pick Azure Communication Services Email or Google Workspace, configure transactional sender, swap `MAIL_MAILER` in production. No code change should be needed beyond config.
+4. **Sanctum auth in the frontend HTTP client + Google sign-in UI flow.** Foundational for everything below.
+5. **Membership application UI on the public site** (form, draft, submitted, needs-more-info, approved/rejected views).
+6. **Member dashboard frontend wiring.** Each surface gets its own store (`useMyStartupsStore`, etc.) per the convention in `frontend/src/stores/README.md`.
+7. **Admin dashboard frontend wiring** (approvals queue, user management, event management, public content, announcements). Multiple sub-slices.
+8. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
+9. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
+10. **Brand/logo asset replacement** when George provides it.
+11. **Azure deployment** of app + backend, plus Discourse on Azure VM.
 
 ## Working Rules
 
@@ -89,6 +90,16 @@ No slice in progress. Last shipped slice: **events backend**. Admin-managed even
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 1, 2026 — Events frontend wiring**
+- Did: added `frontend/src/stores/publicEvents.js`, a sibling of `publicStartups.js`, backed by `/api/public/events`. It exposes `loadList({ time, page, perPage, force, signal })`, `loadOne(id)`, `invalidate()`, a 60-second TTL cache keyed by `time/page/perPage`, and an optimistic detail placeholder from the cached list
+- Did: rewired `EventsPage.vue` to the live store. The visible filters are now `All`, `Upcoming`, and `Past`, and they call the backend with `time = all | upcoming | past`. Loading, empty, API-error, and retry states are explicit
+- Did: rewired `EventDetailPage.vue` to `loadOne(id)`, including loading, 404, and generic API-error states. The detail page renders the public projection fields (`starts_at`, `ends_at`, `location`, `format`, `capacity_limit`, `waitlist_open`, `registration_url`, `recap_content`, derived `status`) and links to external registration only for active events
+- Did: rewired the homepage's "Selected events" section to the same store with `time=upcoming`, `perPage=3`; deleted `frontend/src/data/events.js`
+- Did: fixed stale `backend/README.md` wording that still described the backend as "only the backend foundation"; updated `frontend/README.md` and `frontend/src/stores/README.md` to include the live events store
+- Did: added 11 Vitest specs in `frontend/src/stores/publicEvents.test.js`, mirroring the startup-store coverage and adding the time-filter cache behavior. Frontend checks: `npm test` 29/29, `npm run build` clean, `npm run test:routes` clean. Backend checks required by project rules: `composer validate --strict` clean, `php artisan test` 106 passed / 441 assertions, `php artisan migrate:fresh` clean
+- Left off at: ready for the next slice — partners backend + frontend using the admin-managed CMS/public-read/store pattern
+- Watch out for: root-level GitHub Pages build artifacts were refreshed from `frontend/dist`, but the preview will only load live API data once `VITE_API_BASE_URL` points at a deployed backend. No local smoke with real event rows was run in-browser; this slice was verified with store tests, route smoke, production build, and backend API tests
 
 **May 1, 2026 — Events backend (admin-managed, public read)**
 - Did: added `events` migration with full content lifecycle (`content_status`, `visibility`, `published_at`, `hidden_at`, `archived_at`), separate cancellation axis (`cancelled_at`, `cancellation_note`), `recap_content`, `reminder_days_before` (smallint, default 2 per PRODUCT.md), and event content (`title`, `summary`, `description`, `starts_at`, `ends_at`, `location`, `format`, `image_url`, `registration_url`, `capacity_limit`, `waitlist_open`)

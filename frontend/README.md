@@ -26,9 +26,9 @@ npm run test:routes
 
 ## API Integration
 
-The public site reads live data from the Laravel API via a Pinia store. The HTTP client lives at `src/lib/api.js`. The base URL resolves from `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`, which is Laravel's `php artisan serve` default).
+The public site reads live data from the Laravel API via Pinia stores. The startup directory and events calendar are wired to public API endpoints. The HTTP client lives at `src/lib/api.js`. The base URL resolves from `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`, which is Laravel's `php artisan serve` default).
 
-Local dev workflow when you need real data on `/startups`:
+Local dev workflow when you need real startup data on `/startups`:
 
 ```sh
 # in /backend
@@ -39,6 +39,8 @@ php artisan serve --host=127.0.0.1 --port=8000
 # in /frontend (separate terminal)
 npm run dev -- --host 127.0.0.1 --port 5174
 ```
+
+Events also read from the Laravel API, but there is not yet an event smoke seeder. Create/publish event rows through the API or a local tinker session when you need non-empty `/events` data locally.
 
 Pages must not call `fetch` directly. They consume Pinia stores under `src/stores/`. The convention for naming and structuring stores — and when to add a new store vs. extend an existing one — is documented in `src/stores/README.md`.
 
@@ -88,6 +90,6 @@ Live preview: `https://cool-machine.github.io/waais-website/`
 - CMS publishing workflow for events, partners, announcements, homepage
 - Email and dashboard notifications (UI side — the backend ships them)
 - Discourse SSO and forum installation
-- Events, partners, and forum-preview pages still serve static seed data (`src/data/events.js`, `src/data/partners.js`, `src/data/forum.js`) — wiring them to the Laravel API is queued in subsequent slices
+- Partners and forum-preview pages still serve static seed data (`src/data/partners.js`, `src/data/forum.js`) — wiring them to the Laravel API is queued in subsequent slices
 
-The startup directory (`/startups`, `/startups/:id`, and the homepage's "Featured startups" section) is the first surface to read from the live API.
+The startup directory (`/startups`, `/startups/:id`, and the homepage's "Featured startups" section) and events calendar (`/events`, `/events/:id`, and the homepage's "Selected events" section) read from the live API.

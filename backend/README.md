@@ -4,9 +4,9 @@ Laravel backend scaffold for the Wharton Alumni AI Studio platform.
 
 ## Current Scope
 
-This directory is intentionally only the backend foundation. It pins the WAAIS access model before OAuth, controllers, API routes, or database-backed admin workflows are implemented.
+This directory contains the Laravel API for WAAIS. It started as the backend foundation, but now includes the access model, Google/Sanctum auth foundations, membership application workflows, startup-listing workflows, public read APIs, email notifications, role management, and admin-managed events.
 
-Implemented in this scaffold:
+Implemented:
 
 - `approval_status`, `affiliation_type`, and `permission_role` as separate enum vocabularies.
 - User identity and access fields for Google OAuth, approval state, affiliation, and permissions.
@@ -30,7 +30,6 @@ Implemented in this scaffold:
 
 Not implemented yet:
 
-- Frontend wiring of the public events directory (`frontend/src/data/events.js` still serves static seed data; needs to call `/api/public/events` via a sibling Pinia store).
 - Partner, announcement, or homepage CMS APIs.
 - Discourse SSO relay.
 - Production email provider selection (Azure Communication Services Email or Google Workspace).
