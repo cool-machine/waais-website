@@ -189,6 +189,7 @@ Important current implementation state:
 - [x] Run `composer install`, `php artisan test`, and `php artisan migrate:fresh` inside `/backend/`
 - [x] Add Sanctum API auth foundation and member-access middleware
 - [x] Add Google OAuth pending-user creation foundation
+- [x] Add applicant-owned membership application submit/update/reapply endpoints
 
 **Design decisions from mockup review**
 - Wharton colors (#011F5B navy, #C41E3A crimson) are confirmed — do not change these
@@ -356,6 +357,14 @@ Important current implementation state:
 - Did: added feature tests for new pending-user creation, existing email linking, approved-member sign-in, and linked-email conflict handling
 - Left off at: Google OAuth backend foundation is in place; next backend slice is membership application submit/update/reapply endpoints
 - Watch out for: this still needs real Google OAuth credentials and frontend sign-in wiring before manual browser testing is meaningful
+
+**May 1, 2026 — Membership application API foundation**
+- Did: added authenticated `/api/membership-application` show, submit, and update endpoints
+- Did: added `/api/membership-application/reapply` for rejected applicants
+- Did: kept approved applications read-only for applicants and wrote `application_revisions` for changed fields
+- Did: added feature tests for submit, update revision history, rejected reapply, and approved application edit blocking
+- Left off at: applicant-owned application API is in place; next backend slice is admin review actions
+- Watch out for: admin approval/request-more-info/reject flows and email notifications are not implemented yet
 
 **May 1, 2026 — Backend auth foundation**
 - Did: added Laravel Sanctum, API route loading, `HasApiTokens` on `User`, Sanctum config, and personal access token migration

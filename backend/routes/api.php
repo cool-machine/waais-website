@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\MembershipApplicationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,4 +22,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     });
 
     Route::get('/member/ping', fn (): array => ['ok' => true])->middleware('member.access');
+
+    Route::get('/membership-application', [MembershipApplicationController::class, 'show']);
+    Route::post('/membership-application', [MembershipApplicationController::class, 'submit']);
+    Route::patch('/membership-application', [MembershipApplicationController::class, 'update']);
+    Route::post('/membership-application/reapply', [MembershipApplicationController::class, 'reapply']);
 });

@@ -15,6 +15,7 @@ Implemented in this scaffold:
 - Google identity provisioning that creates pending users and preserves approved member access.
 - Authenticated `/api/user` endpoint returning access-model flags.
 - Member-only API route middleware backed by `canAccessMemberAreas()`.
+- Applicant-owned membership application API endpoints for show, submit, update, and rejected-applicant reapply.
 - Membership application storage matching the documented v1 questionnaire.
 - Application revision history.
 - Generic audit log storage for role, application, profile, and content changes.
@@ -22,7 +23,7 @@ Implemented in this scaffold:
 
 Not implemented yet:
 
-- Membership application submit/review controllers.
+- Admin membership application review controllers.
 - Admin approval, role-management, event, startup, partner, announcement, or CMS APIs.
 - Email notifications.
 - Discourse SSO relay.
@@ -45,7 +46,7 @@ Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Com
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # passed: 11 tests, 23 assertions
+php artisan test       # passed: 19 tests, 79 assertions
 php artisan migrate:fresh
 ```
 
