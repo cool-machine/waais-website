@@ -42,6 +42,11 @@ class User extends Authenticatable
         return $this->hasMany(MembershipApplication::class, 'applicant_id');
     }
 
+    public function startupListings(): HasMany
+    {
+        return $this->hasMany(StartupListing::class, 'owner_id');
+    }
+
     public function applicationRevisions(): HasMany
     {
         return $this->hasMany(ApplicationRevision::class, 'actor_id');
