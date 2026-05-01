@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\AdminMembershipApplicationController;
 use App\Http\Controllers\Api\Admin\AdminStartupListingController;
+use App\Http\Controllers\Api\Admin\AdminUserRoleController;
 use App\Http\Controllers\Api\MembershipApplicationController;
 use App\Http\Controllers\Api\StartupListingController;
 use Illuminate\Http\Request;
@@ -50,5 +51,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/startup-listings/{listing}/approve', [AdminStartupListingController::class, 'approve']);
         Route::post('/startup-listings/{listing}/reject', [AdminStartupListingController::class, 'reject']);
         Route::post('/startup-listings/{listing}/request-info', [AdminStartupListingController::class, 'requestInfo']);
+
+        Route::middleware('super_admin.access')->group(function (): void {
+            Route::post('/users/{user}/promote-admin', [AdminUserRoleController::class, 'promoteAdmin']);
+            Route::post('/users/{user}/demote-admin', [AdminUserRoleController::class, 'demoteAdmin']);
+            Route::post('/users/{user}/promote-super-admin', [AdminUserRoleController::class, 'promoteSuperAdmin']);
+            Route::post('/users/{user}/demote-super-admin', [AdminUserRoleController::class, 'demoteSuperAdmin']);
+        });
     });
 });

@@ -19,6 +19,7 @@ Implemented in this scaffold:
 - Admin membership application review API endpoints for queue (filterable), single application detail with revisions, approve, reject, and request-more-info, with audit-log entries on every admin action and an `admin.access` middleware backed by `User::isAdmin()`.
 - Member-submitted startup-listing API endpoints (list own, show, create, update) gated by `member.access`, with revision history and a 409 on self-edit of approved listings.
 - Admin startup-listing review API endpoints (queue filterable by status, single listing detail with revisions, approve / reject / request-info) under `admin.access`, with audit-log entries on every admin action and `ContentStatus` / `ContentVisibility` driving the published lifecycle.
+- Super-admin role-management API endpoints (promote/demote admin, promote/demote super_admin) under a `super_admin.access` middleware backed by `User::canManageAdminPrivileges()`. Strict from/to role guards return 409 on mismatch; `promote-admin` requires the target to be approved; `demote-super-admin` is blocked when the target would be the last super_admin. Each transition writes an audit log row.
 - Membership application storage matching the documented v1 questionnaire.
 - Application revision history.
 - Generic audit log storage for role, application, profile, and content changes.
@@ -27,7 +28,6 @@ Implemented in this scaffold:
 Not implemented yet:
 
 - Public read API for published startup listings (filtered by `content_status = published` + `visibility = public`).
-- Super-admin role-management endpoints (promote/demote admin).
 - Email notifications.
 - Event, partner, announcement, or homepage CMS APIs.
 - Discourse SSO relay.
@@ -50,7 +50,7 @@ Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Com
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 43 tests, 183 assertions (after startup-listing review slice)
+php artisan test       # last verified: 57 tests, 211 assertions (after super-admin role management slice)
 php artisan migrate:fresh
 ```
 

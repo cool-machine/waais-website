@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureAdminAccess;
 use App\Http\Middleware\EnsureMemberAccess;
+use App\Http\Middleware\EnsureSuperAdminAccess;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'member.access' => EnsureMemberAccess::class,
             'admin.access' => EnsureAdminAccess::class,
+            'super_admin.access' => EnsureSuperAdminAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
