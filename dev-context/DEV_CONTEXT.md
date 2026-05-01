@@ -28,7 +28,10 @@ Project root: `/Users/gg1900/coding/waais-website`
 ### Frontend (live)
 
 - Vue 3 scaffold with public + app/admin routes (see `frontend/src/router/index.js`).
-- Static seed data only — backend integration is not yet wired.
+- Public startup directory (`/startups`, `/startups/:id`) and the homepage's "Featured startups" section read from the live Laravel API via a Pinia store. Other public surfaces (events, partners, forum preview) still serve static seed data and will be wired in subsequent slices.
+- HTTP client at `frontend/src/lib/api.js` — single `getJson()` wrapper, base URL via `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`), `Accept: application/json`, throws `ApiError` on non-2xx.
+- Pinia store at `frontend/src/stores/publicStartups.js` — `loadList`, `loadOne`, in-memory TTL cache so back-navigation between list and detail doesn't refetch. Convention for adding future stores (one per backend resource × access surface) is documented in `frontend/src/stores/README.md`.
+- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 18 specs across `lib/api` and `stores/publicStartups`.
 - Build deployed to GitHub Pages via root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg` copied from `frontend/dist`. Deploy steps live in `frontend/README.md`.
 
 ### Backend (live, validated locally)
@@ -56,17 +59,17 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **email notifications**. Applicant/owner thank-you, admin new-submission notice, approval, request-more-info, and opt-in rejection email are wired through Laravel's `Notification` system on the `mail` channel for both membership applications and startup listings. Notifications fire after the DB transaction commits. Email provider is still TBD; dev runs on the `log` mailer. Backend test suite at 84 passing / 330 assertions.
+No slice in progress. Last shipped slice: **public startup directory frontend wiring**. The Vue public site (`/startups`, `/startups/:id`, and the homepage's "Featured startups" section) now reads from `/api/public/startup-listings` via a Pinia store, replacing the static seed file. Backend test suite at 84 passing / 330 assertions; frontend test suite at 18 passing under Vitest; `npm run build` and `npm run test:routes` clean.
 
 ## 3. Future — Ordered Next Slices
 
 Backend slices follow the **Submission & Admin Review Pattern** documented in `PRODUCT.md`.
 
-1. **Frontend wiring of the public startup directory.** Replace the static seed data in `frontend/src/data/startups.js` with calls to `/api/public/startup-listings`. Keep the existing `StartupsPage.vue` shape; just swap the data source. Surfaces the API publicly and proves the public projection is sufficient.
-2. **Events / partners / homepage CMS APIs.** Same Submission & Admin Review Pattern, plus an event-specific lifecycle (capacity, waitlist, cancellation, recap, reminders). Reuse the notification surfaces from the email-notifications slice.
+1. **Events public API + frontend wiring.** Build `/api/public/events` (Submission & Admin Review Pattern with the event-specific lifecycle: capacity, waitlist, cancellation, recap, reminders), then wire `EventsPage.vue` and `EventDetailPage.vue` to it via a sibling `usePublicEventsStore`. Reuse the notification surfaces from the email-notifications slice.
+2. **Partners + homepage CMS APIs.** Same Submission & Admin Review Pattern. Mirror the public-store pattern from the startups slice.
 3. **Email provider selection.** Pick Azure Communication Services Email or Google Workspace, configure transactional sender, swap `MAIL_MAILER` in production. No code change should be needed beyond config.
-4. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
-5. **Member dashboard + admin dashboard frontend wiring** of the authenticated APIs.
+4. **Member dashboard + admin dashboard frontend wiring** of the authenticated APIs. Each surface gets its own store (`useMyStartupsStore`, `useAdminStartupQueueStore`, etc.) per the convention in `frontend/src/stores/README.md`. The HTTP client in `frontend/src/lib/api.js` will gain Sanctum auth in this slice.
+5. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
 6. **Brand/logo asset replacement** when George provides it.
 7. **Azure deployment** of app + backend, plus Discourse on Azure VM.
 
@@ -82,6 +85,17 @@ Backend slices follow the **Submission & Admin Review Pattern** documented in `P
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 1, 2026 — Public startup directory frontend wiring**
+- Did: introduced `frontend/src/lib/api.js` — a single `getJson()` HTTP client with `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`) resolution, `Accept: application/json`, query-string serialization, and an `ApiError` class that callers can switch on (`error.status`). Tests cover base-URL precedence including the empty-string-fallback edge case
+- Did: introduced `frontend/src/stores/publicStartups.js` — Pinia store with `list`, `listMeta`, `currentListing`, loading/error state, plus actions `loadList({ page, perPage, force, signal })` and `loadOne(id, { signal })`. List has a 60-second in-memory TTL keyed on (page, perPage); detail load surfaces a cached optimistic placeholder before the fresh fetch resolves; 404 leaves `currentListing` null
+- Did: rewrote `StartupsPage.vue`, `StartupDetailPage.vue`, and the "Featured startups" section of `HomePage.vue` to consume the store. Loading, empty, error, and not-found states are explicit. The detail page now renders `industry`, `tagline`, `description`, `stage`, `location`, `founders[]`, plus action buttons for `website_url` and `linkedin_url` — fields surfaced by the public projection. Deleted `frontend/src/data/startups.js`
+- Did: added `frontend/src/stores/README.md` documenting the store convention — one store per backend-resource × access-surface, expected state shape, when to add a new store vs. extend an existing one, why public/member/admin do not share a store. This is the doc the user asked for so future migrations from "page-local fetch" to "shared store" are unnecessary
+- Did: installed Vitest + @vue/test-utils + jsdom; added `vitest.config.js` (kept separate from `vite.config.js` so the production GitHub Pages base URL is unaffected), `npm test` and `npm run test:watch` scripts. 18 specs across `lib/api` and `stores/publicStartups`
+- Did: added `backend/database/seeders/SmokeStartupSeeder.php` — local-only seeder that inserts two approved+published+public listings plus one members_only and one pending_review (the latter two should be invisible to the public API). Useful for re-running the smoke without manual tinker calls
+- Did: validated end-to-end. Backend: `composer validate --strict` clean, `php artisan migrate:fresh` clean, `php artisan test` 84 passed / 330 assertions. Frontend: `npm test` 18/18, `npm run build` clean, `npm run test:routes` clean. Manual smoke: booted Laravel + Vite, opened `/startups` and `/startups/1`, confirmed real listings render and the members_only / pending_review seeds are correctly hidden from the public projection
+- Left off at: ready for the next slice — events public API + frontend wiring (Submission & Admin Review Pattern with event-specific lifecycle: capacity, waitlist, cancellation, recap, reminders)
+- Watch out for: (1) `VITE_API_BASE_URL` defaults to `http://127.0.0.1:8000` for local dev. The deployed GitHub Pages preview will need a real production API URL once the backend ships to Azure; until then the GitHub Pages preview will fail to load real listings. (2) The HomePage featured-startups section is hidden when the store list is empty, so a fresh deploy without published listings will show no "Featured startups" band — that's the intended behavior, not a bug. (3) When member/admin stores land, they share the `getJson()` client with this slice; auth will be added there in one place. Don't fork the client. (4) The seeder is for smoke checks only and is intentionally not in the production seeder chain — `php artisan db:seed --class=SmokeStartupSeeder --force` to re-run it
 
 **May 1, 2026 — Email notifications (membership applications + startup listings)**
 - Did: added 10 mail-channel notification classes under `App\Notifications\*` — five per surface (`*Submitted`, `*ReceivedByAdmin`, `*Approved`, `*NeedsMoreInfo`, `*Rejected`). Each carries the underlying model, returns `['mail']` from `via()`, and renders a `MailMessage` with greeting (applicant first name / owner display name), reviewer notes when present, and an action button back to the relevant URL via `config('app.url')`
