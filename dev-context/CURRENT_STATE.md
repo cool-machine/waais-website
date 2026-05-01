@@ -125,17 +125,18 @@ The forum UX target is similar to PyTorch forums or fast.ai forums: simple categ
 
 ## What We Are Doing Now
 
-The Vue frontend scaffold has been merged into `main` and expanded with public detail routes plus frontend-only app/auth/member/admin mockup routes. The GitHub Pages root now serves the built Vue preview from root-level static assets. Read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md` and `/Users/gg1900/coding/waais-website/dev-context/FRONTEND_HANDOFF_SUMMARY.md` before continuing.
+The Vue frontend scaffold has been merged into `main` and expanded with public detail routes plus frontend-only app/auth/member/admin mockup routes. The GitHub Pages root now serves the built Vue preview from root-level static assets.
+
+Backend work has started on branch `codex/backend-laravel-scaffold`. `/backend/` contains a Laravel scaffold with WAAIS enums, membership application models, audit-log models, migrations, and access-rule tests. Read `/Users/gg1900/coding/waais-website/dev-context/BACKEND_HANDOFF.md` before continuing backend work.
 
 ## Remaining Next Steps
 
 1. Review the Vue GitHub Pages preview after deployment finishes.
 2. Continue polishing the Vue public and app/admin mockup routes.
 3. Replace placeholder logo/brand mark when George provides it.
-4. Decide the canonical backend model for approval status, affiliation type, and permission role before Laravel work.
-5. Scaffold `/backend/` with Laravel/PHP later.
-6. Implement Google OAuth, pending approval, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO later.
-7. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
+4. Run and validate the new Laravel backend scaffold once PHP 8.3+ and Composer are available locally.
+5. Implement Google OAuth, pending approval, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO later.
+6. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
 
 ## Watch Outs
 
@@ -145,4 +146,4 @@ The Vue frontend scaffold has been merged into `main` and expanded with public d
 - Browser cache may show an old GitHub Pages version; hard refresh or open the direct mockup URLs.
 - `legacy/` exists locally but is ignored by git.
 - `/frontend/` exists and is tracked.
-- `/backend/` does not exist yet; that is expected.
+- `/backend/` now exists as a Laravel scaffold with WAAIS enums, membership application models, audit-log models, and access-rule tests. PHP/Composer were not available locally when it was created, so Laravel commands have not been run yet. Read `dev-context/BACKEND_HANDOFF.md` before continuing backend work.
