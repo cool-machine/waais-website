@@ -141,7 +141,7 @@
 
 ## 2. Current Work
 
-**Task: Laravel backend scaffold started, paused for runtime validation**
+**Task: Laravel backend scaffold validated; next backend slice is auth/API foundation**
 
 The design phase produced static HTML/CSS/JS prototypes for the public site, auth/member/admin app, and visual design system. The Vue frontend has been scaffolded, expanded, merged to `main`, and deployed through GitHub Pages as a static preview. Backend work has started on branch `codex/backend-laravel-scaffold`.
 
@@ -149,7 +149,7 @@ Important current implementation state:
 - `frontend/` exists, is tracked, and is the source for the GitHub Pages preview.
 - Root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, and `icons.svg` are generated from `frontend/dist`.
 - `/backend/` exists on branch `codex/backend-laravel-scaffold` and contains a Laravel scaffold with WAAIS enums, membership application models, audit-log models, migrations, and access-rule tests.
-- PHP and Composer are not installed locally, and a Homebrew install attempt failed because of a macOS/Homebrew Ruby code-signing error. Laravel commands have not been run yet.
+- PHP and Composer were repaired locally. `composer install`, `php artisan test`, and `php artisan migrate:fresh` now pass inside `/backend/`.
 - Read `/Users/gg1900/coding/waais-website/dev-context/BACKEND_HANDOFF.md` before continuing backend implementation.
 
 - [x] Audit existing React codebase
@@ -185,8 +185,8 @@ Important current implementation state:
 - [x] Create branch `codex/backend-laravel-scaffold`
 - [x] Add initial `/backend/` Laravel scaffold
 - [x] Add WAAIS backend enums, user access helpers, membership application models, migrations, audit log, and access-rule tests
-- [ ] Install/repair PHP 8.3+ and Composer
-- [ ] Run `composer install`, `php artisan test`, and `php artisan migrate:fresh` inside `/backend/`
+- [x] Install/repair PHP 8.3+ and Composer
+- [x] Run `composer install`, `php artisan test`, and `php artisan migrate:fresh` inside `/backend/`
 
 **Design decisions from mockup review**
 - Wharton colors (#011F5B navy, #C41E3A crimson) are confirmed — do not change these
@@ -347,6 +347,15 @@ Important current implementation state:
 
 > Newest entry at the top. Update this at the end of every session.
 
+**May 1, 2026 — Backend runtime validation**
+- Did: repaired Homebrew PHP/Composer by installing PHP 8.5.5 and Composer 2.9.7, then reinstalling `fontconfig` and completing `brew postinstall php`
+- Did: ran `composer install` in `/backend`, generating `composer.lock`
+- Did: pinned Composer platform PHP to `8.3.0` so the lockfile remains compatible with the documented PHP 8.3+ target instead of drifting to PHP 8.4+ dependencies under local PHP 8.5
+- Did: created local ignored `.env`, generated `APP_KEY`, and validated Laravel with `php artisan test` passing 7 tests / 17 assertions
+- Did: ran `php artisan migrate:fresh`; users, cache, jobs, membership applications, application revisions, and audit logs migrated successfully against local SQLite
+- Left off at: backend scaffold is runtime-validated; next slice is API/auth foundation, starting with Sanctum or the selected auth package
+- Watch out for: `.env`, `vendor/`, and `database/database.sqlite` are local ignored artifacts; `backend/composer.lock` should be committed
+
 **May 1, 2026 — Markdown coherence cleanup**
 - Did: audited Markdown handoff files for stale frontend/backend state and updated `DEV_CONTEXT.md`, `CURRENT_STATE.md`, `FRONTEND_HANDOFF_SUMMARY.md`, `VUE_FRONTEND_HANDOFF.md`, and `mockups/README.md`
 - Did: clarified that Vue is deployed from `main`, `/backend/` exists on branch `codex/backend-laravel-scaffold`, and backend validation is blocked until PHP/Composer are available
@@ -357,8 +366,8 @@ Important current implementation state:
 - Did: created branch `codex/backend-laravel-scaffold`
 - Did: added `/backend/` Laravel scaffold plus WAAIS enums, user access helpers, membership application models, application revision history, audit log, migrations, tests, and backend README
 - Did: added `dev-context/BACKEND_HANDOFF.md` and opened draft PR `https://github.com/cool-machine/waais-website/pull/6`
-- Left off at: source scaffold is committed and pushed, but backend runtime validation is blocked because local `php` and `composer` are unavailable
-- Watch out for: run `composer install`, `php artisan test`, and `php artisan migrate:fresh` before merging or adding backend controllers
+- Left off at: historical note; backend runtime validation was blocked at the time of this scaffold
+- Watch out for: this blocker was resolved in the newer May 1 backend runtime validation note above
 
 **April 30, 2026 — Vue frontend scaffold started**
 - Did: created branch `codex/vue-frontend-scaffold`

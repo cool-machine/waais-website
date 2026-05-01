@@ -26,7 +26,7 @@ Not implemented yet:
 
 ## Local Setup
 
-This scaffold requires PHP and Composer before Laravel commands can run:
+This scaffold requires PHP and Composer:
 
 ```bash
 composer install
@@ -36,7 +36,19 @@ php artisan migrate
 php artisan test
 ```
 
-At the time this scaffold was created, PHP and Composer were not available in the local Codex environment, and Homebrew installation was blocked by a macOS/Homebrew Ruby code-signing error. The source files were therefore created without running Composer, migrations, Pint, or PHPUnit.
+Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Composer:
+
+```text
+PHP 8.5.5
+Composer 2.9.7
+composer install
+php artisan test       # passed: 7 tests, 17 assertions
+php artisan migrate:fresh
+```
+
+The local `.env`, `vendor/`, and SQLite database are ignored development artifacts. Commit `composer.lock` with backend dependency changes.
+
+`composer.json` pins Composer's platform PHP to `8.3.0`. Keep that guard unless the production target changes; otherwise Composer on a newer local PHP can lock dependencies that require PHP 8.4+.
 
 ## Model Contract
 

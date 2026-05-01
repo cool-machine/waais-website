@@ -127,17 +127,16 @@ The forum UX target is similar to PyTorch forums or fast.ai forums: simple categ
 
 The Vue frontend scaffold has been merged into `main` and expanded with public detail routes plus frontend-only app/auth/member/admin mockup routes. The GitHub Pages root now serves the built Vue preview from root-level static assets.
 
-Backend work has started on branch `codex/backend-laravel-scaffold`. `/backend/` contains a Laravel scaffold with WAAIS enums, membership application models, audit-log models, migrations, and access-rule tests. Read `/Users/gg1900/coding/waais-website/dev-context/BACKEND_HANDOFF.md` before continuing backend work.
+Backend work has started on branch `codex/backend-laravel-scaffold`. `/backend/` contains a Laravel scaffold with WAAIS enums, membership application models, audit-log models, migrations, and access-rule tests. PHP/Composer were repaired locally, Composer dependencies were installed, and the scaffold now passes the first test and migration validation. Read `/Users/gg1900/coding/waais-website/dev-context/BACKEND_HANDOFF.md` before continuing backend work.
 
 ## Remaining Next Steps
 
-1. Install or repair PHP 8.3+ and Composer locally.
-2. Run and validate the Laravel backend scaffold: `composer install`, `php artisan test`, and `php artisan migrate:fresh`.
-3. Fix any Laravel 13 compatibility issues found by validation.
-4. Implement Google OAuth, pending approval, membership application submission/review, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO.
-5. Continue frontend polish only as needed while backend APIs take shape.
-6. Replace placeholder logo/brand mark when George provides it.
-7. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
+1. Commit the backend validation outputs that should be tracked, especially `backend/composer.lock`.
+2. Add Sanctum or the selected API auth package.
+3. Implement Google OAuth, pending approval, membership application submission/review, roles, admin permissions, CMS persistence, events, startups, partners, and Discourse SSO.
+4. Continue frontend polish only as needed while backend APIs take shape.
+5. Replace placeholder logo/brand mark when George provides it.
+6. Later deploy the production app/backend to Azure and Discourse to an Azure VM at `forum.whartonai.studio`.
 
 ## Watch Outs
 
@@ -147,4 +146,4 @@ Backend work has started on branch `codex/backend-laravel-scaffold`. `/backend/`
 - Browser cache may show an old GitHub Pages version; hard refresh or open the direct mockup URLs.
 - `legacy/` exists locally but is ignored by git.
 - `/frontend/` exists and is tracked.
-- `/backend/` now exists as a Laravel scaffold with WAAIS enums, membership application models, audit-log models, and access-rule tests. PHP/Composer were not available locally when it was created, so Laravel commands have not been run yet. Read `dev-context/BACKEND_HANDOFF.md` before continuing backend work.
+- `/backend/` now exists as a Laravel scaffold with WAAIS enums, membership application models, audit-log models, and access-rule tests. Initial validation passed locally with `composer install`, `php artisan test`, and `php artisan migrate:fresh`. Read `dev-context/BACKEND_HANDOFF.md` before continuing backend work.

@@ -4,7 +4,7 @@ Last updated: May 1, 2026
 
 ## Status
 
-`/backend/` now contains a Laravel application scaffold with WAAIS-specific domain vocabulary and model stubs. It is not a running backend yet because local PHP and Composer were unavailable when the scaffold was created.
+`/backend/` now contains a Laravel application scaffold with WAAIS-specific domain vocabulary and model stubs. Local PHP/Composer were repaired after scaffold creation, dependencies were installed, and the first test/migration validation now passes.
 
 ## What Was Added
 
@@ -31,31 +31,31 @@ Last updated: May 1, 2026
   - Audit logs.
 - Unit tests documenting first access rules.
 
-## Validation Gap
+## Validation Status
 
-The scaffold has not been executed with Laravel because:
+Validated locally on May 1, 2026 with:
 
-- `php` is not installed locally.
-- `composer` is not installed locally.
-- `brew install php composer` failed due a Homebrew embedded Ruby code-signing problem.
-
-Before continuing backend implementation, run from `/backend/` on a machine with PHP 8.3+ and Composer:
-
-```bash
+```text
+PHP 8.5.5
+Composer 2.9.7
 composer install
 php artisan test
 php artisan migrate:fresh
 ```
 
-Then fix any Laravel 13 skeleton compatibility issues before adding controllers or API routes.
+Results:
+
+- `composer install` completed and generated `composer.lock`.
+- `composer.json` pins Composer platform PHP to `8.3.0` so local PHP 8.5 does not lock PHP 8.4+ dependencies.
+- `php artisan test` passed: 7 tests, 17 assertions.
+- `php artisan migrate:fresh` passed against the local SQLite database.
+- Local ignored artifacts now include `.env`, `vendor/`, and `database/database.sqlite`.
 
 ## Next Backend Slice
 
-1. Install/repair local PHP and Composer.
-2. Run Composer install and Laravel tests.
-3. Add Sanctum or the selected API auth package.
-4. Implement Google OAuth identity creation and pending-user creation.
-5. Implement membership application submit/update/reapply endpoints.
-6. Implement admin approval/request-more-info/reject flows.
-7. Add email notifications for new application, applicant thank-you, approval, and request-more-info.
-8. Add event/startup/content tables and APIs after membership flow is stable.
+1. Add Sanctum or the selected API auth package.
+2. Implement Google OAuth identity creation and pending-user creation.
+3. Implement membership application submit/update/reapply endpoints.
+4. Implement admin approval/request-more-info/reject flows.
+5. Add email notifications for new application, applicant thank-you, approval, and request-more-info.
+6. Add event/startup/content tables and APIs after membership flow is stable.

@@ -145,21 +145,21 @@ The frontend mirrors the same vocabulary in `frontend/src/data/platformModel.js`
 
 ## Recommended Next Step
 
-Validate the Laravel backend scaffold before adding controllers or OAuth.
+The Laravel backend scaffold has now been validated locally. Continue backend API/auth work before adding more frontend-only behavior.
 
 Suggested next backend slice:
 
-1. Install or repair PHP 8.3+ and Composer locally.
-2. From `/backend/`, run `composer install`.
-3. Run `php artisan test` and `php artisan migrate:fresh`.
-4. Fix any Laravel 13 compatibility or scaffold issues.
-5. Then add API auth and membership application endpoints.
+1. Commit `backend/composer.lock`.
+2. Add Sanctum or the selected API auth package.
+3. Add Google OAuth pending-user creation.
+4. Add membership application submit/update/reapply endpoints.
+5. Add admin review endpoints.
 
-Do not implement Google OAuth until the model, migrations, and access tests run cleanly.
+The model, migrations, and access tests are clean as of May 1, 2026: `php artisan test` passed with 7 tests and 17 assertions, and `php artisan migrate:fresh` completed.
 
 ## Known Gaps
 
-- Laravel backend exists as a scaffold, but has not been runtime-validated locally.
+- Laravel backend exists as a validated scaffold, but has no real auth/API workflows yet.
 - No real Google OAuth.
 - No real form submission.
 - No runtime persistence.
