@@ -46,6 +46,15 @@ describe('getJson', () => {
     const [url, init] = fetchImpl.mock.calls[0]
     expect(url).toContain('/api/public/startup-listings')
     expect(init.headers.Accept).toBe('application/json')
+    expect(init.credentials).toBe('same-origin')
+  })
+
+  it('includes browser credentials when auth=true', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ id: 1 }))
+    await getJson('/api/user', { auth: true, fetchImpl })
+
+    const [, init] = fetchImpl.mock.calls[0]
+    expect(init.credentials).toBe('include')
   })
 
   it('throws ApiError with the response status on non-2xx', async () => {
@@ -68,5 +77,12 @@ describe('getJson', () => {
     const [url] = fetchImpl.mock.calls[0]
     expect(url).toContain('page=2')
     expect(url).toContain('per_page=24')
+  })
+})
+
+describe('buildGoogleAuthUrl', () => {
+  it('points at the backend Google OAuth redirect route', () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:8000/')
+    expect(__testing.buildGoogleAuthUrl()).toBe('http://localhost:8000/auth/google/redirect')
   })
 })

@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Build **Sanctum auth in the frontend HTTP client + Google sign-in UI flow**. The backend already has Google OAuth routes (`/auth/google/redirect`, `/auth/google/callback`), Sanctum auth, and `/api/user`. Extend `frontend/src/lib/api.js` in one place for authenticated requests/credentials, add an auth/user store, and wire the public sign-in surfaces so users can start Google sign-in, see pending/approved state where the backend exposes it, and preserve the public stores' anonymous behavior. This unblocks membership application UI, member dashboard wiring, and admin dashboard wiring.
+Build **membership application UI on the public site**. The frontend now has Sanctum-authenticated `/api/user` state and a working Google sign-in flow, and the backend already exposes applicant-owned membership application endpoints (`GET/POST/PATCH /api/membership-application`, `POST /api/membership-application/reapply`). Wire the Membership page to the authenticated application API: signed-out users should be sent to Google sign-in, pending users should be able to create/edit submitted answers, needs-more-info/rejected users should see the relevant review state and reapply path where allowed, and approved users should not be able to delete their application. Preserve anonymous public behavior for the rest of the site.
 ```
 
 ## Maintenance

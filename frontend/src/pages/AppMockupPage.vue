@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import {
   approvalStatuses,
@@ -8,8 +8,10 @@ import {
   contentVisibilities,
   permissionRoles,
 } from '../data/platformModel'
+import { useAuthUserStore } from '../stores/authUser'
 
 const route = useRoute()
+const authUser = useAuthUserStore()
 
 const navGroups = [
   {
@@ -43,6 +45,15 @@ const navGroups = [
 
 const currentView = computed(() => route.params.view || 'sign-in')
 
+const displayName = computed(() => authUser.user?.name || authUser.user?.email || 'member')
+const accountStatusLabel = computed(() => {
+  if (!authUser.initialized || authUser.loading) return 'Checking session'
+  if (!authUser.user) return 'Signed out'
+  if (authUser.canAccessMemberAreas) return 'Approved member access'
+  if (authUser.isPending) return 'Pending admin approval'
+  return authUser.user.approval_status || 'Account created'
+})
+
 const metrics = {
   admin: [
     ['Pending approvals', '8'],
@@ -57,6 +68,10 @@ const metrics = {
     ['Founder intros', '5'],
   ],
 }
+
+onMounted(() => {
+  authUser.loadCurrentUser().catch(() => {})
+})
 </script>
 
 <template>
@@ -94,9 +109,16 @@ const metrics = {
         </div>
         <div class="auth-card">
           <h2>Continue with Google</h2>
-          <p class="small">This remains a frontend-only preview. Laravel Socialite will own real Google OAuth and session state.</p>
-          <button class="button primary" type="button">Sign in with Google</button>
-          <RouterLink class="button water" to="/app/dashboard">Preview member dashboard</RouterLink>
+          <p class="small">Laravel Socialite owns Google OAuth. After Google returns, Sanctum keeps the browser session for `/api/user` and future member/admin requests.</p>
+          <button class="button primary" type="button" @click="authUser.startGoogleSignIn()">Sign in with Google</button>
+          <div class="auth-status">
+            <span class="status-pill" :class="{ pending: authUser.isPending }">{{ accountStatusLabel }}</span>
+            <p v-if="authUser.user" class="small">Signed in as {{ authUser.user.email }}.</p>
+            <p v-else-if="authUser.error" class="small">Could not check the current session. Try again after the backend is running.</p>
+            <p v-else class="small">No active WAAIS session found in this browser.</p>
+          </div>
+          <RouterLink v-if="authUser.canAccessMemberAreas" class="button water" to="/app/dashboard">Open dashboard</RouterLink>
+          <RouterLink v-else-if="authUser.isPending" class="button water" to="/app/pending">View pending status</RouterLink>
         </div>
       </section>
 
@@ -117,8 +139,11 @@ const metrics = {
           </article>
           <article class="card">
             <h2>Account status</h2>
-            <span class="status-pill pending">Pending admin approval</span>
-            <p class="small">Application auto-reply and admin notification email are Laravel/email-provider work.</p>
+            <span class="status-pill" :class="{ pending: authUser.isPending }">{{ accountStatusLabel }}</span>
+            <p v-if="authUser.user" class="small">{{ authUser.user.email }} is signed in with permission role {{ authUser.user.permission_role }}.</p>
+            <p v-else-if="authUser.loading" class="small">Checking the current Sanctum session.</p>
+            <p v-else class="small">Sign in with Google to create or resume a pending account.</p>
+            <button class="button primary" type="button" @click="authUser.startGoogleSignIn()">Sign in with Google</button>
           </article>
         </div>
       </section>
@@ -126,8 +151,9 @@ const metrics = {
       <section v-else-if="currentView === 'dashboard'" class="app-stack">
         <div class="app-hero">
           <p class="eyebrow">Member dashboard</p>
-          <h1>Welcome back, George.</h1>
+          <h1>Welcome back, {{ displayName }}.</h1>
           <p class="lede">A compact home for events, forum activity, founder updates, and profile completion.</p>
+          <p v-if="authUser.initialized && !authUser.canAccessMemberAreas" class="small">This account has not been approved for member areas yet.</p>
         </div>
         <div class="grid four">
           <div v-for="[label, value] in metrics.dashboard" :key="label" class="metric"><span>{{ label }}</span><strong>{{ value }}</strong></div>

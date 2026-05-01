@@ -12,6 +12,7 @@ One store per (backend resource family) × (access surface). The access surface 
 
 | Store name                       | Endpoint family                                  | Access surface             |
 |----------------------------------|--------------------------------------------------|----------------------------|
+| `useAuthUserStore`               | `/api/user`, `/auth/google/redirect`             | Browser session / auth     |
 | `usePublicStartupsStore`         | `/api/public/startup-listings`                   | Anonymous, public site     |
 | `usePublicEventsStore`           | `/api/public/events`                             | Anonymous, public site     |
 | `usePublicPartnersStore`         | `/api/public/partners`                           | Anonymous, public site     |
@@ -65,7 +66,9 @@ Extend an existing store when:
 
 ## HTTP client
 
-All stores call `getJson(...)` from `src/lib/api.js`. That client knows the API base URL (`VITE_API_BASE_URL`, default `http://127.0.0.1:8000`), sets `Accept: application/json`, and throws an `ApiError` on non-2xx so callers don't have to inspect `response.ok`. When auth lands, the client gains a token/cookie strategy in one place; stores stay unchanged.
+All stores call `getJson(...)` from `src/lib/api.js`. That client knows the API base URL (`VITE_API_BASE_URL`, default `http://127.0.0.1:8000`), sets `Accept: application/json`, and throws an `ApiError` on non-2xx so callers don't have to inspect `response.ok`.
+
+Public stores call `getJson(...)` without auth options and stay anonymous. Authenticated stores call `getJson(..., { auth: true })`, which sends browser credentials for Laravel Sanctum's session-cookie flow. `useAuthUserStore` is the root session store: it loads `/api/user`, treats 401 as signed-out state, and starts Google sign-in through the backend `/auth/google/redirect` route.
 
 ## Testing
 

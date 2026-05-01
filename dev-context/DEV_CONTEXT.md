@@ -33,9 +33,10 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Public partners directory (`/partners`, `/partners/:id`) reads from the live Laravel API via a Pinia store.
 - Homepage CMS cards (`what_we_do`, `access_flow`) read from the live Laravel API via a Pinia store, with frontend fallback copy when the CMS is empty.
 - Other public surfaces (forum preview) still serve static seed data and will be wired in subsequent slices.
-- HTTP client at `frontend/src/lib/api.js` — single `getJson()` wrapper, base URL via `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`), `Accept: application/json`, throws `ApiError` on non-2xx.
+- HTTP client at `frontend/src/lib/api.js` — single `getJson()` wrapper, base URL via `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`), `Accept: application/json`, throws `ApiError` on non-2xx. Public stores stay anonymous by default; authenticated stores pass `auth: true` to send Sanctum session credentials.
+- Auth/current-user store at `frontend/src/stores/authUser.js` — calls `/api/user`, treats 401 as signed-out state, exposes approval/permission access getters, and starts Google sign-in by redirecting to `/auth/google/redirect` on the backend.
 - Pinia store at `frontend/src/stores/publicStartups.js` — `loadList`, `loadOne`, in-memory TTL cache so back-navigation between list and detail doesn't refetch. Convention for adding future stores (one per backend resource × access surface) is documented in `frontend/src/stores/README.md`.
-- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 47 specs across `lib/api`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
+- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 54 specs across `lib/api`, `stores/authUser`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
 - Build deployed to GitHub Pages via root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg` copied from `frontend/dist`. Deploy steps live in `frontend/README.md`.
 
 ### Backend (live, validated locally)
@@ -66,18 +67,17 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **email provider selection/config**. Production email target is Azure Communication Services Email over SMTP using the named `azure_communication_services` Laravel mailer. Local dev remains on `MAIL_MAILER=log`; production should set ACS SMTP credentials as secrets and use `MAIL_MAILER=azure_communication_services`. Backend validation is clean at 136 passing tests / 604 assertions, with `composer validate --strict` and `php artisan migrate:fresh` passing.
+No slice in progress. Last shipped slice: **Sanctum auth in the frontend HTTP client + Google sign-in UI flow**. Frontend authenticated requests now use the shared API client with `auth: true` to include Sanctum session credentials, `useAuthUserStore` loads `/api/user` and starts backend Google OAuth, and `/app/sign-in`, `/app/pending`, and `/app/dashboard` display current auth state. Automated validation is clean: frontend `npm test` 54 passed, `npm run build` clean, `npm run test:routes` clean; backend `composer validate --strict` clean, `php artisan test` 136 passed / 604 assertions, and `php artisan migrate:fresh` clean. Manual browser OAuth verification passed locally on May 1, 2026: Google sign-in created/resumed a pending account and redirected to the pending approval page.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Sanctum auth in the frontend HTTP client + Google sign-in UI flow.** Foundational for everything below.
-2. **Membership application UI on the public site** (form, draft, submitted, needs-more-info, approved/rejected views).
-3. **Member dashboard frontend wiring.** Each surface gets its own store (`useMyStartupsStore`, etc.) per the convention in `frontend/src/stores/README.md`.
-4. **Admin dashboard frontend wiring** (approvals queue, user management, event management, public content, announcements). Multiple sub-slices.
-5. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
-6. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
-7. **Brand/logo asset replacement** when George provides it.
-8. **Azure deployment** of app + backend, plus Discourse on Azure VM.
+1. **Membership application UI on the public site** (form, draft, submitted, needs-more-info, approved/rejected views).
+2. **Member dashboard frontend wiring.** Each surface gets its own store (`useMyStartupsStore`, etc.) per the convention in `frontend/src/stores/README.md`.
+3. **Admin dashboard frontend wiring** (approvals queue, user management, event management, public content, announcements). Multiple sub-slices.
+4. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
+5. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
+6. **Brand/logo asset replacement** when George provides it.
+7. **Azure deployment** of app + backend, plus Discourse on Azure VM.
 
 ## Working Rules
 
@@ -91,6 +91,16 @@ No slice in progress. Last shipped slice: **email provider selection/config**. P
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 1, 2026 — Sanctum auth frontend + Google sign-in UI flow**
+- Did: extended `frontend/src/lib/api.js` so public requests remain anonymous by default while authenticated requests can pass `auth: true` to include Sanctum session credentials. Added backend Google OAuth URL construction and a `redirectToGoogleSignIn()` helper that sends users to `/auth/google/redirect`
+- Did: added `frontend/src/stores/authUser.js` with `loadCurrentUser()`, access-model getters, 401-as-signed-out behavior, and `startGoogleSignIn()`
+- Did: wired `/app/sign-in`, `/app/pending`, and `/app/dashboard` to the auth store. The sign-in button now starts the backend-owned Google flow; pending/dashboard views reflect the current `/api/user` session where available
+- Did: added Vitest coverage for credential handling, Google redirect URL construction, current-user loading, anonymous 401 handling, error handling, and auth-store caching. Updated `frontend/README.md` and `frontend/src/stores/README.md`
+- Validation so far: after forcing Homebrew Node onto `PATH`, `npm test` passed at 54 specs, `npm run build` passed, and `npm run test:routes` passed. Backend validation required by project rules also passed: `composer validate --strict`, `php artisan test` 136 passed / 604 assertions, and `php artisan migrate:fresh`
+- Did: manually verified the local browser OAuth flow with Laravel on `127.0.0.1:8000` and Vite on `127.0.0.1:5174`; Google sign-in redirected to `/app/pending` and displayed "Your account is awaiting approval"
+- Left off at: ready for the next slice — membership application UI on the public site
+- Watch out for: running `npm` without Homebrew Node first on `PATH` can pick the Codex app Node and fail on Vite/Vitest's `rolldown` native binding with a Team ID code-signature error. Use `PATH=/opt/homebrew/bin:$PATH npm ...` locally if that happens
 
 **May 1, 2026 — Email provider selection/config**
 - Did: selected Azure Communication Services Email over SMTP as the production transactional email target. Rationale: WAAIS is already targeting Azure infrastructure, ACS Email supports SMTP and custom verified domains, and Laravel already supports SMTP via Symfony Mailer without adding a provider-specific package

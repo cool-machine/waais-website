@@ -6,10 +6,9 @@
 //   1. import.meta.env.VITE_API_BASE_URL (build-time / Vite env)
 //   2. http://127.0.0.1:8000 (Laravel's `php artisan serve` default)
 //
-// Why we don't carry auth here yet: the public startup directory is
-// anonymous. When member/admin endpoints land we'll extend this client
-// with a Sanctum token / cookie strategy in one place rather than
-// sprinkling `fetch` calls across stores.
+// Public stores stay anonymous by default. Authenticated stores opt in
+// with `auth: true`, which sends browser credentials for Laravel
+// Sanctum's session-cookie flow.
 
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8000'
 
@@ -42,6 +41,10 @@ function buildUrl(path, query) {
   return url.toString()
 }
 
+function buildGoogleAuthUrl() {
+  return buildUrl('/auth/google/redirect')
+}
+
 async function parseBody(response) {
   const contentType = response.headers.get('content-type') ?? ''
   if (!contentType.includes('application/json')) {
@@ -58,10 +61,10 @@ async function parseBody(response) {
  * GET a JSON endpoint. Returns the parsed body on 2xx, throws ApiError otherwise.
  *
  * @param {string} path - path beginning with /, e.g. /api/public/startup-listings
- * @param {{ query?: Record<string, unknown>, signal?: AbortSignal, fetchImpl?: typeof fetch }} [options]
+ * @param {{ query?: Record<string, unknown>, signal?: AbortSignal, fetchImpl?: typeof fetch, auth?: boolean }} [options]
  */
 export async function getJson(path, options = {}) {
-  const { query, signal, fetchImpl } = options
+  const { query, signal, fetchImpl, auth = false } = options
   const url = buildUrl(path, query)
   const fetchFn = fetchImpl ?? globalThis.fetch
 
@@ -70,6 +73,7 @@ export async function getJson(path, options = {}) {
     response = await fetchFn(url, {
       method: 'GET',
       headers: { Accept: 'application/json' },
+      credentials: auth ? 'include' : 'same-origin',
       signal,
     })
   } catch (cause) {
@@ -89,6 +93,16 @@ export async function getJson(path, options = {}) {
   return body
 }
 
+/**
+ * Start backend-owned Google OAuth. The backend callback logs the user
+ * in with Sanctum's session cookie and redirects back to the Vue app.
+ *
+ * @param {{ location?: Location }} [options]
+ */
+export function redirectToGoogleSignIn({ location = globalThis.location } = {}) {
+  location.assign(buildGoogleAuthUrl())
+}
+
 // Exported only for tests — gives a knob to override the resolved base
 // URL without poking import.meta.env directly.
-export const __testing = { resolveBaseUrl, buildUrl }
+export const __testing = { resolveBaseUrl, buildUrl, buildGoogleAuthUrl }

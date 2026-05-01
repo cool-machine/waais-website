@@ -54,7 +54,7 @@ Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Com
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 135 tests, 601 assertions (after the homepage CMS slice)
+php artisan test       # last verified: 136 tests, 604 assertions (after the frontend Sanctum auth slice)
 php artisan migrate:fresh
 ```
 

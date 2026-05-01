@@ -658,6 +658,15 @@ textarea {
   gap: 14px;
 }
 
+.auth-status {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(100, 130, 200, 0.14);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 14px;
+}
+
 .app-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -696,6 +705,8 @@ textarea {
   display: inline-flex;
   width: fit-content;
   border-radius: 999px;
+  background: rgba(37, 111, 143, 0.18);
+  color: #93c5fd;
   padding: 7px 11px;
   font-size: 12px;
   font-weight: 900;

@@ -2,7 +2,7 @@
 
 Vue 3 public frontend scaffold for the Wharton Alumni AI Studio platform.
 
-This is the first production-frontend pass converted from the static mockups in `../mockups/`. It is not the Laravel backend, does not authenticate users, and does not persist membership applications, event registrations, startup listings, announcements, or admin changes yet.
+This is the first production-frontend pass converted from the static mockups in `../mockups/`. It is not the Laravel backend, but it now starts the backend-owned Google OAuth flow and reads the current Sanctum user session from `/api/user`. It does not persist membership applications, event registrations, startup listings, announcements, or admin changes yet.
 
 ## Stack
 
@@ -27,6 +27,8 @@ npm run test:routes
 ## API Integration
 
 The public site reads live data from the Laravel API via Pinia stores. The startup directory, events calendar, partners directory, and homepage CMS cards are wired to public API endpoints. The HTTP client lives at `src/lib/api.js`. The base URL resolves from `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`, which is Laravel's `php artisan serve` default).
+
+Authenticated frontend requests also go through `src/lib/api.js`. Public stores stay anonymous by default; authenticated stores pass `auth: true`, which sends browser credentials for Laravel Sanctum's session-cookie flow. The current-user store lives at `src/stores/authUser.js`, calls `/api/user`, treats 401 as an anonymous browser state, and starts Google sign-in by redirecting to `${VITE_API_BASE_URL}/auth/google/redirect`.
 
 Local dev workflow when you need real startup data on `/startups`:
 
@@ -83,7 +85,6 @@ Live preview: `https://cool-machine.github.io/waais-website/`
 
 ## Still Mocked
 
-- Google OAuth and pending approval
 - Membership application submission
 - Member dashboard and admin dashboard
 - Admin/super-admin permission gating
