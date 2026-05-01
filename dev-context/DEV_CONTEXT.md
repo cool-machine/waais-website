@@ -43,7 +43,8 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Admin membership-application review API: `admin.access` middleware backed by `User::isAdmin()`. Routes under `/api/admin/applications`: queue (filterable by `status`), single-application detail with revisions, approve, reject, request-info. Approve promotes pending applicants to Member without downgrading existing Admin/SuperAdmin and syncs `affiliation_type` from the application. Reject and request-info both require `review_notes`. Each transition writes one `AuditLog` row capturing application + applicant before/after state plus IP and user-agent. This is the canonical implementation of the **Submission & Admin Review Pattern** (described in `PRODUCT.md`).
 - Member-side startup-listing API: approved members only via `member.access`. Routes under `/api/startup-listings`: list own, show own, create, update. Submission stamps `approval_status = submitted` and `content_status = pending_review`. Owner cannot show or edit another member's listing. Approved listings cannot be self-edited (returns 409). Edits re-submit and clear reviewer fields. `startup_listing_revisions` rows are written on submit and update with the changed-fields diff.
 - Admin startup-listing review API: routes under `/api/admin/startup-listings` mirror the membership review shape (queue filterable by `status`, show with revisions, approve, reject, request-info). Approve sets `approval_status = approved` + `content_status = published` + `approved_at`. Reject sets `approval_status = rejected` + `content_status = hidden` + `rejected_at` and requires `review_notes`. Request-info sets `approval_status = needs_more_info` + `content_status = draft` and requires `review_notes`. Each transition writes one `AuditLog` row keyed on `StartupListing` with before/after state plus IP and user-agent. `ContentVisibility` defaults to `public`.
-- Test suite: 43 passing (183 assertions). `php artisan migrate:fresh` passes against local SQLite.
+- Super-admin role-management API: `super_admin.access` middleware backed by `User::canManageAdminPrivileges()`. Routes under `/api/admin/users/{user}` for `promote-admin`, `demote-admin`, `promote-super-admin`, `demote-super-admin`. Each transition is a row-locked update with strict from/to role guards (returns 409 on role mismatch). `promote-admin` additionally requires the target to be `approval_status = approved`. `demote-super-admin` is blocked when the target is the last `SuperAdmin` in the system (covers self-demotion and any path that would empty the role). Every transition writes one `AuditLog` row keyed on `User` with `role.promote_admin` / `role.demote_admin` / `role.promote_super_admin` / `role.demote_super_admin` plus before/after `permission_role` plus IP and user-agent.
+- Test suite: 57 passing (211 assertions). `php artisan migrate:fresh` passes against local SQLite.
 
 ### Production database decision
 
@@ -53,20 +54,19 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **startup-listing submission + admin review** — the second implementation of the Submission & Admin Review Pattern. Backend test suite at 43 passing / 183 assertions.
+No slice in progress. Last shipped slice: **super-admin role management** — promote/demote endpoints under `super_admin.access`, with last-super-admin protection and per-transition audit logs. Backend test suite at 57 passing / 211 assertions.
 
 ## 3. Future — Ordered Next Slices
 
 Backend slices follow the **Submission & Admin Review Pattern** documented in `PRODUCT.md`.
 
-1. **Super-admin role management.** Promote/demote admin endpoints. Prevent self-demotion of the last super_admin. Audit-log every change.
+1. **Public read API for published startup listings + events.** Public listing/detail endpoints filtered by `content_status = published` and `visibility = public`. Required before frontend wiring is meaningful.
 2. **Email notifications.** Applicant thank-you on submission, admin new-application notice, approval, request-more-info; rejection email is optional and admin-triggered. Same notification surfaces for startup listings.
-3. **Public read API for published startup listings + events.** Public listing/detail endpoints filtered by `content_status = published` and `visibility = public`. Required before frontend wiring is meaningful.
-4. **Events / partners / homepage CMS APIs.** After review patterns are stable.
-5. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
-6. **Frontend wiring** of the live API endpoints onto the existing Vue routes.
-7. **Brand/logo asset replacement** when George provides it.
-8. **Azure deployment** of app + backend, plus Discourse on Azure VM.
+3. **Events / partners / homepage CMS APIs.** After review patterns are stable.
+4. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
+5. **Frontend wiring** of the live API endpoints onto the existing Vue routes.
+6. **Brand/logo asset replacement** when George provides it.
+7. **Azure deployment** of app + backend, plus Discourse on Azure VM.
 
 ## Working Rules
 
@@ -80,6 +80,16 @@ Backend slices follow the **Submission & Admin Review Pattern** documented in `P
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 1, 2026 — Super-admin role management**
+- Did: added `EnsureSuperAdminAccess` middleware backed by `User::canManageAdminPrivileges()`, registered as the `super_admin.access` route alias in `bootstrap/app.php`
+- Did: added `App\Http\Controllers\Api\Admin\AdminUserRoleController` with `promoteAdmin`, `demoteAdmin`, `promoteSuperAdmin`, `demoteSuperAdmin`. Each transition uses `lockForUpdate()` on the target user, validates the strict from/to permission_role pair (returns 409 on mismatch), and writes one `AuditLog` row keyed on `User` with action `role.promote_admin` / `role.demote_admin` / `role.promote_super_admin` / `role.demote_super_admin`
+- Did: `promote-admin` additionally requires the target to have `approval_status = approved` (returns 409 otherwise)
+- Did: `demote-super-admin` is blocked when the target would be the last `SuperAdmin` in the system. The check counts other super_admins excluding the target, so it covers both self-demotion and demoting any single remaining super_admin
+- Did: routes registered under `/api/admin/users/{user}/{promote-admin,demote-admin,promote-super-admin,demote-super-admin}` inside the existing `admin.access` group, then nested inside `super_admin.access` so a regular admin gets 403 not 405
+- Did: 14 new feature tests in `AdminUserRoleApiTest`. Suite at 57 passed (211 assertions). `composer validate --strict` clean, `migrate:fresh` clean against local SQLite
+- Left off at: ready for the next slice — public read API for published startup listings (and eventually events) so the frontend can stop running on static seed data
+- Watch out for: PRODUCT.md still says "Limit super_admin to George plus at most two designated others" — this is treated as policy, not enforced in code. If we want a hard cap, add it on `promote-super-admin` (count existing super_admins, abort if >= 3). Also, re-promotion is asymmetric: to promote a member to super_admin you must call `promote-admin` then `promote-super-admin`. If that's friction, we could add a single `set-role` endpoint later
 
 **May 1, 2026 — Startup-listing submission + admin review**
 - Did: added `startup_listings` and `startup_listing_revisions` migrations carrying both review fields (`approval_status`, `submitted_at`, `reviewed_at`, `reviewed_by`, `review_notes`, `approved_at`, `rejected_at`) and content-lifecycle fields (`content_status`, `visibility`)
