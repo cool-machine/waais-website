@@ -187,6 +187,7 @@ Important current implementation state:
 - [x] Add WAAIS backend enums, user access helpers, membership application models, migrations, audit log, and access-rule tests
 - [x] Install/repair PHP 8.3+ and Composer
 - [x] Run `composer install`, `php artisan test`, and `php artisan migrate:fresh` inside `/backend/`
+- [x] Add Sanctum API auth foundation and member-access middleware
 
 **Design decisions from mockup review**
 - Wharton colors (#011F5B navy, #C41E3A crimson) are confirmed — do not change these
@@ -346,6 +347,13 @@ Important current implementation state:
 ## Session Notes
 
 > Newest entry at the top. Update this at the end of every session.
+
+**May 1, 2026 — Backend auth foundation**
+- Did: added Laravel Sanctum, API route loading, `HasApiTokens` on `User`, Sanctum config, and personal access token migration
+- Did: added authenticated `/api/user` endpoint exposing approval/permission flags and a `member.access` middleware for member-only API routes
+- Did: added feature tests proving unauthenticated API requests are rejected, pending users cannot access member routes, and approved members can
+- Left off at: Sanctum/API foundation is in place; next backend slice is Google OAuth identity creation and pending-user creation
+- Watch out for: this does not implement Google OAuth, sessions from the Vue app, or membership application submission yet
 
 **May 1, 2026 — Backend runtime validation**
 - Did: repaired Homebrew PHP/Composer by installing PHP 8.5.5 and Composer 2.9.7, then reinstalling `fontconfig` and completing `brew postinstall php`
