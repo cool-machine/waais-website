@@ -34,6 +34,8 @@ WAAIS is the Wharton Alumni AI Studio platform: a public website, approved-membe
 
 ## Membership Flow Now Designed
 
+Backend model decision: do not overload one `role` field. Use separate `approval_status`, `affiliation_type`, and `permission_role` fields as defined in `dev-context/PLATFORM_MODEL.md`.
+
 The public CTA should be `Become a member`, not a generic Get Involved button.
 
 The Membership page should present:

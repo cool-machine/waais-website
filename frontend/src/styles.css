@@ -384,6 +384,12 @@ h3 {
   font-weight: 800;
 }
 
+.tag-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .metrics {
   gap: 14px;
   margin-top: 34px;
@@ -745,6 +751,13 @@ textarea {
   padding: 22px;
 }
 
+.model-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 16px;
+}
+
 @media (max-width: 1120px) {
   .topbar-inner {
     grid-template-columns: 1fr auto;
@@ -784,6 +797,7 @@ textarea {
   }
 
   .auth-wrap,
+  .model-columns,
   .grid.four,
   .grid.three {
     grid-template-columns: 1fr;

@@ -16,6 +16,8 @@ The branch was created from `main` after the static mockup/product review work w
 
 `frontend/` is tracked in git. The GitHub Pages root is populated from `frontend/dist` using root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, and `icons.svg`.
 
+Before backend work, read `dev-context/PLATFORM_MODEL.md`. Frontend constants mirroring that vocabulary live in `frontend/src/data/platformModel.js`.
+
 ## What Was Done
 
 Created the first Vue frontend scaffold in:

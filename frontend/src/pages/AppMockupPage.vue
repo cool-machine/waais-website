@@ -1,6 +1,13 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import {
+  approvalStatuses,
+  affiliationTypes,
+  contentStatuses,
+  contentVisibilities,
+  permissionRoles,
+} from '../data/platformModel'
 
 const route = useRoute()
 
@@ -216,6 +223,24 @@ const metrics = {
             </div>
           </article>
         </div>
+        <article class="card">
+          <h2>Model contract</h2>
+          <p class="small">Laravel should store approval status, affiliation type, and permission role separately.</p>
+          <div class="model-columns">
+            <div>
+              <h3>Approval status</h3>
+              <div class="tag-row"><span v-for="status in approvalStatuses" :key="status" class="tag">{{ status }}</span></div>
+            </div>
+            <div>
+              <h3>Affiliation type</h3>
+              <div class="tag-row"><span v-for="type in affiliationTypes" :key="type" class="tag">{{ type }}</span></div>
+            </div>
+            <div>
+              <h3>Permission role</h3>
+              <div class="tag-row"><span v-for="role in permissionRoles" :key="role" class="tag">{{ role }}</span></div>
+            </div>
+          </div>
+        </article>
       </section>
 
       <section v-else-if="currentView === 'approvals'" class="app-stack">
@@ -259,8 +284,8 @@ const metrics = {
             <label class="full">Title<input value="AI Founder Salon"></label>
             <label>Date<input value="May 14, 2026"></label>
             <label>Capacity<input value="50"></label>
-            <label>Status<select><option>Published</option><option>Draft</option><option>Hidden</option><option>Archived</option></select></label>
-            <label>Visibility<select><option>Members only</option><option>Public</option><option>Mixed</option></select></label>
+            <label>Status<select><option v-for="status in contentStatuses" :key="status">{{ status }}</option></select></label>
+            <label>Visibility<select><option v-for="visibility in contentVisibilities" :key="visibility">{{ visibility }}</option></select></label>
             <label class="full">External registration URL<input value="https://example.com/register"></label>
             <label class="full">Description<textarea>Private dinner for AI founders and operators in the WAAIS community.</textarea></label>
           </form>
@@ -294,7 +319,7 @@ const metrics = {
           <form class="app-form card">
             <label class="full">Title<input value="Neural Insights"></label>
             <label>Type<select><option>Startup</option><option>Event</option><option>Partner</option><option>Homepage feature</option></select></label>
-            <label>Status<select><option>Published</option><option>Draft</option><option>Hidden</option><option>Archived</option></select></label>
+            <label>Status<select><option v-for="status in contentStatuses" :key="status">{{ status }}</option></select></label>
             <label class="full">Short description<textarea>AI-powered analytics platform for extracting actionable insights from complex datasets.</textarea></label>
           </form>
         </div>

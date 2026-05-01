@@ -13,11 +13,12 @@
   - Old React source (reference only): `/Users/gg1900/coding/waais-website/legacy/old-react-site/src/`
   - Old React app root (reference only): `/Users/gg1900/coding/waais-website/legacy/old-react-site/`
   - Dev context folder: `/Users/gg1900/coding/waais-website/dev-context/`
-  - Vue frontend (created locally; untracked until committed): `/Users/gg1900/coding/waais-website/frontend/`
+  - Vue frontend (created and tracked): `/Users/gg1900/coding/waais-website/frontend/`
   - Laravel backend (to be created; missing is expected): `/Users/gg1900/coding/waais-website/backend/`
   - This file: `/Users/gg1900/coding/waais-website/dev-context/DEV_CONTEXT.md`
 - [ ] Also read `/Users/gg1900/coding/waais-website/dev-context/CURRENT_STATE.md` for the latest concise handoff
 - [ ] If Vue implementation is being continued, read `/Users/gg1900/coding/waais-website/dev-context/VUE_FRONTEND_HANDOFF.md`
+- [ ] Before backend/Laravel work, read `/Users/gg1900/coding/waais-website/dev-context/PLATFORM_MODEL.md`
 - [ ] Read the Session Notes at the bottom — they reflect the most recent state of work
 - [ ] Note anything that has moved or changed, and update this file before starting
 
@@ -59,6 +60,7 @@
 - Homepage page-body direction: use a hybrid public-site treatment — dark hero/top shell, then selected white/off-white scroll sections for readability and contrast. Keep dashboard/admin/auth dark.
 
 **Users & roles**
+- Backend model decision: use separate `approval_status`, `affiliation_type`, and `permission_role` fields. See `dev-context/PLATFORM_MODEL.md`.
 - `anonymous visitor` → logged-out public visitor; can see public pages only
 - `pending` → registered / application submitted / Google identity known, but not approved; not shown in directory or forums, including private forums
 - `member` → approved alumni member; gets dashboard + forum access
