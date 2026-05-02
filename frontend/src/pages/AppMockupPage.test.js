@@ -90,6 +90,32 @@ const ADMIN_STARTUP = {
   linkedin_url: 'https://www.linkedin.com/company/autoflow',
 }
 
+const HOMEPAGE_CARD = {
+  id: 51,
+  section: 'what_we_do',
+  eyebrow: 'Studio',
+  title: 'Build with Wharton AI operators',
+  body: 'Peer-led build sessions and founder support.',
+  link_label: 'Join',
+  link_url: '/membership',
+  content_status: 'draft',
+  visibility: 'public',
+  sort_order: 1,
+}
+
+const PARTNER = {
+  id: 61,
+  name: 'Wharton AI Lab',
+  partner_type: 'Academic partner',
+  summary: 'Research collaboration.',
+  description: 'Supports WAAIS programming and research exchange.',
+  website_url: 'https://example.com',
+  logo_url: null,
+  content_status: 'draft',
+  visibility: 'mixed',
+  sort_order: 2,
+}
+
 async function mountAt(path) {
   const router = createRouter({
     history: createMemoryHistory(),
@@ -440,6 +466,108 @@ describe('member dashboard live state', () => {
     await wrapper.find('.table-button').trigger('click')
     await flushPromises()
     expect(wrapper.text()).toContain('Super admin access is required to change roles.')
+  })
+
+  it('renders the admin public content homepage-card editor from the admin API', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.match(/\/api\/admin\/homepage-cards\/51$/)) return Promise.resolve(jsonResponse({ data: HOMEPAGE_CARD }))
+      if (url.includes('/api/admin/homepage-cards')) {
+        return Promise.resolve(jsonResponse({
+          data: [HOMEPAGE_CARD],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/content-admin')
+
+    expect(wrapper.text()).toContain('Edit homepage cards and partners without touching code.')
+    expect(wrapper.text()).toContain('Build with Wharton AI operators')
+
+    const listRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/homepage-cards?'))
+    expect(listRequest[0]).toContain('content_status=draft')
+    expect(listRequest[1].credentials).toBe('include')
+
+    await wrapper.find('.table-button').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('input[required]').element.value).toBe('what_we_do')
+  })
+
+  it('switches the admin public content editor to partners', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.includes('/api/admin/partners')) {
+        return Promise.resolve(jsonResponse({
+          data: [PARTNER],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      if (url.includes('/api/admin/homepage-cards')) {
+        return Promise.resolve(jsonResponse({
+          data: [HOMEPAGE_CARD],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/content-admin')
+    const partnersButton = wrapper.findAll('button').find((node) => node.text() === 'Partners')
+    expect(partnersButton).toBeTruthy()
+
+    await partnersButton.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Wharton AI Lab')
+    const partnerRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/partners?'))
+    expect(partnerRequest[0]).toContain('content_status=draft')
+  })
+
+  it('publishes selected public content and removes it from the draft queue', async () => {
+    const published = { ...HOMEPAGE_CARD, content_status: 'published' }
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.includes('/api/admin/homepage-cards/51/publish')) return Promise.resolve(jsonResponse({ data: published }))
+      if (url.match(/\/api\/admin\/homepage-cards\/51$/)) return Promise.resolve(jsonResponse({ data: HOMEPAGE_CARD }))
+      if (url.includes('/api/admin/homepage-cards')) {
+        return Promise.resolve(jsonResponse({
+          data: [HOMEPAGE_CARD],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/content-admin')
+    await wrapper.find('.table-button').trigger('click')
+    await flushPromises()
+
+    const publishButton = wrapper.findAll('button').find((node) => node.text() === 'Publish')
+    expect(publishButton).toBeTruthy()
+    await publishButton.trigger('click')
+    await flushPromises()
+
+    const publishRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/homepage-cards/51/publish'))
+    expect(publishRequest[1].method).toBe('POST')
+    expect(publishRequest[1].credentials).toBe('include')
+    expect(wrapper.text()).toContain('No public content in this status.')
   })
 
   it('lets a super admin promote a member to admin from the user directory', async () => {

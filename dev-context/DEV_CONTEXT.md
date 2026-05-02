@@ -39,13 +39,14 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Membership application UI at `/membership` is backed by `frontend/src/stores/membershipApplication.js` and the authenticated Laravel endpoints (`GET/POST/PATCH /api/membership-application`, `POST /api/membership-application/reapply`). Signed-out users can choose Google sign-in or request an email sign-in link; pending/needs-more-info/rejected applicants can submit/update/reapply; approved applications render read-only.
 - Member dashboard profile/application status views at `/app/dashboard` and `/app/profile` consume `useAuthUserStore` plus `useMembershipApplicationStore` for live account, profile, and application status. Other member surfaces (`/app/my-events`, `/app/forum-feed`, future startup ownership views) remain queued.
 - Member dashboard startup ownership view at `/app/my-startups` consumes `frontend/src/stores/myStartups.js`, backed by authenticated member endpoints (`GET/POST/PATCH /api/startup-listings`). Approved members can submit new listings and update non-approved listings; approved listings render as not editable.
-- Admin dashboard membership approvals view at `/app/approvals` consumes `frontend/src/stores/adminMembershipApplications.js`, backed by authenticated admin endpoints (`GET /api/admin/applications`, `GET /api/admin/applications/{id}`, and approve/reject/request-info transitions). It is the first live admin review surface; startup listing review remains the next admin queue surface.
+- Admin dashboard membership approvals view at `/app/approvals` consumes `frontend/src/stores/adminMembershipApplications.js`, backed by authenticated admin endpoints (`GET /api/admin/applications`, `GET /api/admin/applications/{id}`, and approve/reject/request-info transitions). It is the canonical live admin review surface for membership applications.
 - Admin dashboard startup-listing review view at `/app/startup-review` consumes `frontend/src/stores/adminStartupListings.js`, backed by authenticated admin endpoints (`GET /api/admin/startup-listings`, `GET /api/admin/startup-listings/{id}`, and approve/reject/request-info transitions). It mirrors the membership queue but stays separate from public/member startup stores.
 - Admin dashboard event management view at `/app/events-admin` consumes `frontend/src/stores/adminEvents.js`, backed by authenticated admin endpoints (`GET /api/admin/events` filterable by `content_status`, `GET /api/admin/events/{id}`, `POST /api/admin/events` create, `PATCH /api/admin/events/{id}` update, plus `publish`/`hide`/`archive`/`cancel` transitions). The store auto-removes events from the active filter when their `content_status` no longer matches and supports an `all` content_status filter that keeps everything in view.
+- Admin dashboard public content view at `/app/content-admin` consumes `frontend/src/stores/adminPublicContent.js`, backed by authenticated admin endpoints for `/api/admin/homepage-cards` and `/api/admin/partners`. Admins can switch resource families, filter by content status, create/edit records, and publish/hide/archive them without touching code.
 - Admin dashboard user directory view at `/app/users` consumes `frontend/src/stores/adminUsers.js`, backed by authenticated admin endpoints (`GET /api/admin/users` filterable by `permission_role`, `approval_status`, `affiliation_type`, and free-text `q`; `GET /api/admin/users/{user}`) plus the existing super-admin role transitions. Promote/demote buttons are gated to super admins via `auth.user.can_manage_admin_privileges`; regular admins see profile context only. Self-role changes are blocked client-side and the last-super-admin guard surfaces on `saveError` when the backend returns 409.
 - Auth UI now has mutually exclusive states: signed-out users see "Sign in with Google" and disabled future "Sign in with email"; signed-in users see account context plus "Sign out". Backend `POST /api/logout` clears browser-session auth when present and the frontend clears authenticated stores after logout.
 - Pinia store at `frontend/src/stores/publicStartups.js` — `loadList`, `loadOne`, in-memory TTL cache so back-navigation between list and detail doesn't refetch. Convention for adding future stores (one per backend resource × access surface) is documented in `frontend/src/stores/README.md`.
-- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 128 specs across `pages/AppMockupPage`, `pages/MembershipPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/myStartups`, `stores/adminMembershipApplications`, `stores/adminStartupListings`, `stores/adminEvents`, `stores/adminUsers`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
+- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 135 specs across `pages/AppMockupPage`, `pages/MembershipPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/myStartups`, `stores/adminMembershipApplications`, `stores/adminStartupListings`, `stores/adminEvents`, `stores/adminPublicContent`, `stores/adminUsers`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
 - Build deployed to GitHub Pages via root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg` copied from `frontend/dist`. Deploy steps live in `frontend/README.md`.
 
 ### Backend (live, validated locally)
@@ -78,11 +79,11 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Admin dashboard user directory shipped on May 2, 2026 at 18:05 CEST and merged to `main`.
+No slice in progress. Admin dashboard public content management shipped on May 2, 2026 at 18:30 CEST and merged to `main`.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Next admin dashboard surface** — public content (homepage cards + partners) or announcements.
+1. **Announcements backend + admin/member surfaces.** Add the announcements data model, admin management API/UI, and member-facing notification/dashboard read surface.
 2. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
 3. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
 4. **Brand/logo asset replacement** when George provides it.
@@ -100,6 +101,14 @@ No slice in progress. Admin dashboard user directory shipped on May 2, 2026 at 1
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 2, 2026 18:30 CEST — Admin dashboard public content management (shipped)**
+- Did: repaired stale handoff/product docs around email-link auth, Azure Communication Services Email, shipped startup review, and admin CMS/user-management frontend state
+- Did: added `frontend/src/stores/adminPublicContent.js`, covering authenticated admin list/detail/create/update/publish/hide/archive flows for `/api/admin/homepage-cards` and `/api/admin/partners`
+- Did: replaced the static `/app/content-admin` placeholder with a live admin surface for switching between homepage cards and partners, filtering by content status, editing resource-specific fields, and moving items through publish/hide/archive transitions
+- Did: added frontend coverage for the new store plus `/app/content-admin`; validation passed at `npm test` 135 specs, `npm run build`, `npm run test:routes`, `composer validate --strict`, `php artisan test` 153 tests / 662 assertions, and `php artisan migrate:fresh`
+- Left off at: ready for the next slice — announcements backend plus admin/member surfaces
+- Watch out for: `/app/content-admin` manages existing backend resources only. Announcements still needs a fresh backend migration/model/API before frontend wiring.
 
 **May 2, 2026 18:15 CEST — /app/users heading copy fix (shipped)**
 - Did: tightened the `/app/users` hero heading from "Search the membership and adjust roles." to "Search the members and adjust roles." after George flagged the wording during the live browser smoke
@@ -354,4 +363,4 @@ No slice in progress. Admin dashboard user directory shipped on May 2, 2026 at 1
 
 ---
 
-*Last updated: May 2, 2026 18:15 CEST*
+*Last updated: May 2, 2026 18:30 CEST*

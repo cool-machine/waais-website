@@ -4,13 +4,13 @@ import { RouterLink, useRoute } from 'vue-router'
 import {
   approvalStatuses,
   affiliationTypes,
-  contentStatuses,
   contentVisibilities,
   permissionRoles,
 } from '../data/platformModel'
 import { useAuthUserStore } from '../stores/authUser'
 import { useAdminEventsStore } from '../stores/adminEvents'
 import { useAdminMembershipApplicationsStore } from '../stores/adminMembershipApplications'
+import { useAdminPublicContentStore } from '../stores/adminPublicContent'
 import { useAdminStartupListingsStore } from '../stores/adminStartupListings'
 import { useAdminUsersStore } from '../stores/adminUsers'
 import { useMembershipApplicationStore } from '../stores/membershipApplication'
@@ -21,6 +21,7 @@ const authUser = useAuthUserStore()
 const adminApplicationsStore = useAdminMembershipApplicationsStore()
 const adminStartupListingsStore = useAdminStartupListingsStore()
 const adminEventsStore = useAdminEventsStore()
+const adminPublicContentStore = useAdminPublicContentStore()
 const adminUsersStore = useAdminUsersStore()
 const applicationStore = useMembershipApplicationStore()
 const myStartupsStore = useMyStartupsStore()
@@ -64,6 +65,22 @@ const eventForm = reactive({
 })
 const eventCancelForm = reactive({
   cancellation_note: '',
+})
+const publicContentForm = reactive({
+  section: '',
+  eyebrow: '',
+  title: '',
+  body: '',
+  link_label: '',
+  link_url: '',
+  name: '',
+  partner_type: '',
+  summary: '',
+  description: '',
+  website_url: '',
+  logo_url: '',
+  visibility: 'public',
+  sort_order: '',
 })
 const userFilterForm = reactive({
   permission_role: 'all',
@@ -199,6 +216,11 @@ const adminEventSaveLabel = computed(() => {
   return adminEventsStore.isCreatingNew ? 'Create draft event' : 'Save changes'
 })
 const adminEventStatusFilters = ['all', 'draft', 'pending_review', 'published', 'hidden', 'archived']
+const adminPublicContentResources = [
+  ['homepage_cards', 'Homepage cards'],
+  ['partners', 'Partners'],
+]
+const adminPublicContentStatusFilters = ['all', 'draft', 'pending_review', 'published', 'hidden', 'archived']
 const adminUserRoleFilters = ['all', ...permissionRoles]
 const adminUserApprovalFilters = ['all', ...approvalStatuses]
 const selectedAdminUser = computed(() => adminUsersStore.currentUser)
@@ -231,6 +253,25 @@ const selectedAdminEventRows = computed(() => {
     ['Format', event?.format || 'Not provided'],
     ['Capacity', event?.capacity_limit ? String(event.capacity_limit) : 'Unlimited'],
     ['Cancelled', event?.cancelled_at ? formatEventDateTime(event.cancelled_at) : 'No'],
+  ]
+})
+const selectedAdminPublicContent = computed(() => adminPublicContentStore.currentItem)
+const adminPublicContentValidationErrors = computed(() => adminPublicContentStore.saveError?.body?.errors ?? {})
+const adminPublicContentCount = computed(() => adminPublicContentStore.listMeta.total || adminPublicContentStore.list.length)
+const adminPublicContentSaveLabel = computed(() => {
+  if (adminPublicContentStore.saving) return 'Saving...'
+  return adminPublicContentStore.isCreatingNew
+    ? `Create ${adminPublicContentStore.resourceConfig.singularLabel.toLowerCase()}`
+    : 'Save changes'
+})
+const selectedAdminPublicContentRows = computed(() => {
+  const item = selectedAdminPublicContent.value
+  return [
+    ['Status', titleize(item?.content_status) || 'Draft'],
+    ['Visibility', titleize(item?.visibility) || 'Public'],
+    ['Section', item?.section || 'Not applicable'],
+    ['Sort order', item?.sort_order ?? 'Not set'],
+    ['Published', item?.published_at ? formatEventDateTime(item.published_at) : 'No'],
   ]
 })
 
@@ -440,6 +481,52 @@ function eventPayload() {
   }
 }
 
+function populatePublicContentForm(item) {
+  const source = item ?? {}
+  publicContentForm.section = source.section ?? ''
+  publicContentForm.eyebrow = source.eyebrow ?? ''
+  publicContentForm.title = source.title ?? ''
+  publicContentForm.body = source.body ?? ''
+  publicContentForm.link_label = source.link_label ?? ''
+  publicContentForm.link_url = source.link_url ?? ''
+  publicContentForm.name = source.name ?? ''
+  publicContentForm.partner_type = source.partner_type ?? ''
+  publicContentForm.summary = source.summary ?? ''
+  publicContentForm.description = source.description ?? ''
+  publicContentForm.website_url = source.website_url ?? ''
+  publicContentForm.logo_url = source.logo_url ?? ''
+  publicContentForm.visibility = source.visibility ?? 'public'
+  publicContentForm.sort_order = source.sort_order === null || source.sort_order === undefined
+    ? ''
+    : String(source.sort_order)
+}
+
+function publicContentPayload() {
+  if (adminPublicContentStore.resource === 'partners') {
+    return {
+      name: publicContentForm.name.trim(),
+      partner_type: nullableString(publicContentForm.partner_type),
+      summary: publicContentForm.summary.trim(),
+      description: publicContentForm.description.trim(),
+      website_url: nullableString(publicContentForm.website_url),
+      logo_url: nullableString(publicContentForm.logo_url),
+      visibility: publicContentForm.visibility || null,
+      sort_order: nullableInteger(publicContentForm.sort_order),
+    }
+  }
+
+  return {
+    section: publicContentForm.section.trim(),
+    eyebrow: nullableString(publicContentForm.eyebrow),
+    title: publicContentForm.title.trim(),
+    body: publicContentForm.body.trim(),
+    link_label: nullableString(publicContentForm.link_label),
+    link_url: nullableString(publicContentForm.link_url),
+    visibility: publicContentForm.visibility || null,
+    sort_order: nullableInteger(publicContentForm.sort_order),
+  }
+}
+
 async function loadAdminEvents(contentStatus = adminEventsStore.listContentStatus) {
   await adminEventsStore.loadList({ contentStatus, force: true })
   populateEventForm(adminEventsStore.currentEvent)
@@ -480,6 +567,55 @@ async function archiveAdminEvent() {
 async function cancelAdminEvent() {
   await adminEventsStore.cancel(eventCancelForm.cancellation_note)
   populateEventForm(adminEventsStore.currentEvent)
+}
+
+async function loadAdminPublicContent({
+  resource = adminPublicContentStore.resource,
+  contentStatus = adminPublicContentStore.filters.content_status,
+  visibility = adminPublicContentStore.filters.visibility,
+} = {}) {
+  await adminPublicContentStore.loadList({ resource, contentStatus, visibility, force: true })
+  populatePublicContentForm(adminPublicContentStore.currentItem)
+}
+
+async function setAdminPublicContentResource(resource) {
+  await loadAdminPublicContent({ resource })
+}
+
+async function setAdminPublicContentStatus(status) {
+  await loadAdminPublicContent({ contentStatus: status })
+}
+
+async function selectAdminPublicContent(item) {
+  adminPublicContentStore.selectItem(item)
+  populatePublicContentForm(item)
+  await adminPublicContentStore.loadOne(item.id)
+  populatePublicContentForm(adminPublicContentStore.currentItem)
+}
+
+function startNewPublicContent() {
+  adminPublicContentStore.startNew()
+  populatePublicContentForm(null)
+}
+
+async function submitAdminPublicContent() {
+  const saved = await adminPublicContentStore.save(publicContentPayload())
+  populatePublicContentForm(saved ?? adminPublicContentStore.currentItem)
+}
+
+async function publishAdminPublicContent() {
+  await adminPublicContentStore.publish()
+  populatePublicContentForm(adminPublicContentStore.currentItem)
+}
+
+async function hideAdminPublicContent() {
+  await adminPublicContentStore.hide()
+  populatePublicContentForm(adminPublicContentStore.currentItem)
+}
+
+async function archiveAdminPublicContent() {
+  await adminPublicContentStore.archive()
+  populatePublicContentForm(adminPublicContentStore.currentItem)
 }
 
 async function loadAdminUsers(overrides = {}) {
@@ -540,6 +676,7 @@ async function signOut() {
   adminApplicationsStore.clear()
   adminStartupListingsStore.clear()
   adminEventsStore.clear()
+  adminPublicContentStore.clear()
   adminUsersStore.clear()
 }
 
@@ -547,13 +684,13 @@ const adminMetrics = computed(() => [
   ['Member approvals', String(adminQueueCount.value || 0)],
   ['Startup reviews', String(adminStartupQueueCount.value || 0)],
   ['Events in view', String(adminEventQueueCount.value || 0)],
-  ['Active members', '284'],
+  ['Public content', String(adminPublicContentCount.value || 0)],
 ])
 
 async function loadMemberDashboard() {
   await authUser.loadCurrentUser()
   const memberViews = ['dashboard', 'profile', 'my-startups']
-  const adminViews = ['admin', 'approvals', 'startup-review', 'events-admin', 'users']
+  const adminViews = ['admin', 'approvals', 'startup-review', 'events-admin', 'content-admin', 'users']
 
   if (authUser.isAuthenticated && memberViews.includes(currentView.value)) {
     await applicationStore.load().catch((error) => {
@@ -581,6 +718,11 @@ async function loadMemberDashboard() {
         if (error?.status !== 401 && error?.status !== 403) throw error
       })
     }
+    if (currentView.value === 'admin' || currentView.value === 'content-admin') {
+      await loadAdminPublicContent().catch((error) => {
+        if (error?.status !== 401 && error?.status !== 403) throw error
+      })
+    }
     if (currentView.value === 'admin' || currentView.value === 'users') {
       await loadAdminUsers().catch((error) => {
         if (error?.status !== 401 && error?.status !== 403) throw error
@@ -593,6 +735,7 @@ watch(() => myStartupsStore.currentListing, populateStartupForm)
 watch(() => adminApplicationsStore.currentApplication, populateAdminReviewForm)
 watch(() => adminStartupListingsStore.currentListing, populateAdminStartupReviewForm)
 watch(() => adminEventsStore.currentEvent, populateEventForm)
+watch(() => adminPublicContentStore.currentItem, populatePublicContentForm)
 watch(currentView, () => {
   loadMemberDashboard().catch(() => {})
 }, { immediate: true })
@@ -867,7 +1010,7 @@ watch(currentView, () => {
             <div class="table">
               <div class="table-row"><span>Review member applications</span><strong>{{ adminQueueCount }}</strong></div>
               <div class="table-row"><span>Review startup listings</span><strong>{{ adminStartupQueueCount }}</strong></div>
-              <div class="table-row"><span>Publish Demo Night</span><strong>Draft</strong></div>
+              <div class="table-row"><span>Public content in view</span><strong>{{ adminPublicContentCount }}</strong></div>
             </div>
           </article>
           <article class="card">
@@ -876,6 +1019,7 @@ watch(currentView, () => {
               <RouterLink class="button water" to="/app/approvals">Review members</RouterLink>
               <RouterLink class="button water" to="/app/startup-review">Review startups</RouterLink>
               <RouterLink class="button water" to="/app/events-admin">Create event</RouterLink>
+              <RouterLink class="button water" to="/app/content-admin">Edit public content</RouterLink>
               <RouterLink class="button water" to="/app/announcements">Create announcement</RouterLink>
               <button class="button secondary" type="button">Open Discourse admin</button>
             </div>
@@ -1288,24 +1432,113 @@ watch(currentView, () => {
       <section v-else-if="currentView === 'content-admin'" class="app-stack">
         <div class="app-hero">
           <p class="eyebrow">Public content</p>
-          <h1>Edit website cards without touching code.</h1>
-          <p class="lede">Admin CMS area for events, startups, partners, homepage cards, and visibility controls.</p>
+          <h1>Edit homepage cards and partners without touching code.</h1>
+          <p class="lede">Admins can create drafts, edit content, publish, hide, and archive the website content already backed by the Laravel CMS APIs.</p>
+          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
         </div>
-        <div class="grid two">
+        <div v-if="adminPublicContentStore.error" class="notice error-notice">
+          <p class="small">Could not load public content. Confirm this account has admin access and the backend is running.</p>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="filter-row">
+          <button
+            v-for="[resource, label] in adminPublicContentResources"
+            :key="resource"
+            class="button secondary"
+            :class="{ active: adminPublicContentStore.resource === resource }"
+            type="button"
+            @click="setAdminPublicContentResource(resource)"
+          >
+            {{ label }}
+          </button>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="filter-row">
+          <button
+            v-for="status in adminPublicContentStatusFilters"
+            :key="status"
+            class="button secondary"
+            :class="{ active: adminPublicContentStore.filters.content_status === status }"
+            type="button"
+            @click="setAdminPublicContentStatus(status)"
+          >
+            {{ titleize(status) }}
+          </button>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="grid two">
           <article class="card">
-            <h2>Content inventory</h2>
-            <div class="table">
-              <div class="table-row"><span>Neural Insights</span><strong>Published</strong></div>
-              <div class="table-row"><span>Founder support partner</span><strong>Draft</strong></div>
-              <div class="table-row"><span>Demo Night</span><strong>Hidden</strong></div>
-              <div class="table-row"><span>AutoFlow AI</span><strong>Pending review</strong></div>
+            <div class="row">
+              <h2>{{ adminPublicContentStore.resourceConfig.label }}</h2>
+              <div class="row gap">
+                <button class="button secondary" type="button" @click="loadAdminPublicContent()">Refresh</button>
+                <button class="button water" type="button" @click="startNewPublicContent">New</button>
+              </div>
+            </div>
+            <p v-if="adminPublicContentStore.loading" class="small">Loading public content.</p>
+            <p v-else-if="!adminPublicContentStore.hasItems" class="small">No public content in this status.</p>
+            <div v-else class="table">
+              <button
+                v-for="item in adminPublicContentStore.list"
+                :key="`${adminPublicContentStore.resource}-${item.id}`"
+                class="table-row table-button"
+                type="button"
+                @click="selectAdminPublicContent(item)"
+              >
+                <span>
+                  {{ item.title || item.name }}
+                  <br>
+                  <small>{{ item.section || item.partner_type || item.summary || 'No grouping' }}</small>
+                </span>
+                <strong>{{ titleize(item.content_status) }}</strong>
+              </button>
             </div>
           </article>
-          <form class="app-form card">
-            <label class="full">Title<input value="Neural Insights"></label>
-            <label>Type<select><option>Startup</option><option>Event</option><option>Partner</option><option>Homepage feature</option></select></label>
-            <label>Status<select><option v-for="status in contentStatuses" :key="status">{{ status }}</option></select></label>
-            <label class="full">Short description<textarea>AI-powered analytics platform for extracting actionable insights from complex datasets.</textarea></label>
+
+          <form class="app-form card" @submit.prevent="submitAdminPublicContent">
+            <div class="full row">
+              <div>
+                <span class="tag">{{ adminPublicContentStore.isCreatingNew ? `New ${adminPublicContentStore.resourceConfig.singularLabel.toLowerCase()}` : titleize(selectedAdminPublicContent?.content_status) || 'Draft' }}</span>
+                <h2>{{ adminPublicContentStore.selectedTitle }}</h2>
+              </div>
+            </div>
+
+            <div v-if="!adminPublicContentStore.isCreatingNew" class="table full">
+              <div v-for="[label, value] in selectedAdminPublicContentRows" :key="label" class="table-row"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+            </div>
+
+            <template v-if="adminPublicContentStore.resource === 'homepage_cards'">
+              <label>Section<input v-model="publicContentForm.section" :disabled="adminPublicContentStore.saving" required /></label>
+              <label>Eyebrow<input v-model="publicContentForm.eyebrow" :disabled="adminPublicContentStore.saving" /></label>
+              <label class="full">Title<input v-model="publicContentForm.title" :disabled="adminPublicContentStore.saving" required /></label>
+              <label class="full">Body<textarea v-model="publicContentForm.body" :disabled="adminPublicContentStore.saving" required /></label>
+              <label>Link label<input v-model="publicContentForm.link_label" :disabled="adminPublicContentStore.saving" /></label>
+              <label>Link URL<input v-model="publicContentForm.link_url" :disabled="adminPublicContentStore.saving" /></label>
+            </template>
+            <template v-else>
+              <label class="full">Name<input v-model="publicContentForm.name" :disabled="adminPublicContentStore.saving" required /></label>
+              <label>Partner type<input v-model="publicContentForm.partner_type" :disabled="adminPublicContentStore.saving" /></label>
+              <label class="full">Summary<textarea v-model="publicContentForm.summary" :disabled="adminPublicContentStore.saving" required /></label>
+              <label class="full">Description<textarea v-model="publicContentForm.description" :disabled="adminPublicContentStore.saving" required /></label>
+              <label class="full">Website URL<input v-model="publicContentForm.website_url" type="url" :disabled="adminPublicContentStore.saving" /></label>
+              <label class="full">Logo URL<input v-model="publicContentForm.logo_url" type="url" :disabled="adminPublicContentStore.saving" /></label>
+            </template>
+
+            <label>Visibility
+              <select v-model="publicContentForm.visibility" :disabled="adminPublicContentStore.saving">
+                <option v-for="visibility in contentVisibilities" :key="visibility" :value="visibility">{{ titleize(visibility) }}</option>
+              </select>
+            </label>
+            <label>Sort order<input v-model="publicContentForm.sort_order" type="number" min="0" :disabled="adminPublicContentStore.saving" /></label>
+
+            <div v-if="Object.keys(adminPublicContentValidationErrors).length" class="notice error-notice full">
+              <p v-for="(messages, field) in adminPublicContentValidationErrors" :key="field" class="small">{{ messages[0] }}</p>
+            </div>
+
+            <div class="button-grid full">
+              <button class="button primary" type="submit" :disabled="adminPublicContentStore.saving">{{ adminPublicContentSaveLabel }}</button>
+              <button v-if="!adminPublicContentStore.isCreatingNew && selectedAdminPublicContent?.content_status !== 'published'" class="button water" type="button" :disabled="adminPublicContentStore.saving" @click="publishAdminPublicContent">Publish</button>
+              <button v-if="!adminPublicContentStore.isCreatingNew && selectedAdminPublicContent?.content_status !== 'hidden'" class="button secondary" type="button" :disabled="adminPublicContentStore.saving" @click="hideAdminPublicContent">Hide</button>
+              <button v-if="!adminPublicContentStore.isCreatingNew && selectedAdminPublicContent?.content_status !== 'archived'" class="button secondary" type="button" :disabled="adminPublicContentStore.saving" @click="archiveAdminPublicContent">Archive</button>
+            </div>
+            <p v-if="adminPublicContentStore.currentLoading" class="small full">Loading full content detail.</p>
           </form>
         </div>
       </section>

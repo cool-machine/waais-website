@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Pick the next admin dashboard surface to wire — public content (homepage cards + partners) or announcements — using the same admin queue pattern already used for `/app/approvals`, `/app/startup-review`, `/app/events-admin`, and `/app/users`. Admin user directory shipped on May 2, 2026 at 18:05 CEST and added `frontend/src/stores/adminUsers.js` plus a live `/app/users` filter+search+role-transition surface backed by a new `GET /api/admin/users` index/show controller plus the existing super-admin promote/demote endpoints. Public content reuses the existing `/api/admin/homepage-cards` and `/api/admin/partners` backends; announcements still needs a fresh backend (migration, model, admin + member endpoints).
+Build announcements next. Admin public content management shipped on May 2, 2026 at 18:30 CEST and added `frontend/src/stores/adminPublicContent.js` plus a live `/app/content-admin` surface for homepage cards and partners backed by the existing `/api/admin/homepage-cards` and `/api/admin/partners` APIs. Announcements still needs a fresh backend first: migration, model, admin create/edit/publish/archive endpoints, member/dashboard read endpoints, then the admin UI and member notification surface.
 ```
 
 ## Maintenance

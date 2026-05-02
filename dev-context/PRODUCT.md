@@ -18,7 +18,7 @@ WAAIS is the Wharton Alumni AI Studio platform — a community platform for Whar
 - Frontend: Vue 3 (Composition API) + Vite + Tailwind v4 + Vue Router + Pinia
 - Backend: Laravel (PHP) — REST API, auth, events, Discourse SSO relay
 - Forum: Discourse (self-hosted on Azure VM)
-- Auth: Google OAuth via Laravel Socialite. New accounts start as pending and require admin approval. PennKey is a future possibility, not blocking v1.
+- Auth: Google OAuth via Laravel Socialite plus email-link sign-in for non-Google applicants. New accounts start as pending and require admin approval. PennKey is a future possibility, not blocking v1.
 - Sessions: Laravel Sanctum
 - Database: SQLite for local dev/test; Azure Database for PostgreSQL Flexible Server for staging/production. Migrations should stay portable; avoid Postgres-only or MySQL-only SQL.
 - Hosting: Microsoft Azure (non-profit grant, ~$2,000/year, ~$167/month cap)
@@ -157,7 +157,7 @@ Each event has:
 - Optional rejection email (admin chooses whether to send).
 - Event registration: confirmation and reminder emails. Reminder timing admin-configurable, default 2 days before the event.
 - Announcements: both email and dashboard notification.
-- Email provider deferred. Candidates: Azure Communication Services Email, Google Workspace / Google for Nonprofits.
+- Production email target: Azure Communication Services Email over SMTP. Local development uses Laravel's log mailer.
 
 ## Azure Cost Estimate
 
@@ -175,5 +175,5 @@ Each event has:
 - Final initial Discourse industry/region categories beyond the launch list above.
 - Other admins/super admins besides George.
 - API location: `whartonai.studio/api` vs. `api.whartonai.studio`.
-- Email provider for transactional mail.
+- Production email domain/Sender verification in Azure Communication Services.
 - Final brand/logo asset from George.
