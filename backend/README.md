@@ -89,6 +89,8 @@ The local `.env`, `vendor/`, and SQLite database are ignored development artifac
 
 Production email target: **Azure Communication Services Email over SMTP**.
 
+The broader Azure production plan lives in `../dev-context/AZURE_PRODUCTION.md`. Privacy/legal launch readiness lives in `../dev-context/PRIVACY_READINESS.md`.
+
 Reasoning:
 
 - The platform is already targeting Azure for hosting and database infrastructure.

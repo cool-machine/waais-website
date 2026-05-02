@@ -8,7 +8,7 @@ WAAIS is the Wharton Alumni AI Studio platform — a community platform for Whar
 
 - Domain: `whartonai.studio`
 - Forum subdomain: `forum.whartonai.studio` (Discourse, hosted on its own Azure VM)
-- API: `whartonai.studio/api` — exact subdomain vs. path TBD
+- API: `api.whartonai.studio`
 - Repository: `https://github.com/cool-machine/waais-website`
 - GitHub Pages preview: `https://cool-machine.github.io/waais-website/`
 - Owner: George (cool.lstm@gmail.com)
@@ -174,6 +174,5 @@ Each event has:
 - PennKey feasibility — can WAAIS verify PennKey without institutional approval, or is Penn/Wharton IT approval required?
 - Final initial Discourse industry/region categories beyond the launch list above.
 - Other admins/super admins besides George.
-- API location: `whartonai.studio/api` vs. `api.whartonai.studio`.
 - Production email domain/Sender verification in Azure Communication Services.
 - Final brand/logo asset from George.

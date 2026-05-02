@@ -79,6 +79,21 @@ Then commit the updated root-level files and push `main`. Direct deep links are 
 
 Live preview: `https://cool-machine.github.io/waais-website/`
 
+## Production Hosting
+
+The production hosting plan is documented in `../dev-context/AZURE_PRODUCTION.md`. Current target hostnames are:
+
+- `https://whartonai.studio` for the frontend.
+- `https://api.whartonai.studio` for the Laravel backend.
+
+Production frontend builds must set:
+
+```sh
+VITE_API_BASE_URL=https://api.whartonai.studio
+```
+
+Keep GitHub Pages as a preview path until the Azure/custom-domain production setup is executed.
+
 ## Implemented Routes
 
 - `/`

@@ -14,8 +14,10 @@ Read these files before doing anything else, in order:
 1. /Users/gg1900/coding/waais-website/dev-context/PRODUCT.md          — what we're building (stable)
 2. /Users/gg1900/coding/waais-website/dev-context/PLATFORM_MODEL.md   — data/access contract
 3. /Users/gg1900/coding/waais-website/dev-context/DEV_CONTEXT.md      — past, present, future, working rules, session log
-4. /Users/gg1900/coding/waais-website/backend/README.md               — backend validation status & commands
-5. /Users/gg1900/coding/waais-website/frontend/README.md              — frontend run/build/deploy commands
+4. /Users/gg1900/coding/waais-website/dev-context/AZURE_PRODUCTION.md — Azure production deployment plan
+5. /Users/gg1900/coding/waais-website/dev-context/PRIVACY_READINESS.md — privacy/legal launch checklist
+6. /Users/gg1900/coding/waais-website/backend/README.md               — backend validation status & commands
+7. /Users/gg1900/coding/waais-website/frontend/README.md              — frontend run/build/deploy commands
 
 Then, before writing any code:
 - Run git status; report current branch and whether the tree is clean.
@@ -33,7 +35,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Pick the next infrastructure/member slice. Announcement email fan-out shipped on May 2, 2026 at 22:13 CEST: publishing an `email_dashboard` announcement sends `AnnouncementPublished` emails to the audience-selected approved verified users, and scheduled `announcements:send-emails` retries missing deliveries with idempotency tracked in `announcement_email_deliveries`. The best next option is forum feed/public teaser wiring once Discourse is provisioned or API details are available; otherwise move to brand/deployment work.
+Pick the next launch-readiness slice. Azure production/privacy documentation shipped on May 2, 2026 at 22:37 CEST: production defaults are West Europe, production-only first launch, frontend at `whartonai.studio`, Laravel at `api.whartonai.studio`, PostgreSQL Flexible Server, ACS Email, organization Google OAuth, and Discourse deferred to final stage. Best next step is legal/privacy frontend readiness: replace placeholder legal copy and add/confirm membership application privacy acknowledgement before launch. After that, execute Azure deployment from `AZURE_PRODUCTION.md` once resource names/SKUs are chosen.
 ```
 
 ## Maintenance

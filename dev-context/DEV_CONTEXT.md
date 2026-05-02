@@ -7,8 +7,10 @@
 1. `dev-context/PRODUCT.md` — what we're building (stable)
 2. `dev-context/PLATFORM_MODEL.md` — data/access contract
 3. `dev-context/DEV_CONTEXT.md` — this file: past / present / future / session log
-4. `backend/README.md` — backend validation status and commands
-5. `frontend/README.md` — frontend run/build/deploy commands
+4. `dev-context/AZURE_PRODUCTION.md` — Azure production deployment plan and environment checklist
+5. `dev-context/PRIVACY_READINESS.md` — privacy/legal readiness checklist before launch
+6. `backend/README.md` — backend validation status and commands
+7. `frontend/README.md` — frontend run/build/deploy commands
 
 Project root: `/Users/gg1900/coding/waais-website`
 
@@ -23,7 +25,7 @@ Project root: `/Users/gg1900/coding/waais-website`
 - `/mockups/` — static HTML reference (public site, app/admin/auth, design system). Visual spec only.
 - `/frontend/` — Vue 3 + Vite + Tailwind v4 source. GitHub Pages serves `frontend/dist` from the repo root.
 - `/backend/` — Laravel 11 source.
-- `/dev-context/` — these docs (4 files: PRODUCT, PLATFORM_MODEL, DEV_CONTEXT, STARTER_PROMPT).
+- `/dev-context/` — project handoff and planning docs: PRODUCT, PLATFORM_MODEL, DEV_CONTEXT, AZURE_PRODUCTION, PRIVACY_READINESS, STARTER_PROMPT.
 
 ### Frontend (live)
 
@@ -79,18 +81,29 @@ Project root: `/Users/gg1900/coding/waais-website`
 ### Production database decision
 
 - Local dev/test: SQLite (in-memory for tests, file for dev).
-- Staging / production: Azure Database for PostgreSQL Flexible Server.
+- Production: Azure Database for PostgreSQL Flexible Server in West Europe by default.
+- Staging: deferred for budget reasons; production-only first launch is documented in `AZURE_PRODUCTION.md`.
 - Migrations and queries should stay portable. No Postgres-only or MySQL-only SQL.
+
+### Production deployment/privacy decisions
+
+- Organization name: Wharton Alumni AI Studio and Research Center.
+- Public domain: `whartonai.studio`; preferred production hostnames are `whartonai.studio` for the frontend, `api.whartonai.studio` for Laravel, and `forum.whartonai.studio` for Discourse later.
+- Azure subscription is active with about EUR 1,700/year grant budget; docs assume a conservative production-only launch to keep spend low.
+- Default Azure region: West Europe, keeping primary app/database data in the Azure Europe geography. International users can use the Europe-hosted app; do not create country-specific databases for v1.
+- Production OAuth should be created under the organization Google for Nonprofits/admin account, not George's personal test OAuth client.
+- Deployment plan lives in `dev-context/AZURE_PRODUCTION.md`; privacy launch checklist lives in `dev-context/PRIVACY_READINESS.md`.
 
 ## 2. Present — Current Slice
 
-No slice in progress. Announcement email fan-out shipped on May 2, 2026 at 22:13 CEST and merged to `main`.
+No slice in progress. Azure production/privacy documentation shipped on May 2, 2026 at 22:37 CEST and merged to `main`.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Forum feed/public teaser wiring.** Discourse SSO is implemented, but forum content still needs Discourse API integration once the forum is provisioned.
-2. **Brand/logo asset replacement** when George provides it.
-3. **Azure deployment** of app + backend, plus Discourse on Azure VM.
+1. **Legal/privacy frontend readiness.** Replace placeholder legal page copy and add/confirm membership application privacy acknowledgement before launch.
+2. **Azure deployment execution.** Use `AZURE_PRODUCTION.md` to create resources/configure production once exact resource names/SKUs are chosen in Azure.
+3. **Brand/logo asset replacement** when George provides it.
+4. **Forum/Discourse final stage.** Discourse SSO is implemented, but forum install/feed wiring waits until the final stage.
 
 ## Working Rules
 
@@ -104,6 +117,13 @@ No slice in progress. Announcement email fan-out shipped on May 2, 2026 at 22:13
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 2, 2026 22:37 CEST — Azure production/privacy documentation (shipped)**
+- Did: added `dev-context/AZURE_PRODUCTION.md` with the recommended Azure production shape: West Europe, production-only first launch, frontend at `whartonai.studio`, Laravel at `api.whartonai.studio`, PostgreSQL Flexible Server, ACS Email, scheduler requirements, env vars, DNS plan, deployment order, smoke checks, and cost guardrails
+- Did: added `dev-context/PRIVACY_READINESS.md` with launch privacy checklist: Europe-hosted primary data, public legal surfaces, membership form notice, privacy policy requirements, international-user handling, email/consent notes, and data-minimization rules
+- Did: documented decisions from George: organization name is Wharton Alumni AI Studio and Research Center, domain is `whartonai.studio`, Azure subscription is active with about EUR 1,700/year, DNS records are editable, production Google OAuth should use the organization Google for Nonprofits/admin account, and Discourse is final-stage work
+- Left off at: legal/privacy frontend readiness, then Azure deployment execution once resource names/SKUs are chosen in Azure
+- Watch out for: docs are a deployment plan, not an Azure deployment. No Azure resources were created and no production secrets were added.
 
 **May 2, 2026 22:13 CEST — Announcement email fan-out (shipped)**
 - Did: added `announcement_email_deliveries` to track per-announcement/per-user email sends by publication timestamp, keeping publish/retry paths idempotent while allowing republished announcements to send again
