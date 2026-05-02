@@ -4,7 +4,7 @@ Laravel API for the Wharton Alumni AI Studio platform.
 
 ## Current Scope
 
-This directory contains the Laravel API for WAAIS. It started as the backend foundation, but now includes the access model, Google/Sanctum auth foundations, membership application workflows, startup-listing workflows, public/member read APIs, email notifications, role management, admin-managed events, admin-managed partners, homepage CMS cards, announcements, and the DiscourseConnect SSO relay.
+This directory contains the Laravel API for WAAIS. It started as the backend foundation, but now includes the access model, Google/Sanctum auth foundations, membership application workflows, startup-listing workflows, public/member read APIs, email notifications, role management, admin-managed events, event reminder dispatch, admin-managed partners, homepage CMS cards, announcements, and the DiscourseConnect SSO relay.
 
 Implemented:
 
@@ -26,6 +26,7 @@ Implemented:
 - Admin user directory API endpoints (`GET /api/admin/users`, `GET /api/admin/users/{user}`) under `admin.access`. Index supports `permission_role`, `approval_status`, `affiliation_type`, free-text `q`, and `per_page` (1–100). Both endpoints use an explicit allowlisted projection; `password`, `remember_token`, and `google_id` are intentionally never serialized.
 - Public read API for startup listings: anonymous endpoints under `/api/public/startup-listings` (index, paginated) and `/api/public/startup-listings/{id}` (show), filtered strictly to `content_status = published` + `visibility = public`. Anything else is invisible (404 on show). Response shape is documented below.
 - Events backend: admin-managed content (no Submission & Admin Review pattern — events are not user-submitted). Migration adds `events` table with `content_status`/`visibility` plus event-specific fields (`starts_at`, `ends_at`, `location`, `format`, `image_url`, `registration_url`, `capacity_limit`, `waitlist_open`, `recap_content`, `reminder_days_before` default 2, `cancelled_at`, `cancellation_note`). Admin endpoints under `/api/admin/events` (index filterable by `content_status`/`visibility`/`time`, store, show, update, publish, hide, archive, cancel) write one `AuditLog` row per state-changing action. Cancellation is independent of `content_status`: a cancelled event remains visible to admins but is filtered out of every public surface. Public read API at `/api/public/events` (index + show) filters strictly to `content_status = published` AND `visibility IN (public, mixed)` AND `cancelled_at IS NULL`. Index supports `time = upcoming|past|all` (default `upcoming`); upcoming sorts ASC by `starts_at`, past sorts DESC. Response shape is documented below.
+- Event reminder dispatch: scheduled `events:send-reminders` command runs daily at 09:00, finds published non-cancelled events whose `starts_at` date matches today + `reminder_days_before`, and emails approved, verified members/admins/super-admins through `EventReminder`. Deliveries are tracked in `event_reminder_deliveries` by event, user, and event start time so reruns are idempotent while moved events can receive a fresh reminder for the new start time.
 - Partners backend: admin-managed content (no Submission & Admin Review pattern). Migration adds `partners` table with `content_status`/`visibility`, lifecycle timestamps, `name`, `partner_type`, `summary`, `description`, `website_url`, `logo_url`, and `sort_order`. Admin endpoints under `/api/admin/partners` (index filterable by `content_status`/`visibility`, store, show, update, publish, hide, archive) write one `AuditLog` row per state-changing action. Public read API at `/api/public/partners` (index + show) filters strictly to `content_status = published` AND `visibility IN (public, mixed)`. Response shape is documented below.
 - Homepage CMS cards backend: admin-managed content (no Submission & Admin Review pattern). Migration adds `homepage_cards` table with `content_status`/`visibility`, lifecycle timestamps, `section`, `eyebrow`, `title`, `body`, optional link fields, and `sort_order`. Admin endpoints under `/api/admin/homepage-cards` (index filterable by `section`/`content_status`/`visibility`, store, show, update, publish, hide, archive) write one `AuditLog` row per state-changing action. Public read API at `/api/public/homepage-cards` (index + show) filters strictly to `content_status = published` AND `visibility IN (public, mixed)`. Response shape is documented below.
 - Announcements backend: admin-managed content (no Submission & Admin Review pattern). Migration adds `announcements` table with `content_status`/`visibility`, lifecycle timestamps, `audience`, `channel`, title/body fields, and optional action link fields. Admin endpoints under `/api/admin/announcements` (index filterable by `content_status`/`visibility`/`audience`, store, show, update, publish, hide, archive) write one `AuditLog` row per state-changing action. Member read API at `/api/announcements` (index + show) is gated by `member.access` and filters strictly to published member-visible announcements. Response shape is documented below.
@@ -37,7 +38,6 @@ Implemented:
 
 Not implemented yet:
 
-- Event reminder dispatch (the `reminder_days_before` field is stored but no scheduled job sends the reminders yet).
 - Announcement email fan-out for announcements with `channel = email_dashboard`.
 
 ## Local Setup
@@ -52,13 +52,14 @@ php artisan migrate
 php artisan test
 ```
 
-Validation was completed locally on May 2, 2026 after the Discourse SSO relay slice:
+Validation was completed locally on May 2, 2026 after the event reminder dispatch slice:
 
 ```text
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 172 tests, 752 assertions
+composer validate --strict
+php artisan test       # last verified: 177 tests, 775 assertions
 php artisan migrate:fresh
 ```
 
