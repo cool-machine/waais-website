@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Build announcements next. Admin public content management shipped on May 2, 2026 at 18:30 CEST and added `frontend/src/stores/adminPublicContent.js` plus a live `/app/content-admin` surface for homepage cards and partners backed by the existing `/api/admin/homepage-cards` and `/api/admin/partners` APIs. Announcements still needs a fresh backend first: migration, model, admin create/edit/publish/archive endpoints, member/dashboard read endpoints, then the admin UI and member notification surface.
+Pick the next infrastructure/member slice. Announcements backend plus admin/member dashboard surfaces shipped on May 2, 2026 at 21:40 CEST: `announcements` table/model, `/api/admin/announcements` create/edit/publish/hide/archive, `/api/announcements` member read API, `frontend/src/stores/adminAnnouncements.js`, `frontend/src/stores/memberAnnouncements.js`, live `/app/announcements`, and a member-dashboard announcements panel. Good next options are Discourse SSO relay, event reminder dispatch, or announcement email fan-out for announcements with `channel = email_dashboard`.
 ```
 
 ## Maintenance

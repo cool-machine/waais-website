@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminAnnouncementController;
 use App\Http\Controllers\Api\Admin\AdminEventController;
 use App\Http\Controllers\Api\Admin\AdminHomepageCardController;
 use App\Http\Controllers\Api\Admin\AdminMembershipApplicationController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Api\Admin\AdminPartnerController;
 use App\Http\Controllers\Api\Admin\AdminStartupListingController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\Admin\AdminUserRoleController;
+use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\MembershipApplicationController;
 use App\Http\Controllers\Api\PublicEventController;
 use App\Http\Controllers\Api\PublicHomepageCardController;
@@ -74,6 +76,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/membership-application/reapply', [MembershipApplicationController::class, 'reapply']);
 
     Route::middleware('member.access')->group(function (): void {
+        Route::get('/announcements', [AnnouncementController::class, 'index']);
+        Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show']);
+
         Route::get('/startup-listings', [StartupListingController::class, 'index']);
         Route::post('/startup-listings', [StartupListingController::class, 'store']);
         Route::get('/startup-listings/{listing}', [StartupListingController::class, 'show']);
@@ -117,6 +122,14 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/homepage-cards/{homepageCard}/publish', [AdminHomepageCardController::class, 'publish']);
         Route::post('/homepage-cards/{homepageCard}/hide', [AdminHomepageCardController::class, 'hide']);
         Route::post('/homepage-cards/{homepageCard}/archive', [AdminHomepageCardController::class, 'archive']);
+
+        Route::get('/announcements', [AdminAnnouncementController::class, 'index']);
+        Route::post('/announcements', [AdminAnnouncementController::class, 'store']);
+        Route::get('/announcements/{announcement}', [AdminAnnouncementController::class, 'show']);
+        Route::patch('/announcements/{announcement}', [AdminAnnouncementController::class, 'update']);
+        Route::post('/announcements/{announcement}/publish', [AdminAnnouncementController::class, 'publish']);
+        Route::post('/announcements/{announcement}/hide', [AdminAnnouncementController::class, 'hide']);
+        Route::post('/announcements/{announcement}/archive', [AdminAnnouncementController::class, 'archive']);
 
         Route::get('/users', [AdminUserController::class, 'index']);
         Route::get('/users/{user}', [AdminUserController::class, 'show']);

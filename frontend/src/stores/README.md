@@ -18,11 +18,13 @@ One store per (backend resource family) × (access surface). The access surface 
 | `usePublicPartnersStore`         | `/api/public/partners`                           | Anonymous, public site     |
 | `usePublicHomepageCardsStore`    | `/api/public/homepage-cards`                     | Anonymous, public site     |
 | `useMembershipApplicationStore`  | `/api/membership-application`                    | Authenticated applicant    |
+| `useMemberAnnouncementsStore`    | `/api/announcements`                             | Authenticated member       |
 | `useMyStartupsStore`             | `/api/startup-listings`                          | Authenticated member       |
 | `useAdminMembershipApplicationsStore` | `/api/admin/applications`                  | Authenticated admin        |
 | `useAdminStartupListingsStore`   | `/api/admin/startup-listings`                    | Authenticated admin        |
 | `useAdminEventsStore`            | `/api/admin/events`                              | Authenticated admin        |
 | `useAdminPublicContentStore`     | `/api/admin/homepage-cards`, `/api/admin/partners` | Authenticated admin     |
+| `useAdminAnnouncementsStore`     | `/api/admin/announcements`                       | Authenticated admin        |
 | `useAdminUsersStore`             | `/api/admin/users` + role-transition endpoints   | Authenticated admin / super-admin |
 
 When a new resource lands (events, partners, announcements, applications), follow the same pattern: name the store after the resource family and the surface it serves. **Do not** put public and admin views into the same store; their fields and their auth semantics diverge.

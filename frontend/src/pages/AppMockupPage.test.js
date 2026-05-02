@@ -116,6 +116,25 @@ const PARTNER = {
   sort_order: 2,
 }
 
+const ANNOUNCEMENT = {
+  id: 71,
+  title: 'Forum categories are live',
+  summary: 'New member discussion spaces are available.',
+  body: 'We opened new member spaces for founders, operators, research, jobs, and member introductions.',
+  content_status: 'draft',
+  visibility: 'members_only',
+  audience: 'all_members',
+  channel: 'dashboard',
+  action_label: 'Open forum',
+  action_url: 'https://forum.whartonai.studio',
+}
+
+const MEMBER_ANNOUNCEMENT = {
+  ...ANNOUNCEMENT,
+  content_status: 'published',
+  published_at: '2026-05-02T18:00:00.000000Z',
+}
+
 async function mountAt(path) {
   const router = createRouter({
     history: createMemoryHistory(),
@@ -149,6 +168,15 @@ describe('member dashboard live state', () => {
     const fetchMock = vi.fn((url) => {
       if (url.includes('/api/user')) return Promise.resolve(jsonResponse(MEMBER))
       if (url.includes('/api/membership-application')) return Promise.resolve(jsonResponse({ data: APPLICATION }))
+      if (url.includes('/api/announcements')) {
+        return Promise.resolve(jsonResponse({
+          data: [MEMBER_ANNOUNCEMENT],
+          current_page: 1,
+          last_page: 1,
+          per_page: 3,
+          total: 1,
+        }))
+      }
       if (url.includes('/api/startup-listings')) return Promise.resolve(jsonResponse({ data: [] }))
       return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
     })
@@ -161,6 +189,7 @@ describe('member dashboard live state', () => {
     expect(wrapper.text()).toContain('Submitted')
     expect(wrapper.text()).toContain('Wharton MBA')
     expect(wrapper.text()).toContain('Update application')
+    expect(wrapper.text()).toContain('Forum categories are live')
     expect(wrapper.text()).not.toContain('Profile completion')
   })
 
@@ -568,6 +597,71 @@ describe('member dashboard live state', () => {
     expect(publishRequest[1].method).toBe('POST')
     expect(publishRequest[1].credentials).toBe('include')
     expect(wrapper.text()).toContain('No public content in this status.')
+  })
+
+  it('renders the admin announcements manager from the admin API', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.match(/\/api\/admin\/announcements\/71$/)) return Promise.resolve(jsonResponse({ data: ANNOUNCEMENT }))
+      if (url.includes('/api/admin/announcements')) {
+        return Promise.resolve(jsonResponse({
+          data: [ANNOUNCEMENT],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/announcements')
+
+    expect(wrapper.text()).toContain('Create, edit, publish, hide, and archive member announcements.')
+    expect(wrapper.text()).toContain('Forum categories are live')
+
+    const listRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/announcements?'))
+    expect(listRequest[0]).toContain('content_status=draft')
+    expect(listRequest[1].credentials).toBe('include')
+
+    await wrapper.find('.table-button').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('input[required]').element.value).toBe('Forum categories are live')
+  })
+
+  it('publishes the selected announcement and removes it from the draft queue', async () => {
+    const published = { ...ANNOUNCEMENT, content_status: 'published' }
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.includes('/api/admin/announcements/71/publish')) return Promise.resolve(jsonResponse({ data: published }))
+      if (url.match(/\/api\/admin\/announcements\/71$/)) return Promise.resolve(jsonResponse({ data: ANNOUNCEMENT }))
+      if (url.includes('/api/admin/announcements')) {
+        return Promise.resolve(jsonResponse({
+          data: [ANNOUNCEMENT],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/announcements')
+    await wrapper.find('.table-button').trigger('click')
+    await flushPromises()
+
+    const publishButton = wrapper.findAll('button').find((node) => node.text() === 'Publish')
+    expect(publishButton).toBeTruthy()
+    await publishButton.trigger('click')
+    await flushPromises()
+
+    const publishRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/announcements/71/publish'))
+    expect(publishRequest[1].method).toBe('POST')
+    expect(publishRequest[1].credentials).toBe('include')
+    expect(wrapper.text()).toContain('No announcements in this status.')
   })
 
   it('lets a super admin promote a member to admin from the user directory', async () => {

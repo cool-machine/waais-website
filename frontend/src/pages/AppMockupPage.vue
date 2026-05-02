@@ -9,11 +9,13 @@ import {
 } from '../data/platformModel'
 import { useAuthUserStore } from '../stores/authUser'
 import { useAdminEventsStore } from '../stores/adminEvents'
+import { useAdminAnnouncementsStore } from '../stores/adminAnnouncements'
 import { useAdminMembershipApplicationsStore } from '../stores/adminMembershipApplications'
 import { useAdminPublicContentStore } from '../stores/adminPublicContent'
 import { useAdminStartupListingsStore } from '../stores/adminStartupListings'
 import { useAdminUsersStore } from '../stores/adminUsers'
 import { useMembershipApplicationStore } from '../stores/membershipApplication'
+import { useMemberAnnouncementsStore } from '../stores/memberAnnouncements'
 import { useMyStartupsStore } from '../stores/myStartups'
 
 const route = useRoute()
@@ -21,9 +23,11 @@ const authUser = useAuthUserStore()
 const adminApplicationsStore = useAdminMembershipApplicationsStore()
 const adminStartupListingsStore = useAdminStartupListingsStore()
 const adminEventsStore = useAdminEventsStore()
+const adminAnnouncementsStore = useAdminAnnouncementsStore()
 const adminPublicContentStore = useAdminPublicContentStore()
 const adminUsersStore = useAdminUsersStore()
 const applicationStore = useMembershipApplicationStore()
+const memberAnnouncementsStore = useMemberAnnouncementsStore()
 const myStartupsStore = useMyStartupsStore()
 
 const startupForm = reactive({
@@ -81,6 +85,16 @@ const publicContentForm = reactive({
   logo_url: '',
   visibility: 'public',
   sort_order: '',
+})
+const announcementForm = reactive({
+  title: '',
+  summary: '',
+  body: '',
+  visibility: 'members_only',
+  audience: 'all_members',
+  channel: 'dashboard',
+  action_label: '',
+  action_url: '',
 })
 const userFilterForm = reactive({
   permission_role: 'all',
@@ -221,6 +235,8 @@ const adminPublicContentResources = [
   ['partners', 'Partners'],
 ]
 const adminPublicContentStatusFilters = ['all', 'draft', 'pending_review', 'published', 'hidden', 'archived']
+const adminAnnouncementStatusFilters = ['all', 'draft', 'published', 'hidden', 'archived']
+const adminAnnouncementAudienceFilters = ['all', 'all_members', 'admins']
 const adminUserRoleFilters = ['all', ...permissionRoles]
 const adminUserApprovalFilters = ['all', ...approvalStatuses]
 const selectedAdminUser = computed(() => adminUsersStore.currentUser)
@@ -272,6 +288,23 @@ const selectedAdminPublicContentRows = computed(() => {
     ['Section', item?.section || 'Not applicable'],
     ['Sort order', item?.sort_order ?? 'Not set'],
     ['Published', item?.published_at ? formatEventDateTime(item.published_at) : 'No'],
+  ]
+})
+const selectedAdminAnnouncement = computed(() => adminAnnouncementsStore.currentAnnouncement)
+const adminAnnouncementValidationErrors = computed(() => adminAnnouncementsStore.saveError?.body?.errors ?? {})
+const adminAnnouncementCount = computed(() => adminAnnouncementsStore.listMeta.total || adminAnnouncementsStore.list.length)
+const adminAnnouncementSaveLabel = computed(() => {
+  if (adminAnnouncementsStore.saving) return 'Saving...'
+  return adminAnnouncementsStore.isCreatingNew ? 'Create draft announcement' : 'Save changes'
+})
+const selectedAdminAnnouncementRows = computed(() => {
+  const announcement = selectedAdminAnnouncement.value
+  return [
+    ['Status', titleize(announcement?.content_status) || 'Draft'],
+    ['Visibility', titleize(announcement?.visibility) || 'Members only'],
+    ['Audience', titleize(announcement?.audience) || 'All members'],
+    ['Channel', titleize(announcement?.channel) || 'Dashboard'],
+    ['Published', announcement?.published_at ? formatEventDateTime(announcement.published_at) : 'No'],
   ]
 })
 
@@ -527,6 +560,31 @@ function publicContentPayload() {
   }
 }
 
+function populateAnnouncementForm(announcement) {
+  const source = announcement ?? {}
+  announcementForm.title = source.title ?? ''
+  announcementForm.summary = source.summary ?? ''
+  announcementForm.body = source.body ?? ''
+  announcementForm.visibility = source.visibility ?? 'members_only'
+  announcementForm.audience = source.audience ?? 'all_members'
+  announcementForm.channel = source.channel ?? 'dashboard'
+  announcementForm.action_label = source.action_label ?? ''
+  announcementForm.action_url = source.action_url ?? ''
+}
+
+function announcementPayload() {
+  return {
+    title: announcementForm.title.trim(),
+    summary: nullableString(announcementForm.summary),
+    body: announcementForm.body.trim(),
+    visibility: announcementForm.visibility || null,
+    audience: announcementForm.audience || null,
+    channel: announcementForm.channel || null,
+    action_label: nullableString(announcementForm.action_label),
+    action_url: nullableString(announcementForm.action_url),
+  }
+}
+
 async function loadAdminEvents(contentStatus = adminEventsStore.listContentStatus) {
   await adminEventsStore.loadList({ contentStatus, force: true })
   populateEventForm(adminEventsStore.currentEvent)
@@ -618,6 +676,54 @@ async function archiveAdminPublicContent() {
   populatePublicContentForm(adminPublicContentStore.currentItem)
 }
 
+async function loadAdminAnnouncements({
+  contentStatus = adminAnnouncementsStore.filters.content_status,
+  audience = adminAnnouncementsStore.filters.audience,
+} = {}) {
+  await adminAnnouncementsStore.loadList({ contentStatus, audience, force: true })
+  populateAnnouncementForm(adminAnnouncementsStore.currentAnnouncement)
+}
+
+async function setAdminAnnouncementStatus(status) {
+  await loadAdminAnnouncements({ contentStatus: status })
+}
+
+async function setAdminAnnouncementAudience(audience) {
+  await loadAdminAnnouncements({ audience })
+}
+
+async function selectAdminAnnouncement(announcement) {
+  adminAnnouncementsStore.selectAnnouncement(announcement)
+  populateAnnouncementForm(announcement)
+  await adminAnnouncementsStore.loadOne(announcement.id)
+  populateAnnouncementForm(adminAnnouncementsStore.currentAnnouncement)
+}
+
+function startNewAnnouncement() {
+  adminAnnouncementsStore.startNew()
+  populateAnnouncementForm(null)
+}
+
+async function submitAdminAnnouncement() {
+  const saved = await adminAnnouncementsStore.save(announcementPayload())
+  populateAnnouncementForm(saved ?? adminAnnouncementsStore.currentAnnouncement)
+}
+
+async function publishAdminAnnouncement() {
+  await adminAnnouncementsStore.publish()
+  populateAnnouncementForm(adminAnnouncementsStore.currentAnnouncement)
+}
+
+async function hideAdminAnnouncement() {
+  await adminAnnouncementsStore.hide()
+  populateAnnouncementForm(adminAnnouncementsStore.currentAnnouncement)
+}
+
+async function archiveAdminAnnouncement() {
+  await adminAnnouncementsStore.archive()
+  populateAnnouncementForm(adminAnnouncementsStore.currentAnnouncement)
+}
+
 async function loadAdminUsers(overrides = {}) {
   await adminUsersStore.loadList({
     permissionRole: overrides.permissionRole ?? userFilterForm.permission_role,
@@ -672,10 +778,12 @@ async function requestAppEmailLink() {
 async function signOut() {
   await authUser.signOut()
   applicationStore.clear()
+  memberAnnouncementsStore.clear()
   myStartupsStore.clear()
   adminApplicationsStore.clear()
   adminStartupListingsStore.clear()
   adminEventsStore.clear()
+  adminAnnouncementsStore.clear()
   adminPublicContentStore.clear()
   adminUsersStore.clear()
 }
@@ -684,17 +792,22 @@ const adminMetrics = computed(() => [
   ['Member approvals', String(adminQueueCount.value || 0)],
   ['Startup reviews', String(adminStartupQueueCount.value || 0)],
   ['Events in view', String(adminEventQueueCount.value || 0)],
-  ['Public content', String(adminPublicContentCount.value || 0)],
+  ['Announcements', String(adminAnnouncementCount.value || 0)],
 ])
 
 async function loadMemberDashboard() {
   await authUser.loadCurrentUser()
   const memberViews = ['dashboard', 'profile', 'my-startups']
-  const adminViews = ['admin', 'approvals', 'startup-review', 'events-admin', 'content-admin', 'users']
+  const adminViews = ['admin', 'approvals', 'startup-review', 'events-admin', 'content-admin', 'announcements', 'users']
 
   if (authUser.isAuthenticated && memberViews.includes(currentView.value)) {
     await applicationStore.load().catch((error) => {
       if (error?.status !== 401 && error?.status !== 404) throw error
+    })
+  }
+  if (authUser.canAccessMemberAreas && currentView.value === 'dashboard') {
+    await memberAnnouncementsStore.loadList({ perPage: 3 }).catch((error) => {
+      if (error?.status !== 401 && error?.status !== 403) throw error
     })
   }
   if (authUser.canAccessMemberAreas && currentView.value === 'my-startups') {
@@ -723,6 +836,11 @@ async function loadMemberDashboard() {
         if (error?.status !== 401 && error?.status !== 403) throw error
       })
     }
+    if (currentView.value === 'admin' || currentView.value === 'announcements') {
+      await loadAdminAnnouncements().catch((error) => {
+        if (error?.status !== 401 && error?.status !== 403) throw error
+      })
+    }
     if (currentView.value === 'admin' || currentView.value === 'users') {
       await loadAdminUsers().catch((error) => {
         if (error?.status !== 401 && error?.status !== 403) throw error
@@ -736,6 +854,7 @@ watch(() => adminApplicationsStore.currentApplication, populateAdminReviewForm)
 watch(() => adminStartupListingsStore.currentListing, populateAdminStartupReviewForm)
 watch(() => adminEventsStore.currentEvent, populateEventForm)
 watch(() => adminPublicContentStore.currentItem, populatePublicContentForm)
+watch(() => adminAnnouncementsStore.currentAnnouncement, populateAnnouncementForm)
 watch(currentView, () => {
   loadMemberDashboard().catch(() => {})
 }, { immediate: true })
@@ -867,6 +986,22 @@ watch(currentView, () => {
             <RouterLink v-if="canEditApplication" class="button water" to="/membership">Update application</RouterLink>
             <RouterLink v-else-if="authUser.isAuthenticated" class="button water" to="/membership">View application</RouterLink>
             <button v-else class="button primary" type="button" @click="authUser.startGoogleSignIn({ next: '/app/dashboard' })">Sign in with Google</button>
+          </article>
+          <article v-if="authUser.canAccessMemberAreas" class="card">
+            <h2>Announcements</h2>
+            <p v-if="memberAnnouncementsStore.loading" class="small">Loading announcements.</p>
+            <p v-else-if="memberAnnouncementsStore.error" class="small">Could not load announcements.</p>
+            <p v-else-if="!memberAnnouncementsStore.hasAnnouncements" class="small">No announcements have been published yet.</p>
+            <div v-else class="table">
+              <div v-for="announcement in memberAnnouncementsStore.list" :key="announcement.id" class="table-row">
+                <span>
+                  {{ announcement.title }}
+                  <br>
+                  <small>{{ announcement.summary || announcement.body }}</small>
+                </span>
+                <strong>{{ formatEventDateTime(announcement.published_at) || 'Published' }}</strong>
+              </div>
+            </div>
           </article>
         </div>
       </section>
@@ -1546,24 +1681,113 @@ watch(currentView, () => {
       <section v-else-if="currentView === 'announcements'" class="app-stack">
         <div class="app-hero">
           <p class="eyebrow">Announcements</p>
-          <h1>Broadcast updates to members or segments.</h1>
-          <p class="lede">Announcements should go through both email and dashboard notification when selected.</p>
+          <h1>Create, edit, publish, hide, and archive member announcements.</h1>
+          <p class="lede">Announcements are admin-authored content. Published items appear in the member dashboard for the selected audience.</p>
+          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
         </div>
-        <div class="grid two">
-          <form class="app-form card">
-            <label>Audience<select><option>All active members</option><option>Admins only</option><option>Event registrants</option></select></label>
-            <label>Channel<select><option>Email + dashboard</option><option>Dashboard only</option></select></label>
-            <label class="full">Subject<input value="New WAAIS forum categories are live"></label>
-            <label class="full">Message<textarea>We have opened new member discussion spaces for founders, operators, research, jobs, and member introductions.</textarea></label>
-          </form>
-          <article class="card mobile-preview">
-            <h2>Preview</h2>
-            <div class="mobile-card">
-              <p class="eyebrow">Announcement</p>
-              <h3>New WAAIS forum categories are live</h3>
-              <p class="small">We have opened new member discussion spaces for founders, operators, research, jobs, and member introductions.</p>
+        <div v-if="adminAnnouncementsStore.error" class="notice error-notice">
+          <p class="small">Could not load announcements. Confirm this account has admin access and the backend is running.</p>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="filter-row">
+          <button
+            v-for="status in adminAnnouncementStatusFilters"
+            :key="status"
+            class="button secondary"
+            :class="{ active: adminAnnouncementsStore.filters.content_status === status }"
+            type="button"
+            @click="setAdminAnnouncementStatus(status)"
+          >
+            {{ titleize(status) }}
+          </button>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="filter-row">
+          <button
+            v-for="audience in adminAnnouncementAudienceFilters"
+            :key="audience"
+            class="button secondary"
+            :class="{ active: adminAnnouncementsStore.filters.audience === audience }"
+            type="button"
+            @click="setAdminAnnouncementAudience(audience)"
+          >
+            {{ titleize(audience) }}
+          </button>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="grid two">
+          <article class="card">
+            <div class="row">
+              <h2>Announcements</h2>
+              <div class="row gap">
+                <button class="button secondary" type="button" @click="loadAdminAnnouncements()">Refresh</button>
+                <button class="button water" type="button" @click="startNewAnnouncement">New announcement</button>
+              </div>
+            </div>
+            <p v-if="adminAnnouncementsStore.loading" class="small">Loading announcements.</p>
+            <p v-else-if="!adminAnnouncementsStore.hasAnnouncements" class="small">No announcements in this status.</p>
+            <div v-else class="table">
+              <button
+                v-for="announcement in adminAnnouncementsStore.list"
+                :key="announcement.id"
+                class="table-row table-button"
+                type="button"
+                @click="selectAdminAnnouncement(announcement)"
+              >
+                <span>
+                  {{ announcement.title }}
+                  <br>
+                  <small>{{ announcement.summary || announcement.audience }}</small>
+                </span>
+                <strong>{{ titleize(announcement.content_status) }}</strong>
+              </button>
             </div>
           </article>
+
+          <form class="app-form card" @submit.prevent="submitAdminAnnouncement">
+            <div class="full row">
+              <div>
+                <span class="tag">{{ adminAnnouncementsStore.isCreatingNew ? 'New announcement' : titleize(selectedAdminAnnouncement?.content_status) || 'Draft' }}</span>
+                <h2>{{ adminAnnouncementsStore.selectedTitle }}</h2>
+              </div>
+            </div>
+
+            <div v-if="!adminAnnouncementsStore.isCreatingNew" class="table full">
+              <div v-for="[label, value] in selectedAdminAnnouncementRows" :key="label" class="table-row"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+            </div>
+
+            <label class="full">Title<input v-model="announcementForm.title" :disabled="adminAnnouncementsStore.saving" required /></label>
+            <label class="full">Summary<textarea v-model="announcementForm.summary" :disabled="adminAnnouncementsStore.saving" /></label>
+            <label class="full">Body<textarea v-model="announcementForm.body" :disabled="adminAnnouncementsStore.saving" required /></label>
+            <label>Audience
+              <select v-model="announcementForm.audience" :disabled="adminAnnouncementsStore.saving">
+                <option value="all_members">All members</option>
+                <option value="admins">Admins</option>
+              </select>
+            </label>
+            <label>Channel
+              <select v-model="announcementForm.channel" :disabled="adminAnnouncementsStore.saving">
+                <option value="dashboard">Dashboard</option>
+                <option value="email_dashboard">Email + dashboard</option>
+              </select>
+            </label>
+            <label>Visibility
+              <select v-model="announcementForm.visibility" :disabled="adminAnnouncementsStore.saving">
+                <option v-for="visibility in contentVisibilities" :key="visibility" :value="visibility">{{ titleize(visibility) }}</option>
+              </select>
+            </label>
+            <label>Action label<input v-model="announcementForm.action_label" :disabled="adminAnnouncementsStore.saving" /></label>
+            <label class="full">Action URL<input v-model="announcementForm.action_url" :disabled="adminAnnouncementsStore.saving" /></label>
+
+            <div v-if="Object.keys(adminAnnouncementValidationErrors).length" class="notice error-notice full">
+              <p v-for="(messages, field) in adminAnnouncementValidationErrors" :key="field" class="small">{{ messages[0] }}</p>
+            </div>
+
+            <div class="button-grid full">
+              <button class="button primary" type="submit" :disabled="adminAnnouncementsStore.saving">{{ adminAnnouncementSaveLabel }}</button>
+              <button v-if="!adminAnnouncementsStore.isCreatingNew && selectedAdminAnnouncement?.content_status !== 'published'" class="button water" type="button" :disabled="adminAnnouncementsStore.saving" @click="publishAdminAnnouncement">Publish</button>
+              <button v-if="!adminAnnouncementsStore.isCreatingNew && selectedAdminAnnouncement?.content_status !== 'hidden'" class="button secondary" type="button" :disabled="adminAnnouncementsStore.saving" @click="hideAdminAnnouncement">Hide</button>
+              <button v-if="!adminAnnouncementsStore.isCreatingNew && selectedAdminAnnouncement?.content_status !== 'archived'" class="button secondary" type="button" :disabled="adminAnnouncementsStore.saving" @click="archiveAdminAnnouncement">Archive</button>
+            </div>
+            <p v-if="adminAnnouncementsStore.currentLoading" class="small full">Loading full announcement detail.</p>
+          </form>
         </div>
       </section>
     </main>
