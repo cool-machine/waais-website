@@ -23,6 +23,13 @@ const MEMBER = {
   can_manage_admin_privileges: false,
 }
 
+const PENDING_USER = {
+  ...MEMBER,
+  approval_status: 'submitted',
+  permission_role: 'pending_user',
+  can_access_member_areas: false,
+}
+
 const APPLICATION = {
   id: 10,
   approval_status: 'submitted',
@@ -36,6 +43,20 @@ const APPLICATION = {
   experience_summary: 'Enterprise software',
   expertise_summary: 'AI systems',
   availability: 'Two hours per month',
+}
+
+const STARTUP = {
+  id: 7,
+  name: 'AutoFlow AI',
+  tagline: 'Workflow automation for B2B teams.',
+  description: 'AutoFlow AI helps operations teams orchestrate workflows.',
+  industry: 'AI Engineering',
+  stage: 'Seed',
+  location: 'New York',
+  founders: ['Daniel Reed', 'Priya Patel'],
+  submitter_role: 'Cofounder',
+  approval_status: 'submitted',
+  content_status: 'pending_review',
 }
 
 async function mountAt(path) {
@@ -71,6 +92,7 @@ describe('member dashboard live state', () => {
     const fetchMock = vi.fn((url) => {
       if (url.includes('/api/user')) return Promise.resolve(jsonResponse(MEMBER))
       if (url.includes('/api/membership-application')) return Promise.resolve(jsonResponse({ data: APPLICATION }))
+      if (url.includes('/api/startup-listings')) return Promise.resolve(jsonResponse({ data: [] }))
       return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
     })
     vi.stubGlobal('fetch', fetchMock)
@@ -89,6 +111,7 @@ describe('member dashboard live state', () => {
     const fetchMock = vi.fn((url) => {
       if (url.includes('/api/user')) return Promise.resolve(jsonResponse(MEMBER))
       if (url.includes('/api/membership-application')) return Promise.resolve(jsonResponse({ data: APPLICATION }))
+      if (url.includes('/api/startup-listings')) return Promise.resolve(jsonResponse({ data: [] }))
       return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
     })
     vi.stubGlobal('fetch', fetchMock)
@@ -99,5 +122,40 @@ describe('member dashboard live state', () => {
     expect(wrapper.text()).toContain('Enterprise software')
     expect(wrapper.text()).toContain('AI systems')
     expect(wrapper.text()).toContain('Two hours per month')
+  })
+
+  it('renders member-owned startup listings and selects one into the form', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(MEMBER))
+      if (url.includes('/api/membership-application')) return Promise.resolve(jsonResponse({ data: APPLICATION }))
+      if (url.includes('/api/startup-listings')) return Promise.resolve(jsonResponse({ data: [STARTUP] }))
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/my-startups')
+
+    expect(wrapper.text()).toContain('Submit and track your startup listings.')
+    expect(wrapper.text()).toContain('AutoFlow AI')
+    expect(wrapper.text()).toContain('Submitted')
+
+    await wrapper.find('.table-button').trigger('click')
+
+    expect(wrapper.find('input[required]').element.value).toBe('AutoFlow AI')
+    expect(wrapper.text()).toContain('Edit listing')
+  })
+
+  it('shows an approval-required state instead of a disabled startup form for pending users', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(PENDING_USER))
+      if (url.includes('/api/membership-application')) return Promise.resolve(jsonResponse({ data: APPLICATION }))
+      return Promise.resolve(jsonResponse({ message: 'Forbidden.' }, { status: 403 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/my-startups')
+
+    expect(wrapper.text()).toContain('Startup submissions open after member approval.')
+    expect(wrapper.find('form').exists()).toBe(false)
   })
 })

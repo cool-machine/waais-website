@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Build **member dashboard startup ownership wiring**. The member dashboard profile/application status slice is shipped, and the backend already exposes approved-member startup listing endpoints under `/api/startup-listings` (list own, show own, create, update). Add a member-surface Pinia store such as `useMyStartupsStore`, wire one dashboard view for owned startup listings, preserve the public startup store's anonymous behavior, and keep admin startup review work separate.
+Build **admin dashboard approvals queue wiring**, starting with one admin review surface. The member dashboard startup ownership slice is shipped. The backend already exposes admin membership application review endpoints under `/api/admin/applications` and admin startup-listing review endpoints under `/api/admin/startup-listings`. Add one admin-surface Pinia store and wire one dashboard view first, preferably the shared approvals queue shape for membership applications before expanding to startup listing review. Preserve member/public stores and keep super-admin user management separate.
 ```
 
 ## Maintenance

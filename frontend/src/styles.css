@@ -550,6 +550,20 @@ textarea:disabled {
   padding: 10px 0;
 }
 
+.table-button {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid rgba(100, 130, 200, 0.14);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.table-button:hover {
+  color: var(--white);
+}
+
 .app-stack .table-row strong {
   max-width: 360px;
   overflow-wrap: anywhere;

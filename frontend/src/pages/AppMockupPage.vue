@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, reactive, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import {
   approvalStatuses,
@@ -10,10 +10,26 @@ import {
 } from '../data/platformModel'
 import { useAuthUserStore } from '../stores/authUser'
 import { useMembershipApplicationStore } from '../stores/membershipApplication'
+import { useMyStartupsStore } from '../stores/myStartups'
 
 const route = useRoute()
 const authUser = useAuthUserStore()
 const applicationStore = useMembershipApplicationStore()
+const myStartupsStore = useMyStartupsStore()
+
+const startupForm = reactive({
+  name: '',
+  tagline: '',
+  description: '',
+  website_url: '',
+  logo_url: '',
+  industry: '',
+  stage: '',
+  location: '',
+  founders: '',
+  submitter_role: '',
+  linkedin_url: '',
+})
 
 const navGroups = [
   {
@@ -28,6 +44,7 @@ const navGroups = [
     items: [
       ['dashboard', 'Overview'],
       ['profile', 'Profile'],
+      ['my-startups', 'My startups'],
       ['my-events', 'My events'],
       ['forum-feed', 'Forum feed'],
     ],
@@ -81,6 +98,18 @@ const applicationSummaryRows = computed(() => [
   ['Availability', applicationStore.application?.availability || 'Not provided'],
 ])
 const canEditApplication = computed(() => authUser.isAuthenticated && applicationStore.canEdit)
+const selectedStartupStatus = computed(() => titleize(myStartupsStore.currentListing?.approval_status) || 'New listing')
+const startupSaveLabel = computed(() => {
+  if (myStartupsStore.saving) return 'Saving...'
+  if (myStartupsStore.currentListing?.id) return 'Update listing'
+  return 'Submit listing'
+})
+const startupValidationErrors = computed(() => myStartupsStore.saveError?.body?.errors ?? {})
+const canSaveStartup = computed(() => (
+  authUser.canAccessMemberAreas
+  && myStartupsStore.canEditCurrent
+  && !myStartupsStore.saving
+))
 
 function titleize(value) {
   return value
@@ -93,6 +122,67 @@ function titleize(value) {
 function fullName(application) {
   const parts = [application?.first_name, application?.last_name].filter(Boolean)
   return parts.join(' ')
+}
+
+function arrayToList(value) {
+  return Array.isArray(value) ? value.join(', ') : ''
+}
+
+function listToArray(value) {
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function nullableString(value) {
+  return value.trim() === '' ? null : value.trim()
+}
+
+function populateStartupForm(listing) {
+  const source = listing ?? {}
+  startupForm.name = source.name ?? ''
+  startupForm.tagline = source.tagline ?? ''
+  startupForm.description = source.description ?? ''
+  startupForm.website_url = source.website_url ?? ''
+  startupForm.logo_url = source.logo_url ?? ''
+  startupForm.industry = source.industry ?? ''
+  startupForm.stage = source.stage ?? ''
+  startupForm.location = source.location ?? ''
+  startupForm.founders = arrayToList(source.founders)
+  startupForm.submitter_role = source.submitter_role ?? ''
+  startupForm.linkedin_url = source.linkedin_url ?? ''
+}
+
+function startupPayload() {
+  return {
+    name: startupForm.name.trim(),
+    tagline: startupForm.tagline.trim(),
+    description: startupForm.description.trim(),
+    website_url: nullableString(startupForm.website_url),
+    logo_url: nullableString(startupForm.logo_url),
+    industry: startupForm.industry.trim(),
+    stage: nullableString(startupForm.stage),
+    location: nullableString(startupForm.location),
+    founders: listToArray(startupForm.founders),
+    submitter_role: nullableString(startupForm.submitter_role),
+    linkedin_url: nullableString(startupForm.linkedin_url),
+  }
+}
+
+function selectStartup(listing) {
+  myStartupsStore.selectListing(listing)
+  populateStartupForm(listing)
+}
+
+function startNewStartup() {
+  myStartupsStore.startNew()
+  populateStartupForm(null)
+}
+
+async function submitStartup() {
+  const saved = await myStartupsStore.save(startupPayload())
+  populateStartupForm(saved)
 }
 
 const metrics = {
@@ -111,7 +201,14 @@ async function loadMemberDashboard() {
       if (error?.status !== 401) throw error
     })
   }
+  if (authUser.canAccessMemberAreas) {
+    await myStartupsStore.loadList().catch((error) => {
+      if (error?.status !== 401 && error?.status !== 403) throw error
+    })
+  }
 }
+
+watch(() => myStartupsStore.currentListing, populateStartupForm)
 
 onMounted(() => {
   loadMemberDashboard().catch(() => {})
@@ -245,6 +342,77 @@ onMounted(() => {
             <RouterLink v-if="canEditApplication" class="button water" to="/membership">Edit application</RouterLink>
             <RouterLink v-else class="button water" to="/membership">Open membership page</RouterLink>
           </article>
+        </div>
+      </section>
+
+      <section v-else-if="currentView === 'my-startups'" class="app-stack">
+        <div class="app-hero">
+          <p class="eyebrow">My startups</p>
+          <h1>Submit and track your startup listings.</h1>
+          <p class="lede">Approved members can submit startup listings for admin review before they appear publicly.</p>
+          <p v-if="authUser.initialized && !authUser.canAccessMemberAreas" class="small">Approved member access is required before you can submit startup listings.</p>
+        </div>
+        <div v-if="myStartupsStore.error" class="notice error-notice">
+          <p class="small">Could not load your startup listings. Confirm this account has approved member access and the backend is running.</p>
+        </div>
+        <div class="grid two">
+          <article class="card">
+            <div class="row">
+              <h2>Listings</h2>
+              <button class="button secondary" type="button" @click="startNewStartup">New listing</button>
+            </div>
+            <p v-if="myStartupsStore.loading" class="small">Loading your startup listings.</p>
+            <p v-else-if="!myStartupsStore.hasListings" class="small">No startup listings submitted yet.</p>
+            <div v-else class="table">
+              <button
+                v-for="listing in myStartupsStore.list"
+                :key="listing.id"
+                class="table-row table-button"
+                type="button"
+                @click="selectStartup(listing)"
+              >
+                <span>{{ listing.name }}<br><small>{{ listing.tagline }}</small></span>
+                <strong>{{ titleize(listing.approval_status) }}</strong>
+              </button>
+            </div>
+          </article>
+
+          <article v-if="authUser.initialized && !authUser.canAccessMemberAreas" class="card">
+            <span class="tag">Approval required</span>
+            <h2>Startup submissions open after member approval.</h2>
+            <p class="small">Your account can still track membership status, but startup listings are accepted only from approved members. Once approved, this page will show the listing form.</p>
+            <RouterLink class="button water" to="/app/dashboard">View account status</RouterLink>
+          </article>
+
+          <form v-else class="app-form card" @submit.prevent="submitStartup">
+            <div class="full row">
+              <div>
+                <span class="tag">{{ selectedStartupStatus }}</span>
+                <h2>{{ myStartupsStore.currentListing?.id ? 'Edit listing' : 'New listing' }}</h2>
+              </div>
+            </div>
+            <label>Name *<input v-model="startupForm.name" required :disabled="!canSaveStartup" /></label>
+            <label>Industry *<input v-model="startupForm.industry" required :disabled="!canSaveStartup" /></label>
+            <label class="full">Tagline *<input v-model="startupForm.tagline" required :disabled="!canSaveStartup" /></label>
+            <label>Website<input v-model="startupForm.website_url" type="url" :disabled="!canSaveStartup" /></label>
+            <label>LinkedIn<input v-model="startupForm.linkedin_url" type="url" :disabled="!canSaveStartup" /></label>
+            <label>Stage<input v-model="startupForm.stage" placeholder="Seed, growth, public, etc." :disabled="!canSaveStartup" /></label>
+            <label>Location<input v-model="startupForm.location" :disabled="!canSaveStartup" /></label>
+            <label class="full">Founders<input v-model="startupForm.founders" placeholder="Comma-separated names" :disabled="!canSaveStartup" /></label>
+            <label class="full">Your role<input v-model="startupForm.submitter_role" placeholder="Founder, investor, operator, advisor..." :disabled="!canSaveStartup" /></label>
+            <label class="full">Description *<textarea v-model="startupForm.description" required :disabled="!canSaveStartup" /></label>
+            <label class="full">Logo URL<input v-model="startupForm.logo_url" type="url" :disabled="!canSaveStartup" /></label>
+
+            <div v-if="Object.keys(startupValidationErrors).length" class="notice error-notice full">
+              <p v-for="(messages, field) in startupValidationErrors" :key="field" class="small">{{ messages[0] }}</p>
+            </div>
+
+            <div class="row full">
+              <button class="button primary" type="submit" :disabled="!canSaveStartup">{{ startupSaveLabel }}</button>
+              <button class="button secondary" type="button" @click="startNewStartup">Clear</button>
+            </div>
+            <p v-if="myStartupsStore.currentListing?.approval_status === 'approved'" class="small full">Approved listings cannot be edited here. Ask an admin if the public listing needs a change.</p>
+          </form>
         </div>
       </section>
 

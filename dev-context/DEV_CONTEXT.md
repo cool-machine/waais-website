@@ -37,8 +37,9 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Auth/current-user store at `frontend/src/stores/authUser.js` — calls `/api/user`, treats 401 as signed-out state, exposes approval/permission access getters, and starts Google sign-in by redirecting to `/auth/google/redirect` on the backend.
 - Membership application UI at `/membership` is backed by `frontend/src/stores/membershipApplication.js` and the authenticated Laravel endpoints (`GET/POST/PATCH /api/membership-application`, `POST /api/membership-application/reapply`). Signed-out users are prompted into Google sign-in; pending/needs-more-info/rejected applicants can submit/update/reapply; approved applications render read-only.
 - Member dashboard profile/application status views at `/app/dashboard` and `/app/profile` consume `useAuthUserStore` plus `useMembershipApplicationStore` for live account, profile, and application status. Other member surfaces (`/app/my-events`, `/app/forum-feed`, future startup ownership views) remain queued.
+- Member dashboard startup ownership view at `/app/my-startups` consumes `frontend/src/stores/myStartups.js`, backed by authenticated member endpoints (`GET/POST/PATCH /api/startup-listings`). Approved members can submit new listings and update non-approved listings; approved listings render as not editable.
 - Pinia store at `frontend/src/stores/publicStartups.js` — `loadList`, `loadOne`, in-memory TTL cache so back-navigation between list and detail doesn't refetch. Convention for adding future stores (one per backend resource × access surface) is documented in `frontend/src/stores/README.md`.
-- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 69 specs across `pages/AppMockupPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
+- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 75 specs across `pages/AppMockupPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/myStartups`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
 - Build deployed to GitHub Pages via root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg` copied from `frontend/dist`. Deploy steps live in `frontend/README.md`.
 
 ### Backend (live, validated locally)
@@ -69,17 +70,16 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **member dashboard profile/application status wiring**. The `/app/dashboard` and `/app/profile` member views now render live current-user and membership-application state instead of static profile/application placeholders. Automated validation is clean: frontend `npm test` 69 passed, `npm run build` clean, `npm run test:routes` clean; backend `composer validate --strict` clean, `php artisan test` 138 passed / 610 assertions, and `php artisan migrate:fresh` clean. Manual browser smoke passed locally: dashboard/profile rendered the expected authenticated account/application fields and the membership edit link returned to `/membership`.
+No slice in progress. Last shipped slice: **member dashboard startup ownership wiring**. The `/app/my-startups` member view now lists authenticated member-owned startup listings and includes a submit/update form backed by `useMyStartupsStore`. Pending/non-approved users see an explicit approval-required state instead of a disabled form. Automated validation is clean: frontend `npm test` 76 passed, `npm run build` clean, `npm run test:routes` clean; backend `composer validate --strict` clean, `php artisan test` 138 passed / 610 assertions, and `php artisan migrate:fresh` clean. Manual browser smoke passed locally: approved-member startup submission/update worked, and the pending listing did not appear in the public `/startups` directory.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Member dashboard startup ownership wiring.** Add `useMyStartupsStore` for authenticated `/api/startup-listings`.
-2. **Admin dashboard frontend wiring** (approvals queue, user management, event management, public content, announcements). Multiple sub-slices.
-3. **Email-link application start** if George wants non-Google applicants to verify by email before the questionnaire opens.
-4. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
-5. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
-6. **Brand/logo asset replacement** when George provides it.
-7. **Azure deployment** of app + backend, plus Discourse on Azure VM.
+1. **Admin dashboard frontend wiring** (approvals queue, user management, event management, public content, announcements). Multiple sub-slices; start with membership/startup approvals queue.
+2. **Email-link application start** if George wants non-Google applicants to verify by email before the questionnaire opens.
+3. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
+4. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
+5. **Brand/logo asset replacement** when George provides it.
+6. **Azure deployment** of app + backend, plus Discourse on Azure VM.
 
 ## Working Rules
 
@@ -93,6 +93,16 @@ No slice in progress. Last shipped slice: **member dashboard profile/application
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 2, 2026 — Member dashboard startup ownership**
+- Did: added `frontend/src/stores/myStartups.js`, backed by authenticated member startup endpoints (`GET/POST/PATCH /api/startup-listings`) with list caching, select-new/select-existing behavior, create, update, and error state
+- Did: wired `/app/my-startups` into the member dashboard nav. Approved members can submit a startup listing, see owned listings with review status, select one into the form, and update non-approved listings. Pending/non-approved users see an explicit approval-required card instead of a disabled form
+- Did: preserved `usePublicStartupsStore` as an anonymous public directory store; pending member-owned listings remain hidden from `/startups` until admin approval publishes them
+- Did: added store tests and component tests for member-owned listing render/select and pending-user approval-required state. Frontend validation passed at `npm test` 76 specs, `npm run build`, and `npm run test:routes`
+- Did: required backend validation still passed: `composer validate --strict`, `php artisan test` 138 passed / 610 assertions, and `php artisan migrate:fresh`
+- Did: manually smoked the visible dashboard flow locally. Approved-member startup submission/update worked, and the submitted listing did not appear in the public startup directory
+- Left off at: ready for the next slice — admin dashboard approvals queue wiring, starting with membership/startup applications
+- Watch out for: startup URL fields are optional, but browser URL inputs require complete URLs with `https://` if filled. This is native browser validation, not a backend error
 
 **May 2, 2026 — Member dashboard profile/application status**
 - Did: rewired `/app/dashboard` to show live account status, membership-application status, affiliation, permission role, and a profile snapshot from `useAuthUserStore` plus `useMembershipApplicationStore`
