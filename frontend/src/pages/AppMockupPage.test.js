@@ -30,6 +30,12 @@ const PENDING_USER = {
   can_access_member_areas: false,
 }
 
+const ADMIN = {
+  ...MEMBER,
+  permission_role: 'admin',
+  can_publish_public_content: true,
+}
+
 const APPLICATION = {
   id: 10,
   approval_status: 'submitted',
@@ -43,6 +49,20 @@ const APPLICATION = {
   experience_summary: 'Enterprise software',
   expertise_summary: 'AI systems',
   availability: 'Two hours per month',
+}
+
+const ADMIN_APPLICATION = {
+  ...APPLICATION,
+  id: 12,
+  email: 'ada@example.com',
+  first_name: 'Ada',
+  last_name: 'Lovelace',
+  applicant: {
+    id: 99,
+    name: 'Ada Lovelace',
+    email: 'ada@example.com',
+  },
+  linkedin_url: 'https://www.linkedin.com/in/ada',
 }
 
 const STARTUP = {
@@ -157,5 +177,114 @@ describe('member dashboard live state', () => {
 
     expect(wrapper.text()).toContain('Startup submissions open after member approval.')
     expect(wrapper.find('form').exists()).toBe(false)
+  })
+
+  it('renders the admin membership approvals queue from the admin API', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.includes('/api/admin/applications/12')) return Promise.resolve(jsonResponse({ data: ADMIN_APPLICATION }))
+      if (url.includes('/api/admin/applications')) {
+        return Promise.resolve(jsonResponse({
+          data: [ADMIN_APPLICATION],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/approvals')
+
+    expect(wrapper.text()).toContain('Review new member applications.')
+    expect(wrapper.text()).toContain('Ada Lovelace')
+    expect(wrapper.text()).toContain('ada@example.com')
+    expect(wrapper.text()).toContain('Wharton MBA')
+    expect(wrapper.text()).toContain('Approve')
+
+    const listRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/applications?'))
+    expect(listRequest[1].credentials).toBe('include')
+  })
+
+  it('posts an approval transition from the selected admin application', async () => {
+    const approved = { ...ADMIN_APPLICATION, approval_status: 'approved' }
+    const fetchMock = vi.fn((url, init = {}) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.includes('/api/admin/applications/12/approve')) return Promise.resolve(jsonResponse({ data: approved }))
+      if (url.includes('/api/admin/applications/12')) return Promise.resolve(jsonResponse({ data: ADMIN_APPLICATION }))
+      if (url.includes('/api/admin/applications')) {
+        return Promise.resolve(jsonResponse({
+          data: [ADMIN_APPLICATION],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/approvals')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    const approveRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/applications/12/approve'))
+    expect(approveRequest[1].method).toBe('POST')
+    expect(approveRequest[1].credentials).toBe('include')
+    expect(JSON.parse(approveRequest[1].body)).toEqual({ review_notes: null })
+    expect(wrapper.text()).toContain('Approved')
+  })
+
+  it('shows a sign-out action for authenticated users and clears app state after logout', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(MEMBER))
+      if (url.includes('/api/logout')) return Promise.resolve(jsonResponse({ ok: true }))
+      if (url.includes('/api/membership-application')) return Promise.resolve(jsonResponse({ data: APPLICATION }))
+      if (url.includes('/api/startup-listings')) return Promise.resolve(jsonResponse({ data: [STARTUP] }))
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/dashboard')
+
+    await wrapper.find('button.button.secondary').trigger('click')
+    await flushPromises()
+
+    const logoutRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/logout'))
+    expect(logoutRequest[1].method).toBe('POST')
+    expect(logoutRequest[1].credentials).toBe('include')
+    expect(wrapper.text()).not.toContain('Sign out')
+  })
+
+  it('shows only sign-in choices before authentication', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse({ message: 'Unauthenticated.' }, { status: 401 }))
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/sign-in')
+
+    expect(wrapper.text()).toContain('Sign in with Google')
+    expect(wrapper.text()).toContain('Sign in with email')
+    expect(wrapper.text()).not.toContain('Sign out')
+  })
+
+  it('shows only sign-out controls after authentication on the sign-in view', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(MEMBER))
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/sign-in')
+
+    expect(wrapper.text()).toContain('Sign out')
+    expect(wrapper.text()).not.toContain('Sign in with Google')
+    expect(wrapper.text()).not.toContain('Sign in with email')
+    expect(wrapper.findAll('.app-nav-group').some((group) => group.text().includes('Auth'))).toBe(false)
   })
 })

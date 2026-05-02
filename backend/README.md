@@ -14,6 +14,7 @@ Implemented:
 - Google OAuth redirect/callback routes using Laravel Socialite, including safe relative `next` paths for frontend flows that need to return to their originating page.
 - Google identity provisioning that creates pending users and preserves approved member access.
 - Authenticated `/api/user` endpoint returning access-model flags.
+- Authenticated `POST /api/logout` endpoint for ending browser-session auth. It invalidates the session when one is attached and remains safe for token-style Sanctum requests without a session store.
 - Member-only API route middleware backed by `canAccessMemberAreas()`.
 - Applicant-owned membership application API endpoints for show, submit, update, and rejected-applicant reapply.
 - Admin membership application review API endpoints for queue (filterable), single application detail with revisions, approve, reject, and request-more-info, with audit-log entries on every admin action and an `admin.access` middleware backed by `User::isAdmin()`.
@@ -48,13 +49,13 @@ php artisan migrate
 php artisan test
 ```
 
-Validation was completed locally on May 2, 2026 after the membership application UI slice:
+Validation was completed locally on May 2, 2026 after the admin membership approvals + sign-out frontend slice:
 
 ```text
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 138 tests, 610 assertions
+php artisan test       # last verified: 139 tests, 612 assertions
 php artisan migrate:fresh
 ```
 

@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
-import { ApiError, getJson, redirectToGoogleSignIn } from '../lib/api'
+import { ApiError, getJson, redirectToGoogleSignIn, sendJson } from '../lib/api'
 
 export const useAuthUserStore = defineStore('authUser', {
   state: () => ({
     user: null,
     initialized: false,
     loading: false,
+    signingOut: false,
     error: null,
   }),
   getters: {
@@ -49,10 +50,31 @@ export const useAuthUserStore = defineStore('authUser', {
       redirectToGoogleSignIn(options)
     },
 
+    async signOut({ signal } = {}) {
+      this.signingOut = true
+      this.error = null
+
+      try {
+        await sendJson('/api/logout', {
+          method: 'POST',
+          auth: true,
+          signal,
+        })
+        this.user = null
+        this.initialized = true
+      } catch (error) {
+        this.error = error
+        throw error
+      } finally {
+        this.signingOut = false
+      }
+    },
+
     clear() {
       this.user = null
       this.initialized = false
       this.loading = false
+      this.signingOut = false
       this.error = null
     },
   },

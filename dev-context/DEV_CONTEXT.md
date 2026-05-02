@@ -38,8 +38,10 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Membership application UI at `/membership` is backed by `frontend/src/stores/membershipApplication.js` and the authenticated Laravel endpoints (`GET/POST/PATCH /api/membership-application`, `POST /api/membership-application/reapply`). Signed-out users are prompted into Google sign-in; pending/needs-more-info/rejected applicants can submit/update/reapply; approved applications render read-only.
 - Member dashboard profile/application status views at `/app/dashboard` and `/app/profile` consume `useAuthUserStore` plus `useMembershipApplicationStore` for live account, profile, and application status. Other member surfaces (`/app/my-events`, `/app/forum-feed`, future startup ownership views) remain queued.
 - Member dashboard startup ownership view at `/app/my-startups` consumes `frontend/src/stores/myStartups.js`, backed by authenticated member endpoints (`GET/POST/PATCH /api/startup-listings`). Approved members can submit new listings and update non-approved listings; approved listings render as not editable.
+- Admin dashboard membership approvals view at `/app/approvals` consumes `frontend/src/stores/adminMembershipApplications.js`, backed by authenticated admin endpoints (`GET /api/admin/applications`, `GET /api/admin/applications/{id}`, and approve/reject/request-info transitions). It is the first live admin review surface; startup listing review remains the next admin queue surface.
+- Auth UI now has mutually exclusive states: signed-out users see "Sign in with Google" and disabled future "Sign in with email"; signed-in users see account context plus "Sign out". Backend `POST /api/logout` clears browser-session auth when present and the frontend clears authenticated stores after logout.
 - Pinia store at `frontend/src/stores/publicStartups.js` — `loadList`, `loadOne`, in-memory TTL cache so back-navigation between list and detail doesn't refetch. Convention for adding future stores (one per backend resource × access surface) is documented in `frontend/src/stores/README.md`.
-- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 75 specs across `pages/AppMockupPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/myStartups`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
+- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 88 specs across `pages/AppMockupPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/myStartups`, `stores/adminMembershipApplications`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
 - Build deployed to GitHub Pages via root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg` copied from `frontend/dist`. Deploy steps live in `frontend/README.md`.
 
 ### Backend (live, validated locally)
@@ -70,11 +72,11 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **member dashboard startup ownership wiring**. The `/app/my-startups` member view now lists authenticated member-owned startup listings and includes a submit/update form backed by `useMyStartupsStore`. Pending/non-approved users see an explicit approval-required state instead of a disabled form. Automated validation is clean: frontend `npm test` 76 passed, `npm run build` clean, `npm run test:routes` clean; backend `composer validate --strict` clean, `php artisan test` 138 passed / 610 assertions, and `php artisan migrate:fresh` clean. Manual browser smoke passed locally: approved-member startup submission/update worked, and the pending listing did not appear in the public `/startups` directory.
+No slice in progress. Last shipped slice: **admin dashboard membership approvals queue wiring + sign-out** on May 2, 2026 at 15:29 CEST. The `/app/approvals` admin view now lists membership applications from `/api/admin/applications`, loads application detail, and supports approve, request-more-info, and reject transitions through `useAdminMembershipApplicationsStore`. Signed-out users see sign-in choices; signed-in users see sign-out only, backed by `POST /api/logout`. Automated validation is clean: frontend `npm test` 88 passed, `npm run build` clean, `npm run test:routes` clean; backend `composer validate --strict` clean, `php artisan test` 139 passed / 612 assertions, and `php artisan migrate:fresh` clean. Manual browser smoke passed locally: George saw Ada Lovelace in the queue; sign-out was then simplified to the mutually-exclusive state and still needs one final visual click check after refresh.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Admin dashboard frontend wiring** (approvals queue, user management, event management, public content, announcements). Multiple sub-slices; start with membership/startup approvals queue.
+1. **Admin dashboard startup-listing review wiring.** Extend the admin approvals queue pattern from membership applications to `/api/admin/startup-listings`, keeping it in a separate admin-surface store and preserving super-admin user management as its own later surface.
 2. **Email-link application start** if George wants non-Google applicants to verify by email before the questionnaire opens.
 3. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
 4. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
@@ -94,7 +96,17 @@ No slice in progress. Last shipped slice: **member dashboard startup ownership w
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
 
-**May 2, 2026 — Member dashboard startup ownership**
+**May 2, 2026 15:29 CEST — Admin dashboard membership approvals queue + sign-out**
+- Did: added `frontend/src/stores/adminMembershipApplications.js`, backed by authenticated admin membership endpoints (`GET /api/admin/applications`, `GET /api/admin/applications/{id}`, `POST approve`, `POST reject`, `POST request-info`) with list pagination metadata, selected detail loading, transition actions, validation-error state, and queue removal after terminal status changes
+- Did: rewired `/app/approvals` from static mock rows to the live admin membership application queue. Approved admins can filter by status, select an applicant, review affiliation/application context, add review notes, approve, request more info, reject, and choose whether to send the optional rejection email
+- Did: added `POST /api/logout`, `useAuthUserStore.signOut()`, and a mutually-exclusive auth UI: signed-out state shows Google/email sign-in options; signed-in state shows sign-out only and hides the Auth nav group
+- Did: kept this as a membership-only admin surface. Startup listing review remains separate so member/public/startup stores stay isolated from admin review projections
+- Did: added store/component/auth tests for queue loading, approve transition, logout, signed-out auth choices, and signed-in sign-out-only state. Frontend validation passed at `npm test` 88 specs, `npm run build`, and `npm run test:routes`
+- Did: required backend validation still passed: `composer validate --strict`, `php artisan test` 139 passed / 612 assertions, and `php artisan migrate:fresh`
+- Left off at: ready for the next slice — admin dashboard startup-listing review wiring using the same admin queue pattern against `/api/admin/startup-listings`
+- Watch out for: `php artisan migrate:fresh` resets local SQLite data. Reseed `cool.lstm@gmail.com` as admin plus a submitted application if continuing manual browser checks. George confirmed Ada Lovelace rendered before the final sign-out simplification; hard-refresh and click sign-out once more after pulling/serving the final build
+
+**May 2, 2026 13:00 CEST — Member dashboard startup ownership**
 - Did: added `frontend/src/stores/myStartups.js`, backed by authenticated member startup endpoints (`GET/POST/PATCH /api/startup-listings`) with list caching, select-new/select-existing behavior, create, update, and error state
 - Did: wired `/app/my-startups` into the member dashboard nav. Approved members can submit a startup listing, see owned listings with review status, select one into the form, and update non-approved listings. Pending/non-approved users see an explicit approval-required card instead of a disabled form
 - Did: preserved `usePublicStartupsStore` as an anonymous public directory store; pending member-owned listings remain hidden from `/startups` until admin approval publishes them
@@ -284,4 +296,4 @@ No slice in progress. Last shipped slice: **member dashboard startup ownership w
 
 ---
 
-*Last updated: May 1, 2026*
+*Last updated: May 2, 2026 15:29 CEST*

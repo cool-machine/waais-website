@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Build **admin dashboard approvals queue wiring**, starting with one admin review surface. The member dashboard startup ownership slice is shipped. The backend already exposes admin membership application review endpoints under `/api/admin/applications` and admin startup-listing review endpoints under `/api/admin/startup-listings`. Add one admin-surface Pinia store and wire one dashboard view first, preferably the shared approvals queue shape for membership applications before expanding to startup listing review. Preserve member/public stores and keep super-admin user management separate.
+Build **admin dashboard startup-listing review wiring**. The membership approvals queue + sign-out slice shipped on May 2, 2026 at 15:29 CEST and added `useAdminMembershipApplicationsStore`, live `/app/approvals` membership review actions, and mutually-exclusive sign-in/sign-out UI backed by `POST /api/logout`. The backend already exposes matching admin startup-listing review endpoints under `/api/admin/startup-listings`. Add a separate admin-surface startup review store and wire the next admin dashboard view or tab using the same queue/detail/transition shape. Preserve member/public stores and keep super-admin user management separate.
 ```
 
 ## Maintenance

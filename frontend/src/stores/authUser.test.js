@@ -106,3 +106,25 @@ describe('startGoogleSignIn', () => {
     expect(location.assign).toHaveBeenCalledWith('http://localhost:8000/auth/google/redirect?next=%2Fmembership')
   })
 })
+
+describe('signOut', () => {
+  it('posts to the backend logout route and clears the current user', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ok: true }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const store = useAuthUserStore()
+    store.user = MEMBER
+    store.initialized = true
+
+    await store.signOut()
+
+    expect(store.user).toBeNull()
+    expect(store.initialized).toBe(true)
+    expect(store.signingOut).toBe(false)
+
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toContain('/api/logout')
+    expect(init.method).toBe('POST')
+    expect(init.credentials).toBe('include')
+  })
+})

@@ -12,7 +12,9 @@ use App\Http\Controllers\Api\PublicHomepageCardController;
 use App\Http\Controllers\Api\PublicPartnerController;
 use App\Http\Controllers\Api\PublicStartupListingController;
 use App\Http\Controllers\Api\StartupListingController;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Public, anonymous endpoints. Filtered to content_status=published and
@@ -47,6 +49,17 @@ Route::middleware('auth:sanctum')->group(function (): void {
             'can_publish_public_content' => $user->canPublishPublicContent(),
             'can_manage_admin_privileges' => $user->canManageAdminPrivileges(),
         ];
+    });
+
+    Route::post('/logout', function (Request $request): JsonResponse {
+        Auth::guard('web')->logout();
+
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
+        return response()->json(['ok' => true]);
     });
 
     Route::get('/member/ping', fn (): array => ['ok' => true])->middleware('member.access');

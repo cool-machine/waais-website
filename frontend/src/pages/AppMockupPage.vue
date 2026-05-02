@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import {
   approvalStatuses,
@@ -9,11 +9,13 @@ import {
   permissionRoles,
 } from '../data/platformModel'
 import { useAuthUserStore } from '../stores/authUser'
+import { useAdminMembershipApplicationsStore } from '../stores/adminMembershipApplications'
 import { useMembershipApplicationStore } from '../stores/membershipApplication'
 import { useMyStartupsStore } from '../stores/myStartups'
 
 const route = useRoute()
 const authUser = useAuthUserStore()
+const adminApplicationsStore = useAdminMembershipApplicationsStore()
 const applicationStore = useMembershipApplicationStore()
 const myStartupsStore = useMyStartupsStore()
 
@@ -29,6 +31,10 @@ const startupForm = reactive({
   founders: '',
   submitter_role: '',
   linkedin_url: '',
+})
+const adminReviewForm = reactive({
+  review_notes: '',
+  send_email: false,
 })
 
 const navGroups = [
@@ -63,6 +69,13 @@ const navGroups = [
 ]
 
 const currentView = computed(() => route.params.view || 'sign-in')
+const visibleNavGroups = computed(() => {
+  if (!authUser.isAuthenticated) {
+    return navGroups
+  }
+
+  return navGroups.filter((group) => group.label !== 'Auth')
+})
 
 const displayName = computed(() => authUser.user?.name || authUser.user?.email || 'member')
 const accountStatusLabel = computed(() => {
@@ -110,6 +123,21 @@ const canSaveStartup = computed(() => (
   && myStartupsStore.canEditCurrent
   && !myStartupsStore.saving
 ))
+const canAccessAdminDashboard = computed(() => authUser.canPublishPublicContent)
+const selectedApplication = computed(() => adminApplicationsStore.currentApplication)
+const selectedApplicationRows = computed(() => {
+  const application = selectedApplication.value
+  return [
+    ['Affiliation', titleize(application?.affiliation_type) || 'Not provided'],
+    ['School', application?.school_affiliation || 'Not provided'],
+    ['Graduation year', application?.graduation_year || 'Not provided'],
+    ['Location', [application?.primary_location, application?.secondary_location].filter(Boolean).join(' / ') || 'Not provided'],
+    ['LinkedIn', application?.linkedin_url || 'Not provided'],
+    ['Availability', application?.availability || 'Not provided'],
+  ]
+})
+const adminValidationErrors = computed(() => adminApplicationsStore.saveError?.body?.errors ?? {})
+const adminQueueCount = computed(() => adminApplicationsStore.listMeta.total || adminApplicationsStore.list.length)
 
 function titleize(value) {
   return value
@@ -154,6 +182,11 @@ function populateStartupForm(listing) {
   startupForm.linkedin_url = source.linkedin_url ?? ''
 }
 
+function populateAdminReviewForm(application) {
+  adminReviewForm.review_notes = application?.review_notes ?? ''
+  adminReviewForm.send_email = false
+}
+
 function startupPayload() {
   return {
     name: startupForm.name.trim(),
@@ -185,34 +218,74 @@ async function submitStartup() {
   populateStartupForm(saved)
 }
 
-const metrics = {
-  admin: [
-    ['Pending approvals', '8'],
-    ['Active members', '284'],
-    ['Published events', '12'],
-    ['Public cards', '46'],
-  ],
+async function selectApplication(application) {
+  adminApplicationsStore.selectApplication(application)
+  populateAdminReviewForm(application)
+  await adminApplicationsStore.loadOne(application.id)
+  populateAdminReviewForm(adminApplicationsStore.currentApplication)
 }
+
+async function loadAdminApplications(status = adminApplicationsStore.listStatus) {
+  await adminApplicationsStore.loadList({ status, force: true })
+  populateAdminReviewForm(adminApplicationsStore.currentApplication)
+}
+
+async function approveApplication() {
+  await adminApplicationsStore.approve(adminReviewForm.review_notes)
+  populateAdminReviewForm(adminApplicationsStore.currentApplication)
+}
+
+async function rejectApplication() {
+  await adminApplicationsStore.reject(adminReviewForm.review_notes, adminReviewForm.send_email)
+  populateAdminReviewForm(adminApplicationsStore.currentApplication)
+}
+
+async function requestApplicationInfo() {
+  await adminApplicationsStore.requestInfo(adminReviewForm.review_notes)
+  populateAdminReviewForm(adminApplicationsStore.currentApplication)
+}
+
+async function signOut() {
+  await authUser.signOut()
+  applicationStore.clear()
+  myStartupsStore.clear()
+  adminApplicationsStore.clear()
+}
+
+const adminMetrics = computed(() => [
+  ['Pending approvals', String(adminQueueCount.value || 0)],
+  ['Active members', '284'],
+  ['Published events', '12'],
+  ['Public cards', '46'],
+])
 
 async function loadMemberDashboard() {
   await authUser.loadCurrentUser()
-  if (authUser.isAuthenticated) {
+  const memberViews = ['dashboard', 'profile', 'my-startups']
+  const adminViews = ['admin', 'approvals']
+
+  if (authUser.isAuthenticated && memberViews.includes(currentView.value)) {
     await applicationStore.load().catch((error) => {
-      if (error?.status !== 401) throw error
+      if (error?.status !== 401 && error?.status !== 404) throw error
     })
   }
-  if (authUser.canAccessMemberAreas) {
+  if (authUser.canAccessMemberAreas && currentView.value === 'my-startups') {
     await myStartupsStore.loadList().catch((error) => {
+      if (error?.status !== 401 && error?.status !== 403) throw error
+    })
+  }
+  if (canAccessAdminDashboard.value && adminViews.includes(currentView.value)) {
+    await loadAdminApplications().catch((error) => {
       if (error?.status !== 401 && error?.status !== 403) throw error
     })
   }
 }
 
 watch(() => myStartupsStore.currentListing, populateStartupForm)
-
-onMounted(() => {
+watch(() => adminApplicationsStore.currentApplication, populateAdminReviewForm)
+watch(currentView, () => {
   loadMemberDashboard().catch(() => {})
-})
+}, { immediate: true })
 </script>
 
 <template>
@@ -226,14 +299,29 @@ onMounted(() => {
         </span>
       </RouterLink>
 
-      <div v-for="group in navGroups" :key="group.label" class="app-nav-group">
+      <div v-if="authUser.isAuthenticated" class="sidebar-account">
+        <span class="status-pill">Signed in</span>
+        <p>{{ authUser.user.email }}</p>
+        <button
+          class="button secondary"
+          type="button"
+          :disabled="authUser.signingOut"
+          @click="signOut"
+        >
+          {{ authUser.signingOut ? 'Signing out...' : 'Sign out' }}
+        </button>
+      </div>
+
+      <div v-for="group in visibleNavGroups" :key="group.label" class="app-nav-group">
         <p class="sidebar-label">{{ group.label }}</p>
         <nav class="app-nav" :aria-label="group.label">
           <RouterLink v-for="[id, label] in group.items" :key="id" :to="`/app/${id}`">{{ label }}</RouterLink>
         </nav>
       </div>
 
-      <RouterLink class="button secondary" to="/">Public site</RouterLink>
+      <div class="sidebar-actions">
+        <RouterLink class="button secondary" to="/">Public site</RouterLink>
+      </div>
     </aside>
 
     <main class="app-canvas">
@@ -249,9 +337,14 @@ onMounted(() => {
           </div>
         </div>
         <div class="auth-card">
-          <h2>Continue with Google</h2>
-          <p class="small">Laravel Socialite owns Google OAuth. After Google returns, Sanctum keeps the browser session for `/api/user` and future member/admin requests.</p>
-          <button class="button primary" type="button" @click="authUser.startGoogleSignIn()">Sign in with Google</button>
+          <h2>{{ authUser.isAuthenticated ? 'Signed in' : 'Sign in' }}</h2>
+          <p v-if="!authUser.isAuthenticated" class="small">Choose Google OAuth now, or email sign-in once that flow is enabled.</p>
+          <p v-else class="small">You are signed in to WAAIS. Use sign out to end this browser session.</p>
+          <div v-if="!authUser.isAuthenticated" class="button-grid">
+            <button class="button primary" type="button" @click="authUser.startGoogleSignIn()">Sign in with Google</button>
+            <button class="button secondary" type="button" disabled>Sign in with email</button>
+          </div>
+          <button v-else class="button secondary" type="button" :disabled="authUser.signingOut" @click="signOut">{{ authUser.signingOut ? 'Signing out...' : 'Sign out' }}</button>
           <div class="auth-status">
             <span class="status-pill" :class="{ pending: authUser.isPending }">{{ accountStatusLabel }}</span>
             <p v-if="authUser.user" class="small">Signed in as {{ authUser.user.email }}.</p>
@@ -452,7 +545,7 @@ onMounted(() => {
           <p class="lede">Admins control approvals, events, startups, partners, homepage cards, announcements, and moderation shortcuts. Super admins can override and manage admin privileges.</p>
         </div>
         <div class="grid four">
-          <div v-for="[label, value] in metrics.admin" :key="label" class="metric"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+          <div v-for="[label, value] in adminMetrics" :key="label" class="metric"><span>{{ label }}</span><strong>{{ value }}</strong></div>
         </div>
         <div class="grid two">
           <article class="card">
@@ -497,16 +590,86 @@ onMounted(() => {
         <div class="app-hero">
           <p class="eyebrow">Approvals queue</p>
           <h1>Review new member applications.</h1>
-          <p class="lede">Fast review table with affiliation signals, application context, and approve/request-more-info/reject controls.</p>
+          <p class="lede">Membership applications come from the authenticated admin API and use the same approve, request-more-info, and reject transitions as the backend.</p>
+          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this queue.</p>
         </div>
-        <article class="card wide-card">
-          <div class="admin-table">
-            <div class="admin-row header"><span>Applicant</span><span>Signal</span><span>Status</span><span>Action</span></div>
-            <div class="admin-row"><span>Maya Chen<br><small>maya@wharton.upenn.edu</small></span><span>Wharton email</span><span>Pending</span><span>Approve / More info / Reject</span></div>
-            <div class="admin-row"><span>Daniel Reed<br><small>daniel@startup.ai</small></span><span>LinkedIn provided</span><span>Pending</span><span>Approve / More info / Reject</span></div>
-            <div class="admin-row"><span>Priya Shah<br><small>priya@enterprise.com</small></span><span>Manual check</span><span>Pending</span><span>Approve / More info / Reject</span></div>
-          </div>
-        </article>
+        <div v-if="adminApplicationsStore.error" class="notice error-notice">
+          <p class="small">Could not load membership applications. Confirm this account has admin access and the backend is running.</p>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="filter-row">
+          <button
+            v-for="status in ['submitted', 'needs_more_info', 'approved', 'rejected']"
+            :key="status"
+            class="button secondary"
+            :class="{ active: adminApplicationsStore.listStatus === status }"
+            type="button"
+            @click="loadAdminApplications(status)"
+          >
+            {{ titleize(status) }}
+          </button>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="grid two">
+          <article class="card">
+            <div class="row">
+              <h2>Applications</h2>
+              <button class="button secondary" type="button" @click="loadAdminApplications(adminApplicationsStore.listStatus)">Refresh</button>
+            </div>
+            <p v-if="adminApplicationsStore.loading" class="small">Loading membership applications.</p>
+            <p v-else-if="!adminApplicationsStore.hasApplications" class="small">No applications in this status.</p>
+            <div v-else class="table">
+              <button
+                v-for="application in adminApplicationsStore.list"
+                :key="application.id"
+                class="table-row table-button"
+                type="button"
+                @click="selectApplication(application)"
+              >
+                <span>
+                  {{ fullName(application) || application.applicant?.name || application.email }}
+                  <br>
+                  <small>{{ application.email }}</small>
+                </span>
+                <strong>{{ titleize(application.approval_status) }}</strong>
+              </button>
+            </div>
+          </article>
+
+          <article v-if="!selectedApplication" class="card">
+            <span class="tag">No selection</span>
+            <h2>Select an application.</h2>
+            <p class="small">Choose a row from the queue to view the applicant profile and review actions.</p>
+          </article>
+
+          <form v-else class="app-form card" @submit.prevent="approveApplication">
+            <div class="full row">
+              <div>
+                <span class="tag">{{ titleize(selectedApplication.approval_status) }}</span>
+                <h2>{{ adminApplicationsStore.selectedApplicantName }}</h2>
+                <p class="small">{{ selectedApplication.email }}</p>
+              </div>
+            </div>
+
+            <div class="table full">
+              <div v-for="[label, value] in selectedApplicationRows" :key="label" class="table-row"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+            </div>
+
+            <label class="full">Experience<textarea :value="selectedApplication.experience_summary || 'Not provided'" readonly /></label>
+            <label class="full">Expertise<textarea :value="selectedApplication.expertise_summary || 'Not provided'" readonly /></label>
+            <label class="full">Review notes<textarea v-model="adminReviewForm.review_notes" :disabled="adminApplicationsStore.saving" /></label>
+            <label class="checkbox-row full"><input v-model="adminReviewForm.send_email" type="checkbox" :disabled="adminApplicationsStore.saving" /> Send rejection email</label>
+
+            <div v-if="Object.keys(adminValidationErrors).length" class="notice error-notice full">
+              <p v-for="(messages, field) in adminValidationErrors" :key="field" class="small">{{ messages[0] }}</p>
+            </div>
+
+            <div class="button-grid full">
+              <button class="button primary" type="submit" :disabled="adminApplicationsStore.saving">Approve</button>
+              <button class="button water" type="button" :disabled="adminApplicationsStore.saving" @click="requestApplicationInfo">Request info</button>
+              <button class="button secondary" type="button" :disabled="adminApplicationsStore.saving" @click="rejectApplication">Reject</button>
+            </div>
+            <p v-if="adminApplicationsStore.currentLoading" class="small full">Loading full application detail.</p>
+          </form>
+        </div>
       </section>
 
       <section v-else-if="currentView === 'users'" class="app-stack">

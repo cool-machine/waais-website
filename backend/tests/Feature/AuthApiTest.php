@@ -53,6 +53,21 @@ class AuthApiTest extends TestCase
     }
 
     #[Test]
+    public function authenticated_browser_sessions_can_log_out(): void
+    {
+        $user = User::factory()->create([
+            'approval_status' => ApprovalStatus::Approved,
+            'permission_role' => PermissionRole::Member,
+        ]);
+
+        $this->actingAs($user);
+
+        $this->postJson('/api/logout')
+            ->assertOk()
+            ->assertJson(['ok' => true]);
+    }
+
+    #[Test]
     public function pending_users_cannot_access_member_api_routes(): void
     {
         Sanctum::actingAs(User::factory()->create([
