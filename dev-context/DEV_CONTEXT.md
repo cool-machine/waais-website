@@ -59,6 +59,7 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Sanctum API auth: `/api/user` returns access flags; `member.access` middleware on `/api/member/*`. Local SPA auth is backed by credentialed CORS config for the Vite dev origins and Sanctum stateful domains (`localhost:5174`, `127.0.0.1:5174`).
 - Google OAuth via Socialite: `/auth/google/redirect` and `/auth/google/callback`. New users → `submitted` / `pending_user`. Existing unlinked users link by email. Approved members are not downgraded on re-sign-in. Email already linked to a different `google_id` returns 409. The redirect route accepts a safe relative `next` path so flows such as Membership can return to `/membership` after Google instead of always landing on the app pending/dashboard mockup.
 - Email-link auth: `POST /api/auth/email-link` validates an email and optional safe relative `next` path, creates/reuses a user without downgrading approved members/admins, sends `EmailSignInLink`, and returns `{ ok: true }`. Signed callback `/auth/email/callback/{user}` is protected by Laravel's `signed` middleware and redirects to the safe frontend path after `Auth::login()`.
+- DiscourseConnect SSO relay: `GET /discourse/sso` validates Discourse's signed `sso` payload with `DISCOURSE_CONNECT_SECRET`, requires an approved member/admin session, and returns a signed nonce/email/external_id/name payload to Discourse. Guest requests are preserved in session and resumed after Google login; pending users redirect to `/app/pending`. WAAIS admins map to Discourse moderator + `waais_admins`; WAAIS super admins map to Discourse admin.
 - Applicant-owned membership application API: `GET/POST/PATCH /api/membership-application`, `POST /api/membership-application/reapply`. Rejected applicants can reapply. Field changes write `application_revisions` rows.
 - Admin membership-application review API: `admin.access` middleware backed by `User::isAdmin()`. Routes under `/api/admin/applications`: queue (filterable by `status`), single-application detail with revisions, approve, reject, request-info. Approve promotes pending applicants to Member without downgrading existing Admin/SuperAdmin and syncs `affiliation_type` from the application. Reject and request-info both require `review_notes`. Each transition writes one `AuditLog` row capturing application + applicant before/after state plus IP and user-agent. This is the canonical implementation of the **Submission & Admin Review Pattern** (described in `PRODUCT.md`).
 - Member-side startup-listing API: approved members only via `member.access`. Routes under `/api/startup-listings`: list own, show own, create, update. Submission stamps `approval_status = submitted` and `content_status = pending_review`. Owner cannot show or edit another member's listing. Approved listings cannot be self-edited (returns 409). Edits re-submit and clear reviewer fields. `startup_listing_revisions` rows are written on submit and update with the changed-fields diff.
@@ -71,7 +72,7 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Super-admin role-management API: `super_admin.access` middleware backed by `User::canManageAdminPrivileges()`. Routes under `/api/admin/users/{user}` for `promote-admin`, `demote-admin`, `promote-super-admin`, `demote-super-admin`. Each transition is a row-locked update with strict from/to role guards (returns 409 on role mismatch). `promote-admin` additionally requires the target to be `approval_status = approved`. `demote-super-admin` is blocked when the target is the last `SuperAdmin` in the system (covers self-demotion and any path that would empty the role). Every transition writes one `AuditLog` row keyed on `User` with `role.promote_admin` / `role.demote_admin` / `role.promote_super_admin` / `role.demote_super_admin` plus before/after `permission_role` plus IP and user-agent.
 - Admin user directory API: `admin.access` middleware. Routes under `/api/admin/users` for `index` (filterable by `permission_role`, `approval_status`, `affiliation_type`, free-text `q` across name/email/first_name/last_name/display_name; paginated, default `per_page = 25` capped at 100) and `/api/admin/users/{user}` for `show`. Both use an explicit allowlisted projection (`id`, `name`, `first_name`, `last_name`, `display_name`, `email`, `email_verified_at`, `avatar_url`, `approval_status`, `affiliation_type`, `permission_role`, `approved_at`, `rejected_at`, `suspended_at`, `created_at`). Internal fields (`password`, `remember_token`, `google_id`) are intentionally never exposed; drift is enforced by `AdminUserApiTest::projection_excludes_internal_fields`.
 - Public read API for startup listings: anonymous (no auth) routes under `/api/public/startup-listings` (index, paginated) and `/api/public/startup-listings/{listing}` (show). Both filter strictly to `content_status = published` AND `visibility = public`; anything else is invisible (404 on show). The response uses an explicit allowlist projection: `id`, `name`, `tagline`, `description`, `website_url`, `logo_url`, `industry`, `stage`, `location`, `founders`, `linkedin_url`, `approved_at` (ISO 8601). Internal fields — `review_notes`, `submitter_role`, `owner_id`, `reviewed_by`, `reviewed_at`, `submitted_at`, `rejected_at`, `approval_status`, `content_status`, `visibility`, `revisions`, `created_at`, `updated_at` — never appear, enforced by a denylist test. Default `per_page = 12`, capped at 48.
-- Test suite: 166 passing / 728 assertions after the announcements backend slice. `php artisan migrate:fresh` passes against local SQLite.
+- Test suite: 172 passing / 752 assertions after the Discourse SSO relay slice. `php artisan migrate:fresh` passes against local SQLite.
 
 ### Production database decision
 
@@ -81,13 +82,13 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Announcements backend plus admin/member dashboard surfaces shipped on May 2, 2026 at 21:40 CEST and merged to `main`.
+No slice in progress. DiscourseConnect SSO relay shipped on May 2, 2026 at 21:47 CEST and merged to `main`.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
-2. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
-3. **Announcement email dispatch.** The announcements model stores `channel = email_dashboard`, but this slice only publishes dashboard announcements; actual email fan-out is still queued.
+1. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
+2. **Announcement email dispatch.** The announcements model stores `channel = email_dashboard`, but this slice only publishes dashboard announcements; actual email fan-out is still queued.
+3. **Forum feed/public teaser wiring.** Discourse SSO is implemented, but forum content still needs Discourse API integration once the forum is provisioned.
 4. **Brand/logo asset replacement** when George provides it.
 5. **Azure deployment** of app + backend, plus Discourse on Azure VM.
 
@@ -103,6 +104,15 @@ No slice in progress. Announcements backend plus admin/member dashboard surfaces
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 2, 2026 21:47 CEST — DiscourseConnect SSO relay (shipped)**
+- Did: added `GET /discourse/sso`, validating DiscourseConnect `sso` + `sig` with `DISCOURSE_CONNECT_SECRET` and rejecting invalid signatures or non-Discourse return URLs
+- Did: added approved-member/admin payload generation with stable `external_id`, verified email, display name, sanitized username, `waais_members`/`waais_admins` groups, and admin/moderator flags
+- Did: unauthenticated SSO requests are preserved in session and resumed after Google login; pending users are redirected to the pending page instead of receiving forum access
+- Did: added `.env.example` entries and backend docs for `DISCOURSE_URL`, `DISCOURSE_CONNECT_SECRET`, and the Discourse provider URL
+- Did: added `DiscourseSsoTest`; validation passed at `php artisan test` 172 tests / 752 assertions
+- Left off at: ready for the next slice — event reminder dispatch, announcement email fan-out, or forum feed/public teaser wiring after Discourse is provisioned
+- Watch out for: Discourse must be configured separately with the same connect secret and provider URL. Group/admin sync requires matching Discourse settings for DiscourseConnect group/admin overrides.
 
 **May 2, 2026 21:40 CEST — Announcements backend + admin/member surfaces (shipped)**
 - Did: added `announcements` backend table/model plus admin endpoints under `/api/admin/announcements` for index/show/create/update/publish/hide/archive with audit logs
@@ -374,4 +384,4 @@ No slice in progress. Announcements backend plus admin/member dashboard surfaces
 
 ---
 
-*Last updated: May 2, 2026 21:40 CEST*
+*Last updated: May 2, 2026 21:47 CEST*

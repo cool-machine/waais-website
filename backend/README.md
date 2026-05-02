@@ -4,7 +4,7 @@ Laravel API for the Wharton Alumni AI Studio platform.
 
 ## Current Scope
 
-This directory contains the Laravel API for WAAIS. It started as the backend foundation, but now includes the access model, Google/Sanctum auth foundations, membership application workflows, startup-listing workflows, public/member read APIs, email notifications, role management, admin-managed events, admin-managed partners, homepage CMS cards, and announcements.
+This directory contains the Laravel API for WAAIS. It started as the backend foundation, but now includes the access model, Google/Sanctum auth foundations, membership application workflows, startup-listing workflows, public/member read APIs, email notifications, role management, admin-managed events, admin-managed partners, homepage CMS cards, announcements, and the DiscourseConnect SSO relay.
 
 Implemented:
 
@@ -14,6 +14,7 @@ Implemented:
 - Google OAuth redirect/callback routes using Laravel Socialite, including safe relative `next` paths for frontend flows that need to return to their originating page.
 - Google identity provisioning that creates pending users and preserves approved member access.
 - Email-link auth for non-Google applicants: public `POST /api/auth/email-link` sends a 30-minute signed link through Laravel mail/log, and `/auth/email/callback/{user}` verifies the signature, marks the email verified, logs the user into the browser session, and redirects back to the frontend.
+- DiscourseConnect SSO relay at `GET /discourse/sso`: validates Discourse's signed `sso` payload with `DISCOURSE_CONNECT_SECRET`, requires an approved member/admin browser session, returns a signed nonce/email/external_id/name payload to Discourse, and maps WAAIS admins/super-admins into Discourse moderator/admin flags. If the browser is not signed in, the request is preserved in session and resumed after Google login.
 - Authenticated `/api/user` endpoint returning access-model flags.
 - Authenticated `POST /api/logout` endpoint for ending browser-session auth. It invalidates the session when one is attached and remains safe for token-style Sanctum requests without a session store.
 - Member-only API route middleware backed by `canAccessMemberAreas()`.
@@ -36,8 +37,8 @@ Implemented:
 
 Not implemented yet:
 
-- Discourse SSO relay.
 - Event reminder dispatch (the `reminder_days_before` field is stored but no scheduled job sends the reminders yet).
+- Announcement email fan-out for announcements with `channel = email_dashboard`.
 
 ## Local Setup
 
@@ -51,15 +52,32 @@ php artisan migrate
 php artisan test
 ```
 
-Validation was completed locally on May 2, 2026 after the announcements slice:
+Validation was completed locally on May 2, 2026 after the Discourse SSO relay slice:
 
 ```text
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 166 tests, 728 assertions
+php artisan test       # last verified: 172 tests, 752 assertions
 php artisan migrate:fresh
 ```
+
+## DiscourseConnect SSO
+
+Discourse should be configured with WAAIS as its DiscourseConnect provider:
+
+```env
+DISCOURSE_URL=https://forum.whartonai.studio
+DISCOURSE_CONNECT_SECRET=...
+```
+
+Provider URL for Discourse settings:
+
+```text
+https://<backend-host>/discourse/sso
+```
+
+The relay accepts only signed requests whose `return_sso_url` host matches `DISCOURSE_URL`. Approved members receive `groups=waais_members`; WAAIS admins receive `moderator=true` and `groups=waais_members,waais_admins`; WAAIS super admins also receive `admin=true`.
 
 The local `.env`, `vendor/`, and SQLite database are ignored development artifacts. Commit `composer.lock` with backend dependency changes.
 

@@ -100,7 +100,7 @@ Live preview: `https://cool-machine.github.io/waais-website/`
 - Member dashboard event/forum surfaces
 - Full admin route guarding and super-admin-specific permission gating
 - Email and dashboard notifications (UI side — the backend ships them)
-- Discourse SSO and forum installation
+- Forum installation and forum-feed API wiring
 - Forum-preview pages still serve static seed data (`src/data/forum.js`) — wiring them to the Laravel API is queued in a subsequent slice
 
 The startup directory (`/startups`, `/startups/:id`, and the homepage's "Featured startups" section), events calendar (`/events`, `/events/:id`, and the homepage's "Selected events" section), partners directory (`/partners`, `/partners/:id`), and homepage CMS card sections read from the live API.

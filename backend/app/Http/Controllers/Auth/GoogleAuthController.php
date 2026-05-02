@@ -27,6 +27,13 @@ class GoogleAuthController extends Controller
 
         Auth::login($user, remember: true);
 
+        if ($user->canAccessMemberAreas()) {
+            $discourseSsoUrl = session()->pull('discourse.sso.intended_url');
+            if (is_string($discourseSsoUrl) && $discourseSsoUrl !== '') {
+                return redirect()->away($discourseSsoUrl);
+            }
+        }
+
         $path = session()->pull('auth.intended_frontend_path')
             ?? ($user->canAccessMemberAreas() ? '/app/dashboard' : '/app/pending');
 

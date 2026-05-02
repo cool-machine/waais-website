@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Pick the next infrastructure/member slice. Announcements backend plus admin/member dashboard surfaces shipped on May 2, 2026 at 21:40 CEST: `announcements` table/model, `/api/admin/announcements` create/edit/publish/hide/archive, `/api/announcements` member read API, `frontend/src/stores/adminAnnouncements.js`, `frontend/src/stores/memberAnnouncements.js`, live `/app/announcements`, and a member-dashboard announcements panel. Good next options are Discourse SSO relay, event reminder dispatch, or announcement email fan-out for announcements with `channel = email_dashboard`.
+Pick the next infrastructure/member slice. DiscourseConnect SSO relay shipped on May 2, 2026 at 21:47 CEST: `GET /discourse/sso` validates Discourse's signed payload with `DISCOURSE_CONNECT_SECRET`, requires approved member/admin access, resumes guest requests after Google login, and returns signed DiscourseConnect identity fields. Good next options are event reminder dispatch, announcement email fan-out for announcements with `channel = email_dashboard`, or forum feed/public teaser wiring once Discourse is provisioned.
 ```
 
 ## Maintenance
