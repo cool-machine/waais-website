@@ -1077,7 +1077,7 @@ watch(currentView, () => {
       <section v-else-if="currentView === 'users'" class="app-stack">
         <div class="app-hero">
           <p class="eyebrow">User management</p>
-          <h1>Search the membership and adjust roles.</h1>
+          <h1>Search the members and adjust roles.</h1>
           <p class="lede">Filter the directory by role, approval, or affiliation. Only super admins can promote or demote admins; regular admins can review profiles only.</p>
           <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
         </div>

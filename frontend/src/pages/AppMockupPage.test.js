@@ -433,7 +433,7 @@ describe('member dashboard live state', () => {
 
     const wrapper = await mountAt('/app/users')
 
-    expect(wrapper.text()).toContain('Search the membership and adjust roles.')
+    expect(wrapper.text()).toContain('Search the members and adjust roles.')
     expect(wrapper.text()).toContain('Grace Hopper')
     expect(wrapper.text()).toContain('grace@example.com')
 
