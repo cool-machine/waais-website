@@ -101,6 +101,13 @@ No slice in progress. Admin dashboard user directory shipped on May 2, 2026 at 1
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
 
+**May 2, 2026 18:15 CEST — /app/users heading copy fix (shipped)**
+- Did: tightened the `/app/users` hero heading from "Search the membership and adjust roles." to "Search the members and adjust roles." after George flagged the wording during the live browser smoke
+- Did: updated the matching `pages/AppMockupPage.test.js` assertion. Frontend validation passed at `npm test` 128 specs, `npm run build`, `npm run test:routes`. Backend untouched
+- Did: refreshed root-level GitHub Pages build artifacts from `frontend/dist`
+- Did: added `backend/database/seeders/LocalSmokeUsersSeeder.php` (idempotent, opt-in, not in the production seed chain) so future local smokes can re-seed George + a varied user fixture set with `php artisan db:seed --class=LocalSmokeUsersSeeder --force`
+- Left off at: ready for the next slice — public content (homepage cards + partners) or announcements
+
 **May 2, 2026 18:05 CEST — Admin dashboard user directory (shipped)**
 - Did: added backend `App\Http\Controllers\Api\Admin\AdminUserController` with `index` (filterable by `permission_role`, `approval_status`, `affiliation_type`, free-text `q` across name/email/first_name/last_name/display_name; paginated, default `per_page = 25` capped at 100) and `show`. Both routes registered under `/api/admin/users` and `/api/admin/users/{user}` inside the existing `admin.access` group, sitting next to the super-admin role-management routes
 - Did: response uses an explicit allowlisted projection (`id`, `name`, `first_name`, `last_name`, `display_name`, `email`, `email_verified_at`, `avatar_url`, `approval_status`, `affiliation_type`, `permission_role`, `approved_at`, `rejected_at`, `suspended_at`, `created_at`). Internal fields (`password`, `remember_token`, `google_id`) are intentionally never serialized. Drift is enforced by `AdminUserApiTest::projection_excludes_internal_fields`
@@ -347,4 +354,4 @@ No slice in progress. Admin dashboard user directory shipped on May 2, 2026 at 1
 
 ---
 
-*Last updated: May 2, 2026 18:05 CEST*
+*Last updated: May 2, 2026 18:15 CEST*
