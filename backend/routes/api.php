@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\PublicHomepageCardController;
 use App\Http\Controllers\Api\PublicPartnerController;
 use App\Http\Controllers\Api\PublicStartupListingController;
 use App\Http\Controllers\Api\StartupListingController;
+use App\Http\Controllers\Auth\EmailAuthController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +34,8 @@ Route::prefix('public')->group(function (): void {
     Route::get('/homepage-cards', [PublicHomepageCardController::class, 'index']);
     Route::get('/homepage-cards/{homepageCard}', [PublicHomepageCardController::class, 'show']);
 });
+
+Route::post('/auth/email-link', [EmailAuthController::class, 'sendLink']);
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/user', function (Request $request): array {

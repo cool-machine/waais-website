@@ -35,14 +35,15 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Other public surfaces (forum preview) still serve static seed data and will be wired in subsequent slices.
 - HTTP client at `frontend/src/lib/api.js` — shared `getJson()` / `sendJson()` wrappers, base URL via `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`), `Accept: application/json`, throws `ApiError` on non-2xx. Public stores stay anonymous by default; authenticated stores pass `auth: true` to send Sanctum session credentials. JSON mutations also send Laravel's `X-XSRF-TOKEN` header when the cookie is present.
 - Auth/current-user store at `frontend/src/stores/authUser.js` — calls `/api/user`, treats 401 as signed-out state, exposes approval/permission access getters, and starts Google sign-in by redirecting to `/auth/google/redirect` on the backend.
-- Membership application UI at `/membership` is backed by `frontend/src/stores/membershipApplication.js` and the authenticated Laravel endpoints (`GET/POST/PATCH /api/membership-application`, `POST /api/membership-application/reapply`). Signed-out users are prompted into Google sign-in; pending/needs-more-info/rejected applicants can submit/update/reapply; approved applications render read-only.
+- Email-link sign-in start is enabled for non-Google applicants. `POST /api/auth/email-link` creates/reuses a pending user, sends a 30-minute signed link through Laravel mail/log, and `/auth/email/callback/{user}` verifies the signature, marks the email verified, logs the user into the browser session, and returns them to the frontend.
+- Membership application UI at `/membership` is backed by `frontend/src/stores/membershipApplication.js` and the authenticated Laravel endpoints (`GET/POST/PATCH /api/membership-application`, `POST /api/membership-application/reapply`). Signed-out users can choose Google sign-in or request an email sign-in link; pending/needs-more-info/rejected applicants can submit/update/reapply; approved applications render read-only.
 - Member dashboard profile/application status views at `/app/dashboard` and `/app/profile` consume `useAuthUserStore` plus `useMembershipApplicationStore` for live account, profile, and application status. Other member surfaces (`/app/my-events`, `/app/forum-feed`, future startup ownership views) remain queued.
 - Member dashboard startup ownership view at `/app/my-startups` consumes `frontend/src/stores/myStartups.js`, backed by authenticated member endpoints (`GET/POST/PATCH /api/startup-listings`). Approved members can submit new listings and update non-approved listings; approved listings render as not editable.
 - Admin dashboard membership approvals view at `/app/approvals` consumes `frontend/src/stores/adminMembershipApplications.js`, backed by authenticated admin endpoints (`GET /api/admin/applications`, `GET /api/admin/applications/{id}`, and approve/reject/request-info transitions). It is the first live admin review surface; startup listing review remains the next admin queue surface.
 - Admin dashboard startup-listing review view at `/app/startup-review` consumes `frontend/src/stores/adminStartupListings.js`, backed by authenticated admin endpoints (`GET /api/admin/startup-listings`, `GET /api/admin/startup-listings/{id}`, and approve/reject/request-info transitions). It mirrors the membership queue but stays separate from public/member startup stores.
 - Auth UI now has mutually exclusive states: signed-out users see "Sign in with Google" and disabled future "Sign in with email"; signed-in users see account context plus "Sign out". Backend `POST /api/logout` clears browser-session auth when present and the frontend clears authenticated stores after logout.
 - Pinia store at `frontend/src/stores/publicStartups.js` — `loadList`, `loadOne`, in-memory TTL cache so back-navigation between list and detail doesn't refetch. Convention for adding future stores (one per backend resource × access surface) is documented in `frontend/src/stores/README.md`.
-- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 98 specs across `pages/AppMockupPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/myStartups`, `stores/adminMembershipApplications`, `stores/adminStartupListings`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
+- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 100 specs across `pages/AppMockupPage`, `pages/MembershipPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/myStartups`, `stores/adminMembershipApplications`, `stores/adminStartupListings`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
 - Build deployed to GitHub Pages via root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg` copied from `frontend/dist`. Deploy steps live in `frontend/README.md`.
 
 ### Backend (live, validated locally)
@@ -53,6 +54,7 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Migrations for users (with `google_id`, `approval_status`, `affiliation_type`, `permission_role`, plus `approved_at`/`rejected_at`/`suspended_at` timestamps), membership applications, application revisions, audit logs, personal access tokens, cache, jobs.
 - Sanctum API auth: `/api/user` returns access flags; `member.access` middleware on `/api/member/*`. Local SPA auth is backed by credentialed CORS config for the Vite dev origins and Sanctum stateful domains (`localhost:5174`, `127.0.0.1:5174`).
 - Google OAuth via Socialite: `/auth/google/redirect` and `/auth/google/callback`. New users → `submitted` / `pending_user`. Existing unlinked users link by email. Approved members are not downgraded on re-sign-in. Email already linked to a different `google_id` returns 409. The redirect route accepts a safe relative `next` path so flows such as Membership can return to `/membership` after Google instead of always landing on the app pending/dashboard mockup.
+- Email-link auth: `POST /api/auth/email-link` validates an email and optional safe relative `next` path, creates/reuses a user without downgrading approved members/admins, sends `EmailSignInLink`, and returns `{ ok: true }`. Signed callback `/auth/email/callback/{user}` is protected by Laravel's `signed` middleware and redirects to the safe frontend path after `Auth::login()`.
 - Applicant-owned membership application API: `GET/POST/PATCH /api/membership-application`, `POST /api/membership-application/reapply`. Rejected applicants can reapply. Field changes write `application_revisions` rows.
 - Admin membership-application review API: `admin.access` middleware backed by `User::isAdmin()`. Routes under `/api/admin/applications`: queue (filterable by `status`), single-application detail with revisions, approve, reject, request-info. Approve promotes pending applicants to Member without downgrading existing Admin/SuperAdmin and syncs `affiliation_type` from the application. Reject and request-info both require `review_notes`. Each transition writes one `AuditLog` row capturing application + applicant before/after state plus IP and user-agent. This is the canonical implementation of the **Submission & Admin Review Pattern** (described in `PRODUCT.md`).
 - Member-side startup-listing API: approved members only via `member.access`. Routes under `/api/startup-listings`: list own, show own, create, update. Submission stamps `approval_status = submitted` and `content_status = pending_review`. Owner cannot show or edit another member's listing. Approved listings cannot be self-edited (returns 409). Edits re-submit and clear reviewer fields. `startup_listing_revisions` rows are written on submit and update with the changed-fields diff.
@@ -73,16 +75,15 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **admin dashboard startup-listing review wiring** on May 2, 2026 at 15:46 CEST. The `/app/startup-review` admin view now lists startup listings from `/api/admin/startup-listings`, loads listing detail, and supports approve, request-more-info, and reject transitions through `useAdminStartupListingsStore`. After a listing leaves the active status filter, the queue clears the detail pane or selects the next item so approved/rejected/request-info records do not linger in the submitted review form. Automated validation is clean: frontend `npm test` 98 passed, `npm run build` clean, `npm run test:routes` clean; backend `composer validate --strict` clean, `php artisan test` 139 passed / 612 assertions, and `php artisan migrate:fresh` clean. Manual browser smoke passed locally: George saw and approved `AutoFlow AI`, then confirmed the approved record moved out of the submitted queue.
+No slice in progress. Email-link application start shipped on May 2, 2026 at 16:15 CEST and merged to `main`.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Email-link application start** if George wants non-Google applicants to verify by email before the questionnaire opens.
-2. **Next admin dashboard surface** — user management, event management, public content, or announcements.
-3. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
-4. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
-5. **Brand/logo asset replacement** when George provides it.
-6. **Azure deployment** of app + backend, plus Discourse on Azure VM.
+1. **Next admin dashboard surface** — user management, event management, public content, or announcements.
+2. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
+3. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
+4. **Brand/logo asset replacement** when George provides it.
+5. **Azure deployment** of app + backend, plus Discourse on Azure VM.
 
 ## Working Rules
 
@@ -96,6 +97,17 @@ No slice in progress. Last shipped slice: **admin dashboard startup-listing revi
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 2, 2026 16:15 CEST — Email-link application start (shipped)**
+- Did: added backend email-link auth start: `POST /api/auth/email-link` creates/reuses a pending user without downgrading approved users, sends an `EmailSignInLink` notification, and returns `{ ok: true }`
+- Did: added signed email callback `/auth/email/callback/{user}` protected by Laravel's `signed` middleware. It marks the email verified, logs the user into the browser session, and redirects to the safe frontend `next` path, defaulting to `/membership`
+- Did: enabled the public `/membership` email start form and the app sign-in email form. Both call `useAuthUserStore.requestEmailSignIn()`
+- Did: added backend `EmailAuthTest`, frontend `MembershipPage.test.js`, and auth-store coverage
+- Did: smoked the full chain locally over the running dev servers. `POST /api/auth/email-link` returned `{ ok: true }`; the signed callback URL pulled from `backend/storage/logs/laravel.log` returned `302 -> http://127.0.0.1:5174/waais-website/membership` and set the `laravel-session` cookie; a follow-up `GET /api/user` with that cookie returned the authenticated pending user
+- Did: refreshed root-level GitHub Pages build artifacts from `frontend/dist` (`index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg`)
+- Did: full automated validation green: frontend `npm test` 100 specs, `npm run build`, `npm run test:routes`; backend `composer validate --strict`, `php artisan test` 143 passed / 628 assertions, and `php artisan migrate:fresh`
+- Left off at: ready for the next slice — another admin dashboard surface (user management, event management, public content, or announcements)
+- Watch out for: local email uses `MAIL_MAILER=log`; the signed link appears in `backend/storage/logs/laravel.log`. The link expires in 30 minutes and uses `APP_URL`, so local smoke expects Laravel on `http://127.0.0.1:8000`. When smoking with curl, the SPA path adds an `Origin` header that switches Sanctum into stateful mode and requires `X-XSRF-TOKEN`; the SPA's `sendJson()` wrapper handles that, so the route works in-browser even though a bare `Origin`-bearing curl POST returns CSRF mismatch
 
 **May 2, 2026 15:46 CEST — Admin dashboard startup-listing review wiring**
 - Did: added `frontend/src/stores/adminStartupListings.js`, backed by authenticated admin startup-listing endpoints (`GET /api/admin/startup-listings`, `GET /api/admin/startup-listings/{id}`, `POST approve`, `POST reject`, `POST request-info`) with list pagination metadata, selected detail loading, transition actions, validation-error state, and queue removal after terminal status changes
@@ -308,4 +320,4 @@ No slice in progress. Last shipped slice: **admin dashboard startup-listing revi
 
 ---
 
-*Last updated: May 2, 2026 15:46 CEST*
+*Last updated: May 2, 2026 16:15 CEST*

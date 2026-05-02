@@ -128,3 +128,26 @@ describe('signOut', () => {
     expect(init.credentials).toBe('include')
   })
 })
+
+describe('requestEmailSignIn', () => {
+  it('posts an email-link request and tracks sent state', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ok: true }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const store = useAuthUserStore()
+    await store.requestEmailSignIn('applicant@example.com', { next: '/membership' })
+
+    expect(store.emailLinkSent).toBe(true)
+    expect(store.emailLinkSending).toBe(false)
+    expect(store.emailLinkError).toBeNull()
+
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toContain('/api/auth/email-link')
+    expect(init.method).toBe('POST')
+    expect(init.credentials).toBe('same-origin')
+    expect(JSON.parse(init.body)).toEqual({
+      email: 'applicant@example.com',
+      next: '/membership',
+    })
+  })
+})

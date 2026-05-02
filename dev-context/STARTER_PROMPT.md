@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Build **email-link application start** if non-Google applicants should be able to verify by email before the questionnaire opens. The admin startup-listing review slice shipped on May 2, 2026 at 15:46 CEST and added `useAdminStartupListingsStore` plus live `/app/startup-review` actions against `/api/admin/startup-listings`. If email-link applications are not the priority, the next admin dashboard surface can be user management, event management, public content, or announcements.
+Pick the next admin dashboard surface to wire — user management, event management, public content, or announcements — using the same admin queue pattern already used for `/app/approvals` and `/app/startup-review`. The email-link application start slice shipped on May 2, 2026 at 16:15 CEST and added `POST /api/auth/email-link`, an `EmailSignInLink` notification, and the signed `/auth/email/callback/{user}` route that logs a non-Google applicant into the browser session and returns them to `/membership`.
 ```
 
 ## Maintenance

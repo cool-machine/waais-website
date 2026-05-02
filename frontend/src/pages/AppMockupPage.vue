@@ -42,6 +42,9 @@ const adminStartupReviewForm = reactive({
   review_notes: '',
   send_email: false,
 })
+const emailSignInForm = reactive({
+  email: '',
+})
 
 const navGroups = [
   {
@@ -299,6 +302,10 @@ async function requestStartupListingInfo() {
   populateAdminStartupReviewForm(adminStartupListingsStore.currentListing)
 }
 
+async function requestAppEmailLink() {
+  await authUser.requestEmailSignIn(emailSignInForm.email, { next: '/app/dashboard' })
+}
+
 async function signOut() {
   await authUser.signOut()
   applicationStore.clear()
@@ -401,11 +408,15 @@ watch(currentView, () => {
         </div>
         <div class="auth-card">
           <h2>{{ authUser.isAuthenticated ? 'Signed in' : 'Sign in' }}</h2>
-          <p v-if="!authUser.isAuthenticated" class="small">Choose Google OAuth now, or email sign-in once that flow is enabled.</p>
+          <p v-if="!authUser.isAuthenticated" class="small">Choose Google OAuth now, or request a secure email sign-in link.</p>
           <p v-else class="small">You are signed in to WAAIS. Use sign out to end this browser session.</p>
+          <form v-if="!authUser.isAuthenticated" class="app-email-form" @submit.prevent="requestAppEmailLink">
+            <label>Email<input v-model="emailSignInForm.email" required type="email" placeholder="you@example.com" :disabled="authUser.emailLinkSending" /></label>
+            <button class="button secondary" type="submit" :disabled="authUser.emailLinkSending">{{ authUser.emailLinkSending ? 'Sending...' : 'Sign in with email' }}</button>
+            <p v-if="authUser.emailLinkSent" class="small">Check your email for a WAAIS sign-in link. In local development, it is written to the Laravel log.</p>
+          </form>
           <div v-if="!authUser.isAuthenticated" class="button-grid">
             <button class="button primary" type="button" @click="authUser.startGoogleSignIn()">Sign in with Google</button>
-            <button class="button secondary" type="button" disabled>Sign in with email</button>
           </div>
           <button v-else class="button secondary" type="button" :disabled="authUser.signingOut" @click="signOut">{{ authUser.signingOut ? 'Signing out...' : 'Sign out' }}</button>
           <div class="auth-status">

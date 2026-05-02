@@ -7,6 +7,9 @@ export const useAuthUserStore = defineStore('authUser', {
     initialized: false,
     loading: false,
     signingOut: false,
+    emailLinkSending: false,
+    emailLinkSent: false,
+    emailLinkError: null,
     error: null,
   }),
   getters: {
@@ -50,6 +53,26 @@ export const useAuthUserStore = defineStore('authUser', {
       redirectToGoogleSignIn(options)
     },
 
+    async requestEmailSignIn(email, { next = '/membership', signal } = {}) {
+      this.emailLinkSending = true
+      this.emailLinkSent = false
+      this.emailLinkError = null
+
+      try {
+        await sendJson('/api/auth/email-link', {
+          method: 'POST',
+          body: { email, next },
+          signal,
+        })
+        this.emailLinkSent = true
+      } catch (error) {
+        this.emailLinkError = error
+        throw error
+      } finally {
+        this.emailLinkSending = false
+      }
+    },
+
     async signOut({ signal } = {}) {
       this.signingOut = true
       this.error = null
@@ -75,6 +98,9 @@ export const useAuthUserStore = defineStore('authUser', {
       this.initialized = false
       this.loading = false
       this.signingOut = false
+      this.emailLinkSending = false
+      this.emailLinkSent = false
+      this.emailLinkError = null
       this.error = null
     },
   },

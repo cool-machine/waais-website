@@ -30,6 +30,9 @@ const form = reactive({
   gender: '',
   age: '',
 })
+const emailLinkForm = reactive({
+  email: '',
+})
 
 const hasSession = computed(() => authUser.isAuthenticated)
 const checkingSession = computed(() => authUser.loading || !authUser.initialized)
@@ -51,6 +54,7 @@ const saveLabel = computed(() => {
 })
 const validationErrors = computed(() => applicationStore.saveError?.body?.errors ?? {})
 const startMembershipSignIn = () => authUser.startGoogleSignIn({ next: '/membership' })
+const emailLinkErrors = computed(() => authUser.emailLinkError?.body?.errors ?? {})
 
 function populateForm(application) {
   const source = application ?? {}
@@ -146,6 +150,10 @@ async function submitApplication() {
   await authUser.loadCurrentUser({ force: true }).catch(() => {})
 }
 
+async function requestEmailLink() {
+  await authUser.requestEmailSignIn(emailLinkForm.email, { next: '/membership' })
+}
+
 watch(() => applicationStore.application, populateForm)
 
 onMounted(() => {
@@ -191,10 +199,19 @@ onMounted(() => {
           <article class="card">
             <span class="tag">Membership application</span>
             <h3>Start or resume your application.</h3>
-            <p>Choose an identity method to open the membership questionnaire. Google sign-in is available now; email link verification is planned as a separate auth slice.</p>
-            <div class="row">
+            <p>Choose an identity method to open the membership questionnaire. Google sign-in works immediately; email sends a secure link to this browser flow.</p>
+            <form class="compact-auth-form" @submit.prevent="requestEmailLink">
+              <label>Email address<input v-model="emailLinkForm.email" required type="email" placeholder="you@example.com" :disabled="authUser.emailLinkSending" /></label>
+              <button class="button secondary paper-button" type="submit" :disabled="authUser.emailLinkSending">{{ authUser.emailLinkSending ? 'Sending...' : 'Start with email' }}</button>
+            </form>
+            <div v-if="authUser.emailLinkSent" class="notice" style="margin-top: 14px">
+              <p class="small">Check your email for a WAAIS sign-in link. In local development, it is written to the Laravel log.</p>
+            </div>
+            <div v-if="Object.keys(emailLinkErrors).length" class="notice error-notice" style="margin-top: 14px">
+              <p v-for="(messages, field) in emailLinkErrors" :key="field" class="small">{{ messages[0] }}</p>
+            </div>
+            <div class="row" style="margin-top: 14px">
               <button class="button primary" type="button" @click="startMembershipSignIn">Continue with Google</button>
-              <button class="button secondary paper-button" type="button" disabled>Start with email</button>
             </div>
           </article>
         </div>

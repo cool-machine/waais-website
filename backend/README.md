@@ -13,6 +13,7 @@ Implemented:
 - Sanctum API authentication foundation, including credentialed local CORS defaults for the Vite dev origins.
 - Google OAuth redirect/callback routes using Laravel Socialite, including safe relative `next` paths for frontend flows that need to return to their originating page.
 - Google identity provisioning that creates pending users and preserves approved member access.
+- Email-link auth for non-Google applicants: public `POST /api/auth/email-link` sends a 30-minute signed link through Laravel mail/log, and `/auth/email/callback/{user}` verifies the signature, marks the email verified, logs the user into the browser session, and redirects back to the frontend.
 - Authenticated `/api/user` endpoint returning access-model flags.
 - Authenticated `POST /api/logout` endpoint for ending browser-session auth. It invalidates the session when one is attached and remains safe for token-style Sanctum requests without a session store.
 - Member-only API route middleware backed by `canAccessMemberAreas()`.
@@ -49,13 +50,13 @@ php artisan migrate
 php artisan test
 ```
 
-Validation was completed locally on May 2, 2026 after the admin membership approvals + sign-out frontend slice:
+Validation was completed locally on May 2, 2026 after the email-link application start slice:
 
 ```text
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 139 tests, 612 assertions
+php artisan test       # last verified: 143 tests, 628 assertions
 php artisan migrate:fresh
 ```
 
