@@ -35,7 +35,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Pick the next launch-readiness slice. Legal/privacy frontend readiness shipped on May 2, 2026 at 22:46 CEST: `/legal` has privacy/cookie/data-request launch copy, first membership submit/reapply requires a recorded privacy acknowledgement, and GitHub Pages preview artifacts were refreshed. Best next step is Azure deployment execution from `AZURE_PRODUCTION.md` once exact resource names/SKUs are chosen in Azure. Discourse remains deferred to the final stage.
+Continue Azure production planning from `AZURE_PRODUCTION.md`. Azure account context was verified on May 3, 2026 as `g1900@whartonaistudio.onmicrosoft.com` in subscription `Azure subscription 1` (`a66b1770-137e-49cc-a9c2-0ab3186e9752`) and tenant `9d7271ab-ab49-4b9b-a134-6905a15fdb38`; use only that organization account, not George's startup Azure account. Resource group `rg-waais-prod-weu` now exists in `westeurope`; no paid Azure resources were created. Next step is exact SKU/resource selection for App Service, PostgreSQL, frontend hosting, email, storage, scheduler, and budget alerts, with explicit approval required before creating any paid resource. Discourse remains deferred to the final stage.
 ```
 
 ## Maintenance

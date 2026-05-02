@@ -89,18 +89,20 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 - Organization name: Wharton Alumni AI Studio and Research Center.
 - Public domain: `whartonai.studio`; preferred production hostnames are `whartonai.studio` for the frontend, `api.whartonai.studio` for Laravel, and `forum.whartonai.studio` for Discourse later.
+- Azure account context verified on May 3, 2026: signed in as `g1900@whartonaistudio.onmicrosoft.com`, subscription `Azure subscription 1` (`a66b1770-137e-49cc-a9c2-0ab3186e9752`), tenant `9d7271ab-ab49-4b9b-a134-6905a15fdb38`. Do not use George's startup Azure account.
 - Azure subscription is active with about EUR 1,700/year grant budget; docs assume a conservative production-only launch to keep spend low.
+- Azure resource group `rg-waais-prod-weu` exists in `westeurope` with tags `project=WAAIS`, `environment=production`, and `owner=Wharton Alumni AI Studio and Research Center`. No paid Azure resources have been created yet.
 - Default Azure region: West Europe, keeping primary app/database data in the Azure Europe geography. International users can use the Europe-hosted app; do not create country-specific databases for v1.
 - Production OAuth should be created under the organization Google for Nonprofits/admin account, not George's personal test OAuth client.
 - Deployment plan lives in `dev-context/AZURE_PRODUCTION.md`; privacy launch checklist lives in `dev-context/PRIVACY_READINESS.md`.
 
 ## 2. Present — Current Slice
 
-No slice in progress. Legal/privacy frontend readiness shipped on May 2, 2026 at 22:46 CEST and merged to `main`.
+No code slice in progress. Azure production setup has started with only the production resource group created; no App Service, database, email, storage, or Discourse resources exist yet.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Azure deployment execution.** Use `AZURE_PRODUCTION.md` to create resources/configure production once exact resource names/SKUs are chosen in Azure.
+1. **Azure SKU/resource selection.** Choose exact App Service, PostgreSQL, frontend hosting, email, storage, scheduler, and budget-alert settings from `AZURE_PRODUCTION.md`; do not create paid resources without explicit approval.
 2. **Brand/logo asset replacement** when George provides it.
 3. **Forum/Discourse final stage.** Discourse SSO is implemented, but forum install/feed wiring waits until the final stage.
 
@@ -116,6 +118,13 @@ No slice in progress. Legal/privacy frontend readiness shipped on May 2, 2026 at
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 3, 2026 00:23 CEST — Azure resource group created**
+- Did: verified Azure CLI context before creating anything. Active user is `g1900@whartonaistudio.onmicrosoft.com`, subscription is `Azure subscription 1` (`a66b1770-137e-49cc-a9c2-0ab3186e9752`), and tenant is `9d7271ab-ab49-4b9b-a134-6905a15fdb38`
+- Did: confirmed `rg-waais-prod-weu` did not already exist, then created exactly one resource group in `westeurope` with tags `project=WAAIS`, `environment=production`, and `owner=Wharton Alumni AI Studio and Research Center`
+- Did: stopped Azure provisioning after the resource group. No App Service, database, email, storage, Discourse, or other paid resources were created
+- Left off at: Azure SKU/resource selection from `AZURE_PRODUCTION.md`, then explicit approval before creating any paid resources
+- Watch out for: keep using only the `g1900@whartonaistudio.onmicrosoft.com` tenant/account. Do not use George's startup Azure account.
 
 **May 2, 2026 22:46 CEST — Legal/privacy frontend readiness (shipped)**
 - Did: replaced `/legal` placeholder cards with launch-readiness privacy, cookie, and data-request copy, including the planned Europe-hosted data posture and privacy contact path
