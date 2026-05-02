@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\SendAnnouncementEmails;
 use App\Console\Commands\SendEventReminders;
 use App\Http\Middleware\EnsureAdminAccess;
 use App\Http\Middleware\EnsureMemberAccess;
@@ -19,9 +20,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withCommands([
+        SendAnnouncementEmails::class,
         SendEventReminders::class,
     ])
     ->withSchedule(function (Schedule $schedule): void {
+        $schedule->command('announcements:send-emails')
+            ->hourly()
+            ->withoutOverlapping();
+
         $schedule->command('events:send-reminders')
             ->dailyAt('09:00')
             ->withoutOverlapping();

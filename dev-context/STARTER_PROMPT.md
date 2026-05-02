@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Pick the next infrastructure/member slice. Event reminder dispatch shipped on May 2, 2026 at 22:05 CEST: scheduled `events:send-reminders` sends `EventReminder` emails to approved verified members/admins/super-admins for published, non-cancelled events whose `starts_at` date matches today + `reminder_days_before`, with idempotency tracked in `event_reminder_deliveries`. The best next option is announcement email fan-out for announcements with `channel = email_dashboard`; forum feed/public teaser wiring should wait until Discourse is provisioned or API details are available.
+Pick the next infrastructure/member slice. Announcement email fan-out shipped on May 2, 2026 at 22:13 CEST: publishing an `email_dashboard` announcement sends `AnnouncementPublished` emails to the audience-selected approved verified users, and scheduled `announcements:send-emails` retries missing deliveries with idempotency tracked in `announcement_email_deliveries`. The best next option is forum feed/public teaser wiring once Discourse is provisioned or API details are available; otherwise move to brand/deployment work.
 ```
 
 ## Maintenance

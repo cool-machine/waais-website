@@ -7,6 +7,7 @@ use App\Enums\ContentVisibility;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\AuditLog;
+use App\Services\AnnouncementEmailFanout;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -104,13 +105,17 @@ class AdminAnnouncementController extends Controller
         return response()->json(['data' => $announcement->fresh()->load('creator:id,name,email')]);
     }
 
-    public function publish(Request $request, Announcement $announcement): JsonResponse
+    public function publish(Request $request, Announcement $announcement, AnnouncementEmailFanout $fanout): JsonResponse
     {
-        return $this->transitionContentStatus($request, $announcement, [
+        $response = $this->transitionContentStatus($request, $announcement, [
             'content_status' => ContentStatus::Published,
             'timestamp_field' => 'published_at',
             'action' => 'announcements.publish',
         ]);
+
+        $fanout->send($announcement->fresh());
+
+        return $response;
     }
 
     public function hide(Request $request, Announcement $announcement): JsonResponse

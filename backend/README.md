@@ -4,7 +4,7 @@ Laravel API for the Wharton Alumni AI Studio platform.
 
 ## Current Scope
 
-This directory contains the Laravel API for WAAIS. It started as the backend foundation, but now includes the access model, Google/Sanctum auth foundations, membership application workflows, startup-listing workflows, public/member read APIs, email notifications, role management, admin-managed events, event reminder dispatch, admin-managed partners, homepage CMS cards, announcements, and the DiscourseConnect SSO relay.
+This directory contains the Laravel API for WAAIS. It started as the backend foundation, but now includes the access model, Google/Sanctum auth foundations, membership application workflows, startup-listing workflows, public/member read APIs, email notifications, role management, admin-managed events, event reminder dispatch, admin-managed partners, homepage CMS cards, announcements with email fan-out, and the DiscourseConnect SSO relay.
 
 Implemented:
 
@@ -30,6 +30,7 @@ Implemented:
 - Partners backend: admin-managed content (no Submission & Admin Review pattern). Migration adds `partners` table with `content_status`/`visibility`, lifecycle timestamps, `name`, `partner_type`, `summary`, `description`, `website_url`, `logo_url`, and `sort_order`. Admin endpoints under `/api/admin/partners` (index filterable by `content_status`/`visibility`, store, show, update, publish, hide, archive) write one `AuditLog` row per state-changing action. Public read API at `/api/public/partners` (index + show) filters strictly to `content_status = published` AND `visibility IN (public, mixed)`. Response shape is documented below.
 - Homepage CMS cards backend: admin-managed content (no Submission & Admin Review pattern). Migration adds `homepage_cards` table with `content_status`/`visibility`, lifecycle timestamps, `section`, `eyebrow`, `title`, `body`, optional link fields, and `sort_order`. Admin endpoints under `/api/admin/homepage-cards` (index filterable by `section`/`content_status`/`visibility`, store, show, update, publish, hide, archive) write one `AuditLog` row per state-changing action. Public read API at `/api/public/homepage-cards` (index + show) filters strictly to `content_status = published` AND `visibility IN (public, mixed)`. Response shape is documented below.
 - Announcements backend: admin-managed content (no Submission & Admin Review pattern). Migration adds `announcements` table with `content_status`/`visibility`, lifecycle timestamps, `audience`, `channel`, title/body fields, and optional action link fields. Admin endpoints under `/api/admin/announcements` (index filterable by `content_status`/`visibility`/`audience`, store, show, update, publish, hide, archive) write one `AuditLog` row per state-changing action. Member read API at `/api/announcements` (index + show) is gated by `member.access` and filters strictly to published member-visible announcements. Response shape is documented below.
+- Announcement email fan-out: publishing an announcement with `channel = email_dashboard` sends `AnnouncementPublished` emails after the publish transaction commits. `audience = all_members` targets approved verified members/admins/super-admins; `audience = admins` targets approved verified admins/super-admins. Scheduled `announcements:send-emails` runs hourly to retry missing deliveries. Deliveries are tracked in `announcement_email_deliveries` by announcement, user, and publication timestamp so publish/retry paths are idempotent while a republished announcement can send again for the new publication timestamp.
 - Email notifications via Laravel's `Notification` system on the `mail` channel, fired post-transaction. Surfaces, mirrored across membership applications and startup listings: submitter thank-you on submit/reapply (not on edit), admin "new submission" queue notice to all approved Admin/SuperAdmin users via `User::admins()`, approval email, request-more-info email, and an opt-in rejection email gated by a `send_email` boolean on the reject endpoint. Notification classes live under `App\Notifications\*`. Local dev uses `MAIL_MAILER=log`; production target is Azure Communication Services Email over SMTP via the `azure_communication_services` mailer in `config/mail.php`.
 - Membership application storage matching the documented v1 questionnaire.
 - Application revision history.
@@ -38,7 +39,7 @@ Implemented:
 
 Not implemented yet:
 
-- Announcement email fan-out for announcements with `channel = email_dashboard`.
+- Forum feed/public teaser API wiring once Discourse is provisioned.
 
 ## Local Setup
 
@@ -52,14 +53,14 @@ php artisan migrate
 php artisan test
 ```
 
-Validation was completed locally on May 2, 2026 after the event reminder dispatch slice:
+Validation was completed locally on May 2, 2026 after the announcement email fan-out slice:
 
 ```text
 PHP 8.5.5
 Composer 2.9.7
 composer install
 composer validate --strict
-php artisan test       # last verified: 177 tests, 775 assertions
+php artisan test       # last verified: 184 tests, 810 assertions
 php artisan migrate:fresh
 ```
 

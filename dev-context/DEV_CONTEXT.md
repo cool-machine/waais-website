@@ -70,10 +70,11 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Partners backend: admin-managed content (no Submission & Admin Review pattern). `partners` table has `content_status`/`visibility`, lifecycle timestamps, `name`, `partner_type`, `summary`, `description`, `website_url`, `logo_url`, and `sort_order`. Admin endpoints under `/api/admin/partners` (index filterable by `content_status`/`visibility`, store, show, update, publish, hide, archive) audit-log every state-changing action. Public read API at `/api/public/partners` (index + show) filters to `content_status = published` AND `visibility IN (public, mixed)` with an explicit allowlist projection.
 - Homepage CMS cards backend: admin-managed content (no Submission & Admin Review pattern). `homepage_cards` table has `content_status`/`visibility`, lifecycle timestamps, `section`, `eyebrow`, `title`, `body`, optional link fields, and `sort_order`. Admin endpoints under `/api/admin/homepage-cards` (index filterable by `section`/`content_status`/`visibility`, store, show, update, publish, hide, archive) audit-log every state-changing action. Public read API at `/api/public/homepage-cards` (index + show) filters to `content_status = published` AND `visibility IN (public, mixed)` with an explicit allowlist projection.
 - Announcements backend: admin-managed content (no Submission & Admin Review pattern). `announcements` table has `content_status`/`visibility`, lifecycle timestamps, `audience`, `channel`, title/body fields, and optional action link fields. Admin endpoints under `/api/admin/announcements` (index filterable by `content_status`/`visibility`/`audience`, store, show, update, publish, hide, archive) audit-log every state-changing action. Member read API at `/api/announcements` is gated by `member.access`, filters to published member-visible announcements, includes admin-only announcements only for admin/super-admin users, and uses an explicit allowlist projection.
+- Announcement email fan-out: publishing an announcement with `channel = email_dashboard` sends `AnnouncementPublished` emails after the publish transaction commits. `audience = all_members` targets approved verified members/admins/super-admins; `audience = admins` targets approved verified admins/super-admins. Scheduled `announcements:send-emails` runs hourly to retry missing deliveries. `announcement_email_deliveries` tracks announcement/user/publication timestamp for idempotency; republishing can send again for the new publication timestamp.
 - Super-admin role-management API: `super_admin.access` middleware backed by `User::canManageAdminPrivileges()`. Routes under `/api/admin/users/{user}` for `promote-admin`, `demote-admin`, `promote-super-admin`, `demote-super-admin`. Each transition is a row-locked update with strict from/to role guards (returns 409 on role mismatch). `promote-admin` additionally requires the target to be `approval_status = approved`. `demote-super-admin` is blocked when the target is the last `SuperAdmin` in the system (covers self-demotion and any path that would empty the role). Every transition writes one `AuditLog` row keyed on `User` with `role.promote_admin` / `role.demote_admin` / `role.promote_super_admin` / `role.demote_super_admin` plus before/after `permission_role` plus IP and user-agent.
 - Admin user directory API: `admin.access` middleware. Routes under `/api/admin/users` for `index` (filterable by `permission_role`, `approval_status`, `affiliation_type`, free-text `q` across name/email/first_name/last_name/display_name; paginated, default `per_page = 25` capped at 100) and `/api/admin/users/{user}` for `show`. Both use an explicit allowlisted projection (`id`, `name`, `first_name`, `last_name`, `display_name`, `email`, `email_verified_at`, `avatar_url`, `approval_status`, `affiliation_type`, `permission_role`, `approved_at`, `rejected_at`, `suspended_at`, `created_at`). Internal fields (`password`, `remember_token`, `google_id`) are intentionally never exposed; drift is enforced by `AdminUserApiTest::projection_excludes_internal_fields`.
 - Public read API for startup listings: anonymous (no auth) routes under `/api/public/startup-listings` (index, paginated) and `/api/public/startup-listings/{listing}` (show). Both filter strictly to `content_status = published` AND `visibility = public`; anything else is invisible (404 on show). The response uses an explicit allowlist projection: `id`, `name`, `tagline`, `description`, `website_url`, `logo_url`, `industry`, `stage`, `location`, `founders`, `linkedin_url`, `approved_at` (ISO 8601). Internal fields — `review_notes`, `submitter_role`, `owner_id`, `reviewed_by`, `reviewed_at`, `submitted_at`, `rejected_at`, `approval_status`, `content_status`, `visibility`, `revisions`, `created_at`, `updated_at` — never appear, enforced by a denylist test. Default `per_page = 12`, capped at 48.
-- Test suite: 177 passing / 775 assertions after the event reminder dispatch slice. `php artisan migrate:fresh` passes against local SQLite.
+- Test suite: 184 passing / 810 assertions after the announcement email fan-out slice. `php artisan migrate:fresh` passes against local SQLite.
 
 ### Production database decision
 
@@ -83,14 +84,13 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Event reminder dispatch shipped on May 2, 2026 at 22:05 CEST and merged to `main`.
+No slice in progress. Announcement email fan-out shipped on May 2, 2026 at 22:13 CEST and merged to `main`.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Announcement email dispatch.** The announcements model stores `channel = email_dashboard`, but this slice only publishes dashboard announcements; actual email fan-out is still queued.
-2. **Forum feed/public teaser wiring.** Discourse SSO is implemented, but forum content still needs Discourse API integration once the forum is provisioned.
-3. **Brand/logo asset replacement** when George provides it.
-4. **Azure deployment** of app + backend, plus Discourse on Azure VM.
+1. **Forum feed/public teaser wiring.** Discourse SSO is implemented, but forum content still needs Discourse API integration once the forum is provisioned.
+2. **Brand/logo asset replacement** when George provides it.
+3. **Azure deployment** of app + backend, plus Discourse on Azure VM.
 
 ## Working Rules
 
@@ -104,6 +104,15 @@ No slice in progress. Event reminder dispatch shipped on May 2, 2026 at 22:05 CE
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 2, 2026 22:13 CEST — Announcement email fan-out (shipped)**
+- Did: added `announcement_email_deliveries` to track per-announcement/per-user email sends by publication timestamp, keeping publish/retry paths idempotent while allowing republished announcements to send again
+- Did: added `AnnouncementPublished` mail notification, `AnnouncementEmailFanout` service, and `announcements:send-emails`, scheduled hourly with `withoutOverlapping()`
+- Did: publishing an `email_dashboard` announcement now triggers fan-out; the retry command also sends missing deliveries for already-published `email_dashboard` announcements
+- Did: `audience = all_members` targets approved verified members/admins/super-admins; `audience = admins` targets approved verified admins/super-admins; `channel = dashboard` never emails
+- Did: added `AnnouncementEmailFanoutTest`; validation passed at `php artisan test` 184 tests / 810 assertions, `composer validate --strict`, and `php artisan migrate:fresh`
+- Left off at: forum feed/public teaser wiring once Discourse is provisioned, or brand/deployment work if Discourse details are not available
+- Watch out for: production email still depends on Azure Communication Services Email setup and verified sender/domain secrets outside the repo.
 
 **May 2, 2026 22:05 CEST — Event reminder dispatch (shipped)**
 - Did: added `event_reminder_deliveries` to track per-event/per-user reminder sends by event start time, keeping reruns idempotent while allowing a moved event to send again for the new date
