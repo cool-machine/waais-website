@@ -9,6 +9,7 @@ import {
   permissionRoles,
 } from '../data/platformModel'
 import { useAuthUserStore } from '../stores/authUser'
+import { useAdminEventsStore } from '../stores/adminEvents'
 import { useAdminMembershipApplicationsStore } from '../stores/adminMembershipApplications'
 import { useAdminStartupListingsStore } from '../stores/adminStartupListings'
 import { useMembershipApplicationStore } from '../stores/membershipApplication'
@@ -18,6 +19,7 @@ const route = useRoute()
 const authUser = useAuthUserStore()
 const adminApplicationsStore = useAdminMembershipApplicationsStore()
 const adminStartupListingsStore = useAdminStartupListingsStore()
+const adminEventsStore = useAdminEventsStore()
 const applicationStore = useMembershipApplicationStore()
 const myStartupsStore = useMyStartupsStore()
 
@@ -41,6 +43,25 @@ const adminReviewForm = reactive({
 const adminStartupReviewForm = reactive({
   review_notes: '',
   send_email: false,
+})
+const eventForm = reactive({
+  title: '',
+  summary: '',
+  description: '',
+  starts_at: '',
+  ends_at: '',
+  location: '',
+  format: '',
+  image_url: '',
+  registration_url: '',
+  capacity_limit: '',
+  waitlist_open: false,
+  visibility: 'members_only',
+  recap_content: '',
+  reminder_days_before: '2',
+})
+const eventCancelForm = reactive({
+  cancellation_note: '',
 })
 const emailSignInForm = reactive({
   email: '',
@@ -163,6 +184,27 @@ const selectedAdminStartupRows = computed(() => {
 })
 const adminStartupValidationErrors = computed(() => adminStartupListingsStore.saveError?.body?.errors ?? {})
 const adminStartupQueueCount = computed(() => adminStartupListingsStore.listMeta.total || adminStartupListingsStore.list.length)
+const selectedAdminEvent = computed(() => adminEventsStore.currentEvent)
+const adminEventValidationErrors = computed(() => adminEventsStore.saveError?.body?.errors ?? {})
+const adminEventQueueCount = computed(() => adminEventsStore.listMeta.total || adminEventsStore.list.length)
+const adminEventSaveLabel = computed(() => {
+  if (adminEventsStore.saving) return 'Saving...'
+  return adminEventsStore.isCreatingNew ? 'Create draft event' : 'Save changes'
+})
+const adminEventStatusFilters = ['all', 'draft', 'pending_review', 'published', 'hidden', 'archived']
+const selectedAdminEventRows = computed(() => {
+  const event = selectedAdminEvent.value
+  return [
+    ['Status', titleize(event?.content_status) || 'Draft'],
+    ['Visibility', titleize(event?.visibility) || 'Members only'],
+    ['Starts', formatEventDateTime(event?.starts_at) || 'Not set'],
+    ['Ends', formatEventDateTime(event?.ends_at) || 'Not set'],
+    ['Location', event?.location || 'Not provided'],
+    ['Format', event?.format || 'Not provided'],
+    ['Capacity', event?.capacity_limit ? String(event.capacity_limit) : 'Unlimited'],
+    ['Cancelled', event?.cancelled_at ? formatEventDateTime(event.cancelled_at) : 'No'],
+  ]
+})
 
 function titleize(value) {
   return value
@@ -190,6 +232,34 @@ function listToArray(value) {
 
 function nullableString(value) {
   return value.trim() === '' ? null : value.trim()
+}
+
+function toLocalDateTimeInput(iso) {
+  if (!iso) return ''
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+function localDateTimeToIso(value) {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toISOString()
+}
+
+function formatEventDateTime(iso) {
+  if (!iso) return ''
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString()
+}
+
+function nullableInteger(value) {
+  if (value === '' || value === null || value === undefined) return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? Math.trunc(parsed) : null
 }
 
 function populateStartupForm(listing) {
@@ -302,6 +372,88 @@ async function requestStartupListingInfo() {
   populateAdminStartupReviewForm(adminStartupListingsStore.currentListing)
 }
 
+function populateEventForm(event) {
+  const source = event ?? {}
+  eventForm.title = source.title ?? ''
+  eventForm.summary = source.summary ?? ''
+  eventForm.description = source.description ?? ''
+  eventForm.starts_at = toLocalDateTimeInput(source.starts_at)
+  eventForm.ends_at = toLocalDateTimeInput(source.ends_at)
+  eventForm.location = source.location ?? ''
+  eventForm.format = source.format ?? ''
+  eventForm.image_url = source.image_url ?? ''
+  eventForm.registration_url = source.registration_url ?? ''
+  eventForm.capacity_limit = source.capacity_limit ?? source.capacity_limit === 0 ? String(source.capacity_limit ?? '') : ''
+  eventForm.waitlist_open = Boolean(source.waitlist_open)
+  eventForm.visibility = source.visibility ?? 'members_only'
+  eventForm.recap_content = source.recap_content ?? ''
+  eventForm.reminder_days_before = source.reminder_days_before === null || source.reminder_days_before === undefined
+    ? '2'
+    : String(source.reminder_days_before)
+  eventCancelForm.cancellation_note = source.cancellation_note ?? ''
+}
+
+function eventPayload() {
+  return {
+    title: eventForm.title.trim(),
+    summary: eventForm.summary.trim(),
+    description: eventForm.description.trim(),
+    starts_at: localDateTimeToIso(eventForm.starts_at),
+    ends_at: localDateTimeToIso(eventForm.ends_at),
+    location: nullableString(eventForm.location),
+    format: nullableString(eventForm.format),
+    image_url: nullableString(eventForm.image_url),
+    registration_url: nullableString(eventForm.registration_url),
+    capacity_limit: nullableInteger(eventForm.capacity_limit),
+    waitlist_open: Boolean(eventForm.waitlist_open),
+    visibility: eventForm.visibility || null,
+    recap_content: nullableString(eventForm.recap_content),
+    reminder_days_before: nullableInteger(eventForm.reminder_days_before),
+  }
+}
+
+async function loadAdminEvents(contentStatus = adminEventsStore.listContentStatus) {
+  await adminEventsStore.loadList({ contentStatus, force: true })
+  populateEventForm(adminEventsStore.currentEvent)
+}
+
+async function selectAdminEvent(event) {
+  adminEventsStore.selectEvent(event)
+  populateEventForm(event)
+  await adminEventsStore.loadOne(event.id)
+  populateEventForm(adminEventsStore.currentEvent)
+}
+
+function startNewEvent() {
+  adminEventsStore.startNew()
+  populateEventForm(null)
+}
+
+async function submitAdminEvent() {
+  const saved = await adminEventsStore.save(eventPayload())
+  populateEventForm(saved ?? adminEventsStore.currentEvent)
+}
+
+async function publishAdminEvent() {
+  await adminEventsStore.publish()
+  populateEventForm(adminEventsStore.currentEvent)
+}
+
+async function hideAdminEvent() {
+  await adminEventsStore.hide()
+  populateEventForm(adminEventsStore.currentEvent)
+}
+
+async function archiveAdminEvent() {
+  await adminEventsStore.archive()
+  populateEventForm(adminEventsStore.currentEvent)
+}
+
+async function cancelAdminEvent() {
+  await adminEventsStore.cancel(eventCancelForm.cancellation_note)
+  populateEventForm(adminEventsStore.currentEvent)
+}
+
 async function requestAppEmailLink() {
   await authUser.requestEmailSignIn(emailSignInForm.email, { next: '/app/dashboard' })
 }
@@ -312,19 +464,20 @@ async function signOut() {
   myStartupsStore.clear()
   adminApplicationsStore.clear()
   adminStartupListingsStore.clear()
+  adminEventsStore.clear()
 }
 
 const adminMetrics = computed(() => [
   ['Member approvals', String(adminQueueCount.value || 0)],
   ['Startup reviews', String(adminStartupQueueCount.value || 0)],
+  ['Events in view', String(adminEventQueueCount.value || 0)],
   ['Active members', '284'],
-  ['Published events', '12'],
 ])
 
 async function loadMemberDashboard() {
   await authUser.loadCurrentUser()
   const memberViews = ['dashboard', 'profile', 'my-startups']
-  const adminViews = ['admin', 'approvals', 'startup-review']
+  const adminViews = ['admin', 'approvals', 'startup-review', 'events-admin']
 
   if (authUser.isAuthenticated && memberViews.includes(currentView.value)) {
     await applicationStore.load().catch((error) => {
@@ -347,12 +500,18 @@ async function loadMemberDashboard() {
         if (error?.status !== 401 && error?.status !== 403) throw error
       })
     }
+    if (currentView.value === 'admin' || currentView.value === 'events-admin') {
+      await loadAdminEvents().catch((error) => {
+        if (error?.status !== 401 && error?.status !== 403) throw error
+      })
+    }
   }
 }
 
 watch(() => myStartupsStore.currentListing, populateStartupForm)
 watch(() => adminApplicationsStore.currentApplication, populateAdminReviewForm)
 watch(() => adminStartupListingsStore.currentListing, populateAdminStartupReviewForm)
+watch(() => adminEventsStore.currentEvent, populateEventForm)
 watch(currentView, () => {
   loadMemberDashboard().catch(() => {})
 }, { immediate: true })
@@ -851,27 +1010,106 @@ watch(currentView, () => {
       <section v-else-if="currentView === 'events-admin'" class="app-stack">
         <div class="app-hero">
           <p class="eyebrow">Event management</p>
-          <h1>Create, publish, cancel, hide, and recap events.</h1>
-          <p class="lede">Events need visibility, capacity, waitlist, external registration URL, reminder timing, cancellation, and recap fields.</p>
+          <h1>Create, edit, publish, hide, archive, and cancel events.</h1>
+          <p class="lede">Admins author events as drafts, then publish them to public or members-only audiences. Cancellation hides events from public surfaces while keeping them visible here.</p>
+          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
         </div>
-        <div class="grid two">
-          <form class="app-form card">
-            <label class="full">Title<input value="AI Founder Salon"></label>
-            <label>Date<input value="May 14, 2026"></label>
-            <label>Capacity<input value="50"></label>
-            <label>Status<select><option v-for="status in contentStatuses" :key="status">{{ status }}</option></select></label>
-            <label>Visibility<select><option v-for="visibility in contentVisibilities" :key="visibility">{{ visibility }}</option></select></label>
-            <label class="full">External registration URL<input value="https://example.com/register"></label>
-            <label class="full">Description<textarea>Private dinner for AI founders and operators in the WAAIS community.</textarea></label>
-          </form>
+        <div v-if="adminEventsStore.error" class="notice error-notice">
+          <p class="small">Could not load events. Confirm this account has admin access and the backend is running.</p>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="filter-row">
+          <button
+            v-for="status in adminEventStatusFilters"
+            :key="status"
+            class="button secondary"
+            :class="{ active: adminEventsStore.listContentStatus === status }"
+            type="button"
+            @click="loadAdminEvents(status)"
+          >
+            {{ titleize(status) }}
+          </button>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="grid two">
           <article class="card">
-            <h2>Published events</h2>
-            <div class="table">
-              <div class="table-row"><span>AI Founder Salon</span><strong>42 / 50</strong></div>
-              <div class="table-row"><span>Agentic Workflows</span><strong>18 / 100</strong></div>
-              <div class="table-row"><span>Demo Night</span><strong>Draft</strong></div>
+            <div class="row">
+              <h2>Events</h2>
+              <div class="row gap">
+                <button class="button secondary" type="button" @click="loadAdminEvents(adminEventsStore.listContentStatus)">Refresh</button>
+                <button class="button water" type="button" @click="startNewEvent">New event</button>
+              </div>
+            </div>
+            <p v-if="adminEventsStore.loading" class="small">Loading events.</p>
+            <p v-else-if="!adminEventsStore.hasEvents" class="small">No events in this status.</p>
+            <div v-else class="table">
+              <button
+                v-for="event in adminEventsStore.list"
+                :key="event.id"
+                class="table-row table-button"
+                type="button"
+                @click="selectAdminEvent(event)"
+              >
+                <span>
+                  {{ event.title }}
+                  <br>
+                  <small>{{ formatEventDateTime(event.starts_at) || 'No start date' }}</small>
+                </span>
+                <strong>
+                  {{ titleize(event.content_status) }}
+                  <small v-if="event.cancelled_at"> · Cancelled</small>
+                </strong>
+              </button>
             </div>
           </article>
+
+          <form class="app-form card" @submit.prevent="submitAdminEvent">
+            <div class="full row">
+              <div>
+                <span class="tag">{{ adminEventsStore.isCreatingNew ? 'New event' : titleize(selectedAdminEvent?.content_status) || 'Draft' }}</span>
+                <h2>{{ adminEventsStore.selectedEventTitle }}</h2>
+                <p v-if="!adminEventsStore.isCreatingNew && selectedAdminEvent?.cancelled_at" class="small">Cancelled {{ formatEventDateTime(selectedAdminEvent.cancelled_at) }}.</p>
+              </div>
+            </div>
+
+            <div v-if="!adminEventsStore.isCreatingNew" class="table full">
+              <div v-for="[label, value] in selectedAdminEventRows" :key="label" class="table-row"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+            </div>
+
+            <label class="full">Title<input v-model="eventForm.title" :disabled="adminEventsStore.saving" required /></label>
+            <label class="full">Summary<textarea v-model="eventForm.summary" :disabled="adminEventsStore.saving" required /></label>
+            <label class="full">Description<textarea v-model="eventForm.description" :disabled="adminEventsStore.saving" required /></label>
+            <label>Starts<input v-model="eventForm.starts_at" type="datetime-local" :disabled="adminEventsStore.saving" required /></label>
+            <label>Ends<input v-model="eventForm.ends_at" type="datetime-local" :disabled="adminEventsStore.saving" /></label>
+            <label>Location<input v-model="eventForm.location" :disabled="adminEventsStore.saving" /></label>
+            <label>Format<input v-model="eventForm.format" :disabled="adminEventsStore.saving" /></label>
+            <label>Capacity<input v-model="eventForm.capacity_limit" type="number" min="0" :disabled="adminEventsStore.saving" /></label>
+            <label>Visibility
+              <select v-model="eventForm.visibility" :disabled="adminEventsStore.saving">
+                <option v-for="visibility in contentVisibilities" :key="visibility" :value="visibility">{{ titleize(visibility) }}</option>
+              </select>
+            </label>
+            <label>Reminder days before<input v-model="eventForm.reminder_days_before" type="number" min="0" max="60" :disabled="adminEventsStore.saving" /></label>
+            <label class="checkbox-row"><input v-model="eventForm.waitlist_open" type="checkbox" :disabled="adminEventsStore.saving" /> Waitlist open</label>
+            <label class="full">External registration URL<input v-model="eventForm.registration_url" type="url" :disabled="adminEventsStore.saving" /></label>
+            <label class="full">Image URL<input v-model="eventForm.image_url" type="url" :disabled="adminEventsStore.saving" /></label>
+            <label class="full">Recap content<textarea v-model="eventForm.recap_content" :disabled="adminEventsStore.saving" /></label>
+
+            <div v-if="Object.keys(adminEventValidationErrors).length" class="notice error-notice full">
+              <p v-for="(messages, field) in adminEventValidationErrors" :key="field" class="small">{{ messages[0] }}</p>
+            </div>
+
+            <div class="button-grid full">
+              <button class="button primary" type="submit" :disabled="adminEventsStore.saving">{{ adminEventSaveLabel }}</button>
+              <button v-if="!adminEventsStore.isCreatingNew && selectedAdminEvent?.content_status !== 'published'" class="button water" type="button" :disabled="adminEventsStore.saving" @click="publishAdminEvent">Publish</button>
+              <button v-if="!adminEventsStore.isCreatingNew && selectedAdminEvent?.content_status !== 'hidden'" class="button secondary" type="button" :disabled="adminEventsStore.saving" @click="hideAdminEvent">Hide</button>
+              <button v-if="!adminEventsStore.isCreatingNew && selectedAdminEvent?.content_status !== 'archived'" class="button secondary" type="button" :disabled="adminEventsStore.saving" @click="archiveAdminEvent">Archive</button>
+            </div>
+
+            <div v-if="!adminEventsStore.isCreatingNew && !selectedAdminEvent?.cancelled_at" class="full">
+              <label class="full">Cancellation note<textarea v-model="eventCancelForm.cancellation_note" :disabled="adminEventsStore.saving" /></label>
+              <button class="button secondary" type="button" :disabled="adminEventsStore.saving" @click="cancelAdminEvent">Cancel event</button>
+            </div>
+            <p v-if="adminEventsStore.currentLoading" class="small full">Loading full event detail.</p>
+          </form>
         </div>
       </section>
 

@@ -359,4 +359,96 @@ describe('member dashboard live state', () => {
     expect(wrapper.text()).not.toContain('Sign in with email')
     expect(wrapper.findAll('.app-nav-group').some((group) => group.text().includes('Auth'))).toBe(false)
   })
+
+  it('renders the admin event management queue from the admin API', async () => {
+    const ADMIN_EVENT = {
+      id: 33,
+      title: 'AI Founder Salon',
+      summary: 'Focused salon.',
+      description: 'Private dinner.',
+      starts_at: '2026-06-10T18:00:00.000000Z',
+      ends_at: '2026-06-10T21:00:00.000000Z',
+      location: 'New York',
+      content_status: 'draft',
+      visibility: 'members_only',
+      cancelled_at: null,
+      capacity_limit: 50,
+      reminder_days_before: 2,
+      waitlist_open: false,
+    }
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.match(/\/api\/admin\/events\/33$/)) return Promise.resolve(jsonResponse({ data: ADMIN_EVENT }))
+      if (url.includes('/api/admin/events')) {
+        return Promise.resolve(jsonResponse({
+          data: [ADMIN_EVENT],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/events-admin')
+
+    expect(wrapper.text()).toContain('Create, edit, publish, hide, archive, and cancel events.')
+    expect(wrapper.text()).toContain('AI Founder Salon')
+
+    const listRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/events?'))
+    expect(listRequest[0]).toContain('content_status=draft')
+    expect(listRequest[1].credentials).toBe('include')
+
+    await wrapper.find('.table-button').trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain('Publish')
+  })
+
+  it('publishes the selected event and removes it from the draft queue', async () => {
+    const ADMIN_EVENT = {
+      id: 41,
+      title: 'Demo Night',
+      summary: 'Showcase.',
+      description: 'Live demos.',
+      starts_at: '2026-06-20T18:00:00.000000Z',
+      content_status: 'draft',
+      visibility: 'public',
+      cancelled_at: null,
+      reminder_days_before: 2,
+      waitlist_open: false,
+    }
+    const published = { ...ADMIN_EVENT, content_status: 'published' }
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.includes('/api/admin/events/41/publish')) return Promise.resolve(jsonResponse({ data: published }))
+      if (url.match(/\/api\/admin\/events\/41$/)) return Promise.resolve(jsonResponse({ data: ADMIN_EVENT }))
+      if (url.includes('/api/admin/events')) {
+        return Promise.resolve(jsonResponse({
+          data: [ADMIN_EVENT],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/events-admin')
+    await wrapper.find('.table-button').trigger('click')
+    await flushPromises()
+
+    const publishButton = wrapper.findAll('button').find((node) => node.text() === 'Publish')
+    expect(publishButton).toBeTruthy()
+    await publishButton.trigger('click')
+    await flushPromises()
+
+    const publishRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/events/41/publish'))
+    expect(publishRequest[1].method).toBe('POST')
+    expect(publishRequest[1].credentials).toBe('include')
+    expect(wrapper.text()).toContain('No events in this status.')
+  })
 })

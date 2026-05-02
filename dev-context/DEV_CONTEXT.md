@@ -41,9 +41,10 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Member dashboard startup ownership view at `/app/my-startups` consumes `frontend/src/stores/myStartups.js`, backed by authenticated member endpoints (`GET/POST/PATCH /api/startup-listings`). Approved members can submit new listings and update non-approved listings; approved listings render as not editable.
 - Admin dashboard membership approvals view at `/app/approvals` consumes `frontend/src/stores/adminMembershipApplications.js`, backed by authenticated admin endpoints (`GET /api/admin/applications`, `GET /api/admin/applications/{id}`, and approve/reject/request-info transitions). It is the first live admin review surface; startup listing review remains the next admin queue surface.
 - Admin dashboard startup-listing review view at `/app/startup-review` consumes `frontend/src/stores/adminStartupListings.js`, backed by authenticated admin endpoints (`GET /api/admin/startup-listings`, `GET /api/admin/startup-listings/{id}`, and approve/reject/request-info transitions). It mirrors the membership queue but stays separate from public/member startup stores.
+- Admin dashboard event management view at `/app/events-admin` consumes `frontend/src/stores/adminEvents.js`, backed by authenticated admin endpoints (`GET /api/admin/events` filterable by `content_status`, `GET /api/admin/events/{id}`, `POST /api/admin/events` create, `PATCH /api/admin/events/{id}` update, plus `publish`/`hide`/`archive`/`cancel` transitions). The store auto-removes events from the active filter when their `content_status` no longer matches and supports an `all` content_status filter that keeps everything in view.
 - Auth UI now has mutually exclusive states: signed-out users see "Sign in with Google" and disabled future "Sign in with email"; signed-in users see account context plus "Sign out". Backend `POST /api/logout` clears browser-session auth when present and the frontend clears authenticated stores after logout.
 - Pinia store at `frontend/src/stores/publicStartups.js` — `loadList`, `loadOne`, in-memory TTL cache so back-navigation between list and detail doesn't refetch. Convention for adding future stores (one per backend resource × access surface) is documented in `frontend/src/stores/README.md`.
-- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 100 specs across `pages/AppMockupPage`, `pages/MembershipPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/myStartups`, `stores/adminMembershipApplications`, `stores/adminStartupListings`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
+- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 116 specs across `pages/AppMockupPage`, `pages/MembershipPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/myStartups`, `stores/adminMembershipApplications`, `stores/adminStartupListings`, `stores/adminEvents`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
 - Build deployed to GitHub Pages via root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg` copied from `frontend/dist`. Deploy steps live in `frontend/README.md`.
 
 ### Backend (live, validated locally)
@@ -75,11 +76,11 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Email-link application start shipped on May 2, 2026 at 16:15 CEST and merged to `main`.
+No slice in progress. Admin dashboard event management shipped on May 2, 2026 at 17:55 CEST and merged to `main`.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Next admin dashboard surface** — user management, event management, public content, or announcements.
+1. **Next admin dashboard surface** — user management, public content, or announcements.
 2. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
 3. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
 4. **Brand/logo asset replacement** when George provides it.
@@ -97,6 +98,18 @@ No slice in progress. Email-link application start shipped on May 2, 2026 at 16:
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 2, 2026 17:55 CEST — Admin dashboard event management (shipped)**
+- Did: added `frontend/src/stores/adminEvents.js`, backed by authenticated admin event endpoints (`GET /api/admin/events`, `GET /api/admin/events/{id}`, `POST /api/admin/events` create, `PATCH /api/admin/events/{id}` update, `POST publish`/`hide`/`archive`/`cancel`). Store supports content_status filter (default `draft`, plus `all` keeps everything in view), pagination metadata, list cache invalidation on `force`, validation-error state, and a single `applyUpdated()` helper that adds, replaces, or removes the affected event from the active filter slice
+- Did: rewired `/app/events-admin` from the static mockup to a live admin event management surface. Approved admins can filter by content_status, refresh the queue, start a new event, edit an existing one, set visibility/capacity/reminder/registration URL/recap fields, and run `Save`, `Publish`, `Hide`, `Archive`, or `Cancel` transitions with an optional cancellation note. Pending/non-admin users see an explicit access-required state instead of a disabled form
+- Did: kept this store separate from `usePublicEventsStore`; admin event projections never share state with the anonymous public events store
+- Did: updated `loadMemberDashboard()` to load events when the admin lands on `/app/admin` or `/app/events-admin`, and made `signOut()` clear the new store
+- Did: replaced the static "Published events: 12" admin metric with a live `Events in view` count
+- Did: added 14 store tests (`stores/adminEvents.test.js`) and 2 page tests (`pages/AppMockupPage.test.js`) covering list+filter, status filter, save POST/PATCH branching, validation-error capture, publish removes from draft queue, publish keeps in queue when filter is `all`, cancel with/without note, hide and archive endpoints, startNew/clear. Frontend validation passed at `npm test` 116 specs, `npm run build`, and `npm run test:routes`
+- Did: required backend validation still passed: `composer validate --strict`, `php artisan test` 143 passed / 628 assertions, and `php artisan migrate:fresh`
+- Did: refreshed root-level GitHub Pages build artifacts from `frontend/dist`
+- Left off at: ready for the next slice — the next admin dashboard surface (user management, public content, or announcements)
+- Watch out for: events use `content_status` (admin-managed) instead of `approval_status`, so the admin queue defaults to `draft` rather than `submitted`. Cancellation is a separate axis from `content_status`: cancelled events still appear in the admin queue but are filtered from every public surface. Datetime input uses `datetime-local` and converts to ISO at the wire boundary; if a future slice introduces explicit timezone handling for international events, replace the in-page conversion helpers (`toLocalDateTimeInput`, `localDateTimeToIso`) with timezone-aware logic. The `publish_at` / `hidden_at` / `archived_at` timestamps are written by the backend on transition; the frontend reads `cancelled_at` and `content_status` only
 
 **May 2, 2026 16:15 CEST — Email-link application start (shipped)**
 - Did: added backend email-link auth start: `POST /api/auth/email-link` creates/reuses a pending user without downgrading approved users, sends an `EmailSignInLink` notification, and returns `{ ok: true }`
@@ -320,4 +333,4 @@ No slice in progress. Email-link application start shipped on May 2, 2026 at 16:
 
 ---
 
-*Last updated: May 2, 2026 16:15 CEST*
+*Last updated: May 2, 2026 17:55 CEST*

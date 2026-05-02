@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Pick the next admin dashboard surface to wire — user management, event management, public content, or announcements — using the same admin queue pattern already used for `/app/approvals` and `/app/startup-review`. The email-link application start slice shipped on May 2, 2026 at 16:15 CEST and added `POST /api/auth/email-link`, an `EmailSignInLink` notification, and the signed `/auth/email/callback/{user}` route that logs a non-Google applicant into the browser session and returns them to `/membership`.
+Pick the next admin dashboard surface to wire — user management, public content (homepage cards + partners), or announcements — using the same admin queue pattern already used for `/app/approvals`, `/app/startup-review`, and `/app/events-admin`. Admin event management shipped on May 2, 2026 at 17:55 CEST and added `frontend/src/stores/adminEvents.js` plus a live `/app/events-admin` create/edit/publish/hide/archive/cancel surface backed by `/api/admin/events`. Announcements is the largest of the remaining options because it still needs a backend (migration, model, admin + member endpoints); user management and public content can both reuse existing backend endpoints.
 ```
 
 ## Maintenance
