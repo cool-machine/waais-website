@@ -91,20 +91,26 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Public domain: `whartonai.studio`; preferred production hostnames are `whartonai.studio` for the frontend, `api.whartonai.studio` for Laravel, and `forum.whartonai.studio` for Discourse later.
 - Azure account context verified on May 3, 2026: signed in as `g1900@whartonaistudio.onmicrosoft.com`, subscription `Azure subscription 1` (`a66b1770-137e-49cc-a9c2-0ab3186e9752`), tenant `9d7271ab-ab49-4b9b-a134-6905a15fdb38`. Do not use George's startup Azure account.
 - Azure subscription is active with about EUR 1,700/year grant budget; docs assume a conservative production-only launch to keep spend low.
-- Azure resource group `rg-waais-prod-weu` exists in `westeurope` with tags `project=WAAIS`, `environment=production`, and `owner=Wharton Alumni AI Studio and Research Center`. No paid Azure resources have been created yet.
+- Azure resource group `rg-waais-prod-weu` exists in `westeurope` with tags `project=WAAIS`, `environment=production`, and `owner=Wharton Alumni AI Studio and Research Center`.
+- Azure resources created so far:
+  - App Service plan `asp-waais-prod-weu-b1`: Linux Basic B1, West Europe, paid tier.
+  - Web App `app-waais-api-prod-weu`: Linux/PHP 8.3, default host `app-waais-api-prod-weu.azurewebsites.net`, HTTPS-only enabled, Always On enabled, HTTP/2 enabled, FTPS-only enabled.
+  - Static Web App `swa-waais-prod-weu`: Free tier, West Europe, default host `proud-moss-0ec457703.7.azurestaticapps.net`, no repo integration configured yet.
+- PostgreSQL Flexible Server was approved for `Standard_B1ms` but was not created. `Microsoft.DBforPostgreSQL` was registered successfully, then `az postgres flexible-server create ... --location westeurope --sku-name Standard_B1ms ...` failed with `The location is restricted from performing this operation.`
 - Default Azure region: West Europe, keeping primary app/database data in the Azure Europe geography. International users can use the Europe-hosted app; do not create country-specific databases for v1.
 - Production OAuth should be created under the organization Google for Nonprofits/admin account, not George's personal test OAuth client.
 - Deployment plan lives in `dev-context/AZURE_PRODUCTION.md`; privacy launch checklist lives in `dev-context/PRIVACY_READINESS.md`.
 
 ## 2. Present — Current Slice
 
-No code slice in progress. Azure production setup has started with only the production resource group created; no App Service, database, email, storage, or Discourse resources exist yet.
+No code slice in progress. Azure production setup has started: resource group, B1 App Service plan, PHP 8.3 web app, and Free Static Web App exist. PostgreSQL is blocked by a West Europe subscription/location restriction; email, storage, custom domains, scheduler, deployment, Google OAuth, and Discourse are not created/configured yet.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Azure SKU/resource selection.** Choose exact App Service, PostgreSQL, frontend hosting, email, storage, scheduler, and budget-alert settings from `AZURE_PRODUCTION.md`; do not create paid resources without explicit approval.
-2. **Brand/logo asset replacement** when George provides it.
-3. **Forum/Discourse final stage.** Discourse SSO is implemented, but forum install/feed wiring waits until the final stage.
+1. **Resolve PostgreSQL location restriction.** Decide whether to request/unblock West Europe PostgreSQL quota/region access in Azure support or use another Europe geography region such as North Europe. Do not silently move the production database region without explicit approval.
+2. **Azure deployment configuration.** Configure production secrets/app settings, deployment, database connection, custom domains/TLS, budget alerts, scheduler, and smoke checks.
+3. **Brand/logo asset replacement** when George provides it.
+4. **Forum/Discourse final stage.** Discourse SSO is implemented, but forum install/feed wiring waits until the final stage.
 
 ## Working Rules
 
@@ -118,6 +124,19 @@ No code slice in progress. Azure production setup has started with only the prod
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 3, 2026 01:15 CEST — Azure B1 app resources created; PostgreSQL blocked**
+- Did: George approved `App Service B1 + PostgreSQL B1ms + Static Web Apps Free`
+- Did: verified the active Azure account again as `g1900@whartonaistudio.onmicrosoft.com` in subscription `Azure subscription 1` (`a66b1770-137e-49cc-a9c2-0ab3186e9752`) and tenant `9d7271ab-ab49-4b9b-a134-6905a15fdb38`
+- Did: confirmed Azure CLI support for `webapp`, `postgres flexible-server`, and `staticwebapp`; no CLI extension install was needed
+- Did: registered first-use Azure resource providers as needed: `Microsoft.Web` was auto-registered during App Service creation; `Microsoft.DBforPostgreSQL` was manually registered with `az provider register --namespace Microsoft.DBforPostgreSQL --wait`
+- Did: created App Service plan `asp-waais-prod-weu-b1` in `rg-waais-prod-weu`, West Europe, Linux Basic B1, tags `project=WAAIS environment=production owner=Wharton Alumni AI Studio and Research Center`
+- Did: created Web App `app-waais-api-prod-weu` on that plan with runtime `PHP:8.3`; default hostname is `app-waais-api-prod-weu.azurewebsites.net`. Set `httpsOnly=true`, `alwaysOn=true`, `http20Enabled=true`, `minTlsVersion=1.2`, and `ftpsState=FtpsOnly`
+- Did: created Static Web App `swa-waais-prod-weu` in West Europe, Free tier, no source-control integration yet; default hostname is `proud-moss-0ec457703.7.azurestaticapps.net`
+- Did: attempted PostgreSQL Flexible Server creation as approved: `psql-waais-prod-weu`, West Europe, `Standard_B1ms`, Burstable, PostgreSQL 16, 32 GiB storage, storage auto-grow enabled, 7-day backup retention, geo-redundant backup disabled, public access `None`, admin user `waaisadmin`. A generated temporary admin password was passed to Azure in-memory and not printed or saved. The first attempt rejected `--database-name` because this CLI only allows that flag for ElasticCluster; the second attempt initially required registering `Microsoft.DBforPostgreSQL`; after provider registration, Azure failed with `The location is restricted from performing this operation.` No PostgreSQL server was created.
+- Did: verified current resource group resources with `az resource list`: `asp-waais-prod-weu-b1` (B1), `app-waais-api-prod-weu`, and `swa-waais-prod-weu` (Free). No PostgreSQL server was listed.
+- Left off at: resolve the PostgreSQL West Europe restriction. Options are to request/unblock West Europe PostgreSQL access/quota through Azure support, or explicitly approve a different Europe geography region such as North Europe for the database. Do not create the database in another region without explicit approval.
+- Watch out for: App Service and PostgreSQL commands may require sandbox escalation because Azure CLI writes logs under `~/.azure`. A `ps` check was blocked by sandbox, so the next session should verify no lingering Azure CLI command is running if concerned; the last known Azure create/list commands had completed before this documentation update.
 
 **May 3, 2026 00:23 CEST — Azure resource group created**
 - Did: verified Azure CLI context before creating anything. Active user is `g1900@whartonaistudio.onmicrosoft.com`, subscription is `Azure subscription 1` (`a66b1770-137e-49cc-a9c2-0ab3186e9752`), and tenant is `9d7271ab-ab49-4b9b-a134-6905a15fdb38`
