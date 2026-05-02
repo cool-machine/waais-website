@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, getJson, __testing } from './api'
+import { ApiError, getJson, sendJson, __testing } from './api'
 
 function jsonResponse(body, { status = 200 } = {}) {
   return new Response(JSON.stringify(body), {
@@ -84,5 +84,65 @@ describe('buildGoogleAuthUrl', () => {
   it('points at the backend Google OAuth redirect route', () => {
     vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:8000/')
     expect(__testing.buildGoogleAuthUrl()).toBe('http://localhost:8000/auth/google/redirect')
+  })
+
+  it('can include a safe frontend return path', () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:8000/')
+    expect(__testing.buildGoogleAuthUrl('/membership')).toBe(
+      'http://localhost:8000/auth/google/redirect?next=%2Fmembership',
+    )
+  })
+})
+
+describe('sendJson', () => {
+  it('sends JSON with authenticated credentials', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ data: { id: 1 } }))
+    const result = await sendJson('/api/membership-application', {
+      auth: true,
+      body: { email: 'applicant@example.com' },
+      fetchImpl,
+    })
+
+    expect(result).toEqual({ data: { id: 1 } })
+    const [url, init] = fetchImpl.mock.calls[0]
+    expect(url).toContain('/api/membership-application')
+    expect(init.method).toBe('POST')
+    expect(init.credentials).toBe('include')
+    expect(init.headers.Accept).toBe('application/json')
+    expect(init.headers['Content-Type']).toBe('application/json')
+    expect(init.body).toBe(JSON.stringify({ email: 'applicant@example.com' }))
+  })
+
+  it('includes Laravel XSRF token when present', async () => {
+    vi.stubGlobal('document', { cookie: 'XSRF-TOKEN=abc%20123; laravel-session=session-value' })
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ data: { id: 1 } }))
+
+    await sendJson('/api/membership-application', { auth: true, fetchImpl })
+
+    const [, init] = fetchImpl.mock.calls[0]
+    expect(init.headers['X-XSRF-TOKEN']).toBe('abc 123')
+  })
+
+  it('supports PATCH and throws ApiError on validation failures', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ message: 'Invalid' }, { status: 422 }))
+
+    await expect(sendJson('/api/membership-application', {
+      method: 'PATCH',
+      body: { email: '' },
+      fetchImpl,
+    })).rejects.toMatchObject({ status: 422, body: { message: 'Invalid' } })
+
+    const [, init] = fetchImpl.mock.calls[0]
+    expect(init.method).toBe('PATCH')
+  })
+})
+
+describe('readCookie', () => {
+  it('returns a decoded cookie by name', () => {
+    expect(__testing.readCookie('XSRF-TOKEN', 'one=1; XSRF-TOKEN=hello%20there')).toBe('hello there')
+  })
+
+  it('returns null when the cookie is absent', () => {
+    expect(__testing.readCookie('missing', 'one=1')).toBeNull()
   })
 })

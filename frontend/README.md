@@ -2,7 +2,7 @@
 
 Vue 3 public frontend scaffold for the Wharton Alumni AI Studio platform.
 
-This is the first production-frontend pass converted from the static mockups in `../mockups/`. It is not the Laravel backend, but it now starts the backend-owned Google OAuth flow and reads the current Sanctum user session from `/api/user`. It does not persist membership applications, event registrations, startup listings, announcements, or admin changes yet.
+This is the first production-frontend pass converted from the static mockups in `../mockups/`. It is not the Laravel backend, but it now starts the backend-owned Google OAuth flow, reads the current Sanctum user session from `/api/user`, and persists the applicant-owned membership form. It does not persist event registrations, startup listings, announcements, or admin changes yet.
 
 ## Stack
 
@@ -28,7 +28,7 @@ npm run test:routes
 
 The public site reads live data from the Laravel API via Pinia stores. The startup directory, events calendar, partners directory, and homepage CMS cards are wired to public API endpoints. The HTTP client lives at `src/lib/api.js`. The base URL resolves from `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`, which is Laravel's `php artisan serve` default).
 
-Authenticated frontend requests also go through `src/lib/api.js`. Public stores stay anonymous by default; authenticated stores pass `auth: true`, which sends browser credentials for Laravel Sanctum's session-cookie flow. The current-user store lives at `src/stores/authUser.js`, calls `/api/user`, treats 401 as an anonymous browser state, and starts Google sign-in by redirecting to `${VITE_API_BASE_URL}/auth/google/redirect`.
+Authenticated frontend requests also go through `src/lib/api.js`. Public stores stay anonymous by default; authenticated stores pass `auth: true`, which sends browser credentials for Laravel Sanctum's session-cookie flow. `sendJson()` handles JSON mutations and sends Laravel's `X-XSRF-TOKEN` header when the cookie is present. The current-user store lives at `src/stores/authUser.js`, calls `/api/user`, treats 401 as an anonymous browser state, and starts Google sign-in by redirecting to `${VITE_API_BASE_URL}/auth/google/redirect`. The membership application store lives at `src/stores/membershipApplication.js` and backs the real `/membership` form.
 
 Local dev workflow when you need real startup data on `/startups`:
 
@@ -43,6 +43,18 @@ npm run dev -- --host 127.0.0.1 --port 5174
 ```
 
 Events, partners, and homepage CMS cards also read from the Laravel API, but there are not yet smoke seeders for those surfaces. Create/publish rows through the API or a local tinker session when you need non-empty `/events` or `/partners` data locally. The homepage keeps fallback copy for CMS-backed sections so an empty CMS does not blank out the landing page.
+
+Local membership application smoke workflow:
+
+```sh
+# in /backend
+php artisan serve --host=127.0.0.1 --port=8000
+
+# in /frontend
+npm run dev -- --host 127.0.0.1 --port 5174
+```
+
+Open `http://127.0.0.1:5174/waais-website/membership`, sign in with Google if needed, and submit/update the form. The backend `.env` must have valid Google OAuth settings for sign-in.
 
 Pages must not call `fetch` directly. They consume Pinia stores under `src/stores/`. The convention for naming and structuring stores — and when to add a new store vs. extend an existing one — is documented in `src/stores/README.md`.
 
@@ -85,7 +97,6 @@ Live preview: `https://cool-machine.github.io/waais-website/`
 
 ## Still Mocked
 
-- Membership application submission
 - Member dashboard and admin dashboard
 - Admin/super-admin permission gating
 - CMS publishing workflow UI for events, partners, announcements, homepage cards

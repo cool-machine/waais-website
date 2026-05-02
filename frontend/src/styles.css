@@ -161,6 +161,12 @@ textarea {
   color: var(--white);
 }
 
+.paper .button.secondary,
+.button.paper-button {
+  background: rgba(1, 31, 91, 0.08);
+  color: var(--nav-dark);
+}
+
 .hero {
   position: relative;
   min-height: 680px;
@@ -475,6 +481,14 @@ h3 {
   margin-top: 20px;
 }
 
+.auth-gate {
+  margin-top: 20px;
+}
+
+.auth-gate .card {
+  max-width: 620px;
+}
+
 .application-form label {
   display: grid;
   gap: 7px;
@@ -507,6 +521,19 @@ textarea {
   border-left: 4px solid var(--crimson);
   background: rgba(196, 30, 58, 0.08);
   padding: 14px 16px;
+}
+
+.error-notice {
+  border-left-color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
 .table {

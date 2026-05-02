@@ -22,6 +22,14 @@ class AuthApiTest extends TestCase
     }
 
     #[Test]
+    public function api_user_returns_json_unauthenticated_response_for_browser_requests(): void
+    {
+        $this->get('/api/user')
+            ->assertUnauthorized()
+            ->assertJson(['message' => 'Unauthenticated.']);
+    }
+
+    #[Test]
     public function authenticated_users_receive_access_model_flags(): void
     {
         $user = User::factory()->create([

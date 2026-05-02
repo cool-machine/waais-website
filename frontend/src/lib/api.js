@@ -41,8 +41,20 @@ function buildUrl(path, query) {
   return url.toString()
 }
 
-function buildGoogleAuthUrl() {
-  return buildUrl('/auth/google/redirect')
+function buildGoogleAuthUrl(next) {
+  return buildUrl('/auth/google/redirect', next ? { next } : undefined)
+}
+
+function readCookie(name, cookieString = globalThis.document?.cookie ?? '') {
+  const encodedName = `${encodeURIComponent(name)}=`
+  const cookie = cookieString
+    .split(';')
+    .map((item) => item.trim())
+    .find((item) => item.startsWith(encodedName))
+
+  if (!cookie) return null
+
+  return decodeURIComponent(cookie.slice(encodedName.length))
 }
 
 async function parseBody(response) {
@@ -94,15 +106,68 @@ export async function getJson(path, options = {}) {
 }
 
 /**
+ * Send a JSON request. Used by authenticated stores for Laravel API mutations.
+ *
+ * @param {string} path
+ * @param {{ method?: 'POST'|'PATCH'|'PUT'|'DELETE', body?: unknown, query?: Record<string, unknown>, signal?: AbortSignal, fetchImpl?: typeof fetch, auth?: boolean }} [options]
+ */
+export async function sendJson(path, options = {}) {
+  const {
+    method = 'POST',
+    body,
+    query,
+    signal,
+    fetchImpl,
+    auth = false,
+  } = options
+  const url = buildUrl(path, query)
+  const fetchFn = fetchImpl ?? globalThis.fetch
+  const headers = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  }
+
+  const xsrfToken = auth ? readCookie('XSRF-TOKEN') : null
+  if (xsrfToken) {
+    headers['X-XSRF-TOKEN'] = xsrfToken
+  }
+
+  let response
+  try {
+    response = await fetchFn(url, {
+      method,
+      headers,
+      credentials: auth ? 'include' : 'same-origin',
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal,
+    })
+  } catch (cause) {
+    throw new ApiError(`Network error contacting ${url}: ${cause.message}`, { url })
+  }
+
+  const responseBody = await parseBody(response)
+
+  if (!response.ok) {
+    throw new ApiError(`Request to ${url} failed with status ${response.status}`, {
+      status: response.status,
+      url,
+      body: responseBody,
+    })
+  }
+
+  return responseBody
+}
+
+/**
  * Start backend-owned Google OAuth. The backend callback logs the user
  * in with Sanctum's session cookie and redirects back to the Vue app.
  *
- * @param {{ location?: Location }} [options]
+ * @param {{ location?: Location, next?: string }} [options]
  */
-export function redirectToGoogleSignIn({ location = globalThis.location } = {}) {
-  location.assign(buildGoogleAuthUrl())
+export function redirectToGoogleSignIn({ location = globalThis.location, next } = {}) {
+  location.assign(buildGoogleAuthUrl(next))
 }
 
 // Exported only for tests — gives a knob to override the resolved base
 // URL without poking import.meta.env directly.
-export const __testing = { resolveBaseUrl, buildUrl, buildGoogleAuthUrl }
+export const __testing = { resolveBaseUrl, buildUrl, buildGoogleAuthUrl, readCookie }

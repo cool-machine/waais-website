@@ -85,6 +85,16 @@ class GoogleAuthTest extends TestCase
     }
 
     #[Test]
+    public function google_callback_prefers_safe_intended_frontend_path(): void
+    {
+        $this->mockGoogleUser($this->socialiteUser());
+
+        $this->withSession(['auth.intended_frontend_path' => '/membership'])
+            ->get('/auth/google/callback')
+            ->assertRedirect('http://127.0.0.1:5174/membership');
+    }
+
+    #[Test]
     public function google_callback_rejects_email_already_linked_to_different_google_account(): void
     {
         User::factory()->create([

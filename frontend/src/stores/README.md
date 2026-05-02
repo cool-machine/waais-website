@@ -17,6 +17,7 @@ One store per (backend resource family) × (access surface). The access surface 
 | `usePublicEventsStore`           | `/api/public/events`                             | Anonymous, public site     |
 | `usePublicPartnersStore`         | `/api/public/partners`                           | Anonymous, public site     |
 | `usePublicHomepageCardsStore`    | `/api/public/homepage-cards`                     | Anonymous, public site     |
+| `useMembershipApplicationStore`  | `/api/membership-application`                    | Authenticated applicant    |
 | `useMyStartupsStore` (planned)   | `/api/startup-listings`                          | Authenticated member       |
 | `useAdminStartupQueueStore` (planned) | `/api/admin/startup-listings`                | Authenticated admin        |
 
@@ -68,7 +69,7 @@ Extend an existing store when:
 
 All stores call `getJson(...)` from `src/lib/api.js`. That client knows the API base URL (`VITE_API_BASE_URL`, default `http://127.0.0.1:8000`), sets `Accept: application/json`, and throws an `ApiError` on non-2xx so callers don't have to inspect `response.ok`.
 
-Public stores call `getJson(...)` without auth options and stay anonymous. Authenticated stores call `getJson(..., { auth: true })`, which sends browser credentials for Laravel Sanctum's session-cookie flow. `useAuthUserStore` is the root session store: it loads `/api/user`, treats 401 as signed-out state, and starts Google sign-in through the backend `/auth/google/redirect` route.
+Public stores call `getJson(...)` without auth options and stay anonymous. Authenticated stores call `getJson(..., { auth: true })`, which sends browser credentials for Laravel Sanctum's session-cookie flow. For JSON mutations, authenticated stores use `sendJson(..., { auth: true })`; it sends JSON headers and forwards Laravel's `X-XSRF-TOKEN` cookie value when present. `useAuthUserStore` is the root session store: it loads `/api/user`, treats 401 as signed-out state, and starts Google sign-in through the backend `/auth/google/redirect` route.
 
 ## Testing
 

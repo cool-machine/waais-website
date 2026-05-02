@@ -95,4 +95,14 @@ describe('startGoogleSignIn', () => {
 
     expect(location.assign).toHaveBeenCalledWith('http://localhost:8000/auth/google/redirect')
   })
+
+  it('passes a requested frontend return path', () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:8000')
+    const location = { assign: vi.fn() }
+
+    const store = useAuthUserStore()
+    store.startGoogleSignIn({ location, next: '/membership' })
+
+    expect(location.assign).toHaveBeenCalledWith('http://localhost:8000/auth/google/redirect?next=%2Fmembership')
+  })
 })

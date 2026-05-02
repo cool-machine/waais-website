@@ -10,8 +10,8 @@ Implemented:
 
 - `approval_status`, `affiliation_type`, and `permission_role` as separate enum vocabularies.
 - User identity and access fields for Google OAuth, approval state, affiliation, and permissions.
-- Sanctum API authentication foundation.
-- Google OAuth redirect/callback routes using Laravel Socialite.
+- Sanctum API authentication foundation, including credentialed local CORS defaults for the Vite dev origins.
+- Google OAuth redirect/callback routes using Laravel Socialite, including safe relative `next` paths for frontend flows that need to return to their originating page.
 - Google identity provisioning that creates pending users and preserves approved member access.
 - Authenticated `/api/user` endpoint returning access-model flags.
 - Member-only API route middleware backed by `canAccessMemberAreas()`.
@@ -48,13 +48,13 @@ php artisan migrate
 php artisan test
 ```
 
-Validation was completed locally on May 1, 2026 after repairing Homebrew PHP/Composer:
+Validation was completed locally on May 2, 2026 after the membership application UI slice:
 
 ```text
 PHP 8.5.5
 Composer 2.9.7
 composer install
-php artisan test       # last verified: 136 tests, 604 assertions (after the frontend Sanctum auth slice)
+php artisan test       # last verified: 138 tests, 610 assertions
 php artisan migrate:fresh
 ```
 
