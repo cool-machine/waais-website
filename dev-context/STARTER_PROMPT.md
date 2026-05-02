@@ -35,7 +35,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Pick the next launch-readiness slice. Azure production/privacy documentation shipped on May 2, 2026 at 22:37 CEST: production defaults are West Europe, production-only first launch, frontend at `whartonai.studio`, Laravel at `api.whartonai.studio`, PostgreSQL Flexible Server, ACS Email, organization Google OAuth, and Discourse deferred to final stage. Best next step is legal/privacy frontend readiness: replace placeholder legal copy and add/confirm membership application privacy acknowledgement before launch. After that, execute Azure deployment from `AZURE_PRODUCTION.md` once resource names/SKUs are chosen.
+Pick the next launch-readiness slice. Legal/privacy frontend readiness shipped on May 2, 2026 at 22:46 CEST: `/legal` has privacy/cookie/data-request launch copy, first membership submit/reapply requires a recorded privacy acknowledgement, and GitHub Pages preview artifacts were refreshed. Best next step is Azure deployment execution from `AZURE_PRODUCTION.md` once exact resource names/SKUs are chosen in Azure. Discourse remains deferred to the final stage.
 ```
 
 ## Maintenance

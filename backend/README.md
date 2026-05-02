@@ -53,14 +53,14 @@ php artisan migrate
 php artisan test
 ```
 
-Validation was completed locally on May 2, 2026 after the announcement email fan-out slice:
+Validation was completed locally on May 2, 2026 after the legal/privacy readiness slice:
 
 ```text
 PHP 8.5.5
 Composer 2.9.7
 composer install
 composer validate --strict
-php artisan test       # last verified: 184 tests, 810 assertions
+php artisan test       # last verified: 185 tests, 815 assertions
 php artisan migrate:fresh
 ```
 

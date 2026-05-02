@@ -18,6 +18,8 @@ use Illuminate\Validation\Rule;
 
 class MembershipApplicationController extends Controller
 {
+    private const PRIVACY_ACKNOWLEDGEMENT_VERSION = '2026-05-02';
+
     public function show(Request $request): JsonResponse
     {
         return response()->json([
@@ -34,7 +36,7 @@ class MembershipApplicationController extends Controller
 
         $application ??= new MembershipApplication(['applicant_id' => $request->user()->id]);
 
-        $this->fillAndSubmit($application, $request, 'submitted');
+        $this->fillAndSubmit($application, $request, 'submitted', requirePrivacyAcknowledgement: true);
         $this->notifyOnSubmission($application, $request->user());
 
         return response()->json(['data' => $application->fresh()], $application->wasRecentlyCreated ? 201 : 200);
@@ -58,18 +60,29 @@ class MembershipApplicationController extends Controller
 
         abort_unless($application->approval_status === ApprovalStatus::Rejected, 409, 'Only rejected applications can be reapplied.');
 
-        $this->fillAndSubmit($application, $request, 'reapplied');
+        $this->fillAndSubmit($application, $request, 'reapplied', requirePrivacyAcknowledgement: true);
         $this->notifyOnSubmission($application, $request->user());
 
         return response()->json(['data' => $application->fresh()]);
     }
 
-    private function fillAndSubmit(MembershipApplication $application, Request $request, string $note): void
+    private function fillAndSubmit(
+        MembershipApplication $application,
+        Request $request,
+        string $note,
+        bool $requirePrivacyAcknowledgement = false,
+    ): void
     {
-        $validated = $request->validate($this->rules());
+        $validated = $request->validate($this->rules($requirePrivacyAcknowledgement));
         $before = $application->exists ? $application->getAttributes() : [];
+        $privacyAcknowledged = (bool) ($validated['privacy_acknowledgement'] ?? false);
+        unset($validated['privacy_acknowledgement']);
 
         $application->fill($validated);
+        if ($privacyAcknowledged) {
+            $application->privacy_acknowledged_at = now();
+            $application->privacy_acknowledgement_version = self::PRIVACY_ACKNOWLEDGEMENT_VERSION;
+        }
         $application->approval_status = ApprovalStatus::Submitted;
         $application->submitted_at = now();
         $application->reviewed_at = null;
@@ -84,7 +97,7 @@ class MembershipApplicationController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function rules(): array
+    private function rules(bool $requirePrivacyAcknowledgement = false): array
     {
         return [
             'affiliation_type' => ['nullable', Rule::enum(AffiliationType::class)],
@@ -108,6 +121,7 @@ class MembershipApplicationController extends Controller
             'availability' => ['nullable', 'string', 'max:255'],
             'gender' => ['nullable', 'string', 'max:255'],
             'age' => ['nullable', 'integer', 'between:13,120'],
+            'privacy_acknowledgement' => [$requirePrivacyAcknowledgement ? 'accepted' : 'sometimes', 'boolean'],
         ];
     }
 
@@ -137,6 +151,9 @@ class MembershipApplicationController extends Controller
     {
         $fields = array_keys($this->rules());
         $fields = array_values(array_filter($fields, fn (string $field): bool => ! str_contains($field, '*')));
+        $fields = array_values(array_diff($fields, ['privacy_acknowledgement']));
+        $fields[] = 'privacy_acknowledged_at';
+        $fields[] = 'privacy_acknowledgement_version';
 
         $changed = [];
         $old = [];
@@ -169,6 +186,10 @@ class MembershipApplicationController extends Controller
 
     private function revisionValue(string $field, mixed $value): mixed
     {
+        if ($field === 'privacy_acknowledged_at' && $value !== null) {
+            return \Illuminate\Support\Carbon::parse($value)->toIso8601String();
+        }
+
         if ($value instanceof \BackedEnum) {
             return $value->value;
         }

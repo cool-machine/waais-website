@@ -25,10 +25,10 @@ Optional demographic fields such as gender and age should stay optional and shou
 
 Before public launch, replace the current legal placeholders with:
 
-- Privacy Policy.
-- Cookie Policy.
-- GDPR/data rights request instructions.
-- Contact path for privacy requests.
+- Privacy Policy. Initial launch-readiness copy is live in `/legal`; counsel review remains recommended.
+- Cookie Policy. Initial launch-readiness copy is live in `/legal`; counsel review remains recommended.
+- GDPR/data rights request instructions. Initial launch-readiness copy is live in `/legal`; counsel review remains recommended.
+- Contact path for privacy requests. `/legal` names `privacy@whartonai.studio` as the recommended mailbox until confirmed.
 
 Recommended privacy contact:
 
@@ -40,7 +40,7 @@ or another organization-controlled mailbox.
 
 ## Membership Form Notice
 
-Add a clear notice or required checkbox before membership application submission. Suggested plain-English copy:
+The membership application now requires a clear acknowledgement before first submit/reapply and stores `privacy_acknowledged_at` plus a version string. Current copy:
 
 ```text
 By submitting this application, you agree that Wharton Alumni AI Studio and Research Center may process your information to review membership, operate the community, provide member services, send WAAIS-related communications, and maintain platform security and moderation records.
@@ -103,8 +103,8 @@ Before launch:
 ## Operational Checklist
 
 - Create/confirm privacy mailbox.
-- Replace frontend legal placeholders.
-- Add membership application notice/checkbox if not already present.
+- Frontend legal placeholders replaced with launch-readiness copy; counsel review still recommended.
+- Membership application notice/checkbox implemented for first submit/reapply.
 - Confirm Azure region choice is documented as West Europe.
 - Confirm all production secrets are in Azure settings, not git.
 - Confirm Google OAuth production client is owned by the organization account.

@@ -31,6 +31,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'availability',
     'gender',
     'age',
+    'privacy_acknowledged_at',
+    'privacy_acknowledgement_version',
     'submitted_at',
     'reviewed_at',
     'reviewed_by',
@@ -61,6 +63,7 @@ class MembershipApplication extends Model
             'is_alumnus' => 'boolean',
             'industries_to_add_value' => 'array',
             'industries_to_extend_expertise' => 'array',
+            'privacy_acknowledged_at' => 'datetime',
             'submitted_at' => 'datetime',
             'reviewed_at' => 'datetime',
         ];

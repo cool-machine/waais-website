@@ -37,7 +37,9 @@ class MembershipNotificationsTest extends TestCase
 
         Sanctum::actingAs($applicant);
 
-        $this->postJson('/api/membership-application', $this->payload())
+        $this->postJson('/api/membership-application', $this->payload([
+            'privacy_acknowledgement' => true,
+        ]))
             ->assertCreated();
 
         Notification::assertSentTo($applicant, MembershipApplicationSubmitted::class);
@@ -69,6 +71,7 @@ class MembershipNotificationsTest extends TestCase
 
         $this->postJson('/api/membership-application/reapply', $this->payload([
             'experience_summary' => 'Extra info now.',
+            'privacy_acknowledgement' => true,
         ]))->assertOk();
 
         Notification::assertSentTo($applicant, MembershipApplicationSubmitted::class);

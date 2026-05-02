@@ -29,6 +29,7 @@ const form = reactive({
   availability: '',
   gender: '',
   age: '',
+  privacy_acknowledgement: false,
 })
 const emailLinkForm = reactive({
   email: '',
@@ -37,7 +38,12 @@ const emailLinkForm = reactive({
 const hasSession = computed(() => authUser.isAuthenticated)
 const checkingSession = computed(() => authUser.loading || !authUser.initialized)
 const showApplicationForm = computed(() => authUser.initialized && hasSession.value)
-const canSubmit = computed(() => showApplicationForm.value && applicationStore.canEdit && !applicationStore.saving && !applicationStore.loading)
+const canEditFields = computed(() => showApplicationForm.value && applicationStore.canEdit && !applicationStore.saving && !applicationStore.loading)
+const requiresPrivacyAcknowledgement = computed(() => !applicationStore.hasApplication || applicationStore.mustReapply)
+const canSubmit = computed(() => {
+  return canEditFields.value
+    && (!requiresPrivacyAcknowledgement.value || form.privacy_acknowledgement)
+})
 const showSessionError = computed(() => Boolean(authUser.error))
 const statusLabel = computed(() => {
   const status = applicationStore.status
@@ -77,6 +83,7 @@ function populateForm(application) {
   form.availability = source.availability ?? ''
   form.gender = source.gender ?? ''
   form.age = source.age ?? ''
+  form.privacy_acknowledgement = Boolean(source.privacy_acknowledged_at)
 }
 
 function firstName(name) {
@@ -109,7 +116,7 @@ function nullableInteger(value) {
 }
 
 function payload() {
-  return {
+  const data = {
     affiliation_type: form.affiliation_type || null,
     email: form.email.trim(),
     first_name: form.first_name.trim(),
@@ -130,6 +137,12 @@ function payload() {
     gender: nullableString(form.gender),
     age: nullableInteger(form.age),
   }
+
+  if (requiresPrivacyAcknowledgement.value) {
+    data.privacy_acknowledgement = form.privacy_acknowledgement
+  }
+
+  return data
 }
 
 async function loadApplication() {
@@ -217,12 +230,12 @@ onMounted(() => {
         </div>
 
         <form v-else class="application-form" @submit.prevent="submitApplication">
-          <label>Email *<input v-model="form.email" required type="email" placeholder="you@example.com" :disabled="!canSubmit" /></label>
-          <label>Phone associated with WhatsApp account (optional)<input v-model="form.phone_whatsapp" placeholder="Only if you want to join the WhatsApp community" :disabled="!canSubmit" /></label>
-          <label>First name *<input v-model="form.first_name" required placeholder="First name" :disabled="!canSubmit" /></label>
-          <label>Last name *<input v-model="form.last_name" required placeholder="Last name" :disabled="!canSubmit" /></label>
+          <label>Email *<input v-model="form.email" required type="email" placeholder="you@example.com" :disabled="!canEditFields" /></label>
+          <label>Phone associated with WhatsApp account (optional)<input v-model="form.phone_whatsapp" placeholder="Only if you want to join the WhatsApp community" :disabled="!canEditFields" /></label>
+          <label>First name *<input v-model="form.first_name" required placeholder="First name" :disabled="!canEditFields" /></label>
+          <label>Last name *<input v-model="form.last_name" required placeholder="Last name" :disabled="!canEditFields" /></label>
           <label>Affiliation type
-            <select v-model="form.affiliation_type" :disabled="!canSubmit">
+            <select v-model="form.affiliation_type" :disabled="!canEditFields">
               <option value="alumni">Alumni</option>
               <option value="student">Student</option>
               <option value="faculty_staff">Faculty/staff</option>
@@ -231,24 +244,35 @@ onMounted(() => {
             </select>
           </label>
           <label>Are you an alumnus/a? *
-            <select v-model="form.is_alumnus" :disabled="!canSubmit">
+            <select v-model="form.is_alumnus" :disabled="!canEditFields">
               <option :value="true">Yes</option>
               <option :value="false">No</option>
             </select>
           </label>
-          <label>School affiliation<input v-model="form.school_affiliation" placeholder="School, program, student/faculty/staff status, or other affiliation" :disabled="!canSubmit" /></label>
-          <label>Graduation year<input v-model="form.graduation_year" type="number" min="1800" max="2100" placeholder="e.g. 2020" :disabled="!canSubmit" /></label>
-          <label>Primary location<input v-model="form.primary_location" placeholder="City, region, or country" :disabled="!canSubmit" /></label>
-          <label>Secondary location<input v-model="form.secondary_location" placeholder="Optional" :disabled="!canSubmit" /></label>
-          <label>LinkedIn profile<input v-model="form.linkedin_url" type="url" placeholder="https://www.linkedin.com/in/..." :disabled="!canSubmit" /></label>
-          <label>Age (optional)<input v-model="form.age" type="number" min="13" max="120" placeholder="Optional" :disabled="!canSubmit" /></label>
-          <label class="full">If invited by a Wharton/Penn alumnus/a, provide their name<input v-model="form.inviter_name" placeholder="Inviter name, if applicable" :disabled="!canSubmit" /></label>
-          <label class="full">Experience: industries and roles<textarea v-model="form.experience_summary" placeholder="Tell us about industries you worked in and roles you held." :disabled="!canSubmit" /></label>
-          <label class="full">Expertise<textarea v-model="form.expertise_summary" placeholder="Tell us about your expertise." :disabled="!canSubmit" /></label>
-          <label class="full">Industries where you would like to add value<textarea v-model="form.industries_to_add_value" placeholder="Comma-separated, e.g. Finance, AI Engineering" :disabled="!canSubmit" /></label>
-          <label class="full">Industries where you want to extend your expertise<textarea v-model="form.industries_to_extend_expertise" placeholder="Comma-separated, e.g. Healthcare, Education" :disabled="!canSubmit" /></label>
-          <label class="full">Availability<textarea v-model="form.availability" placeholder="How much time per month can you dedicate to a potential future project?" :disabled="!canSubmit" /></label>
-          <label>Gender (optional)<input v-model="form.gender" placeholder="Optional" :disabled="!canSubmit" /></label>
+          <label>School affiliation<input v-model="form.school_affiliation" placeholder="School, program, student/faculty/staff status, or other affiliation" :disabled="!canEditFields" /></label>
+          <label>Graduation year<input v-model="form.graduation_year" type="number" min="1800" max="2100" placeholder="e.g. 2020" :disabled="!canEditFields" /></label>
+          <label>Primary location<input v-model="form.primary_location" placeholder="City, region, or country" :disabled="!canEditFields" /></label>
+          <label>Secondary location<input v-model="form.secondary_location" placeholder="Optional" :disabled="!canEditFields" /></label>
+          <label>LinkedIn profile<input v-model="form.linkedin_url" type="url" placeholder="https://www.linkedin.com/in/..." :disabled="!canEditFields" /></label>
+          <label>Age (optional)<input v-model="form.age" type="number" min="13" max="120" placeholder="Optional" :disabled="!canEditFields" /></label>
+          <label class="full">If invited by a Wharton/Penn alumnus/a, provide their name<input v-model="form.inviter_name" placeholder="Inviter name, if applicable" :disabled="!canEditFields" /></label>
+          <label class="full">Experience: industries and roles<textarea v-model="form.experience_summary" placeholder="Tell us about industries you worked in and roles you held." :disabled="!canEditFields" /></label>
+          <label class="full">Expertise<textarea v-model="form.expertise_summary" placeholder="Tell us about your expertise." :disabled="!canEditFields" /></label>
+          <label class="full">Industries where you would like to add value<textarea v-model="form.industries_to_add_value" placeholder="Comma-separated, e.g. Finance, AI Engineering" :disabled="!canEditFields" /></label>
+          <label class="full">Industries where you want to extend your expertise<textarea v-model="form.industries_to_extend_expertise" placeholder="Comma-separated, e.g. Healthcare, Education" :disabled="!canEditFields" /></label>
+          <label class="full">Availability<textarea v-model="form.availability" placeholder="How much time per month can you dedicate to a potential future project?" :disabled="!canEditFields" /></label>
+          <label>Gender (optional)<input v-model="form.gender" placeholder="Optional" :disabled="!canEditFields" /></label>
+
+          <label v-if="requiresPrivacyAcknowledgement" class="checkbox-row full privacy-consent">
+            <input v-model="form.privacy_acknowledgement" type="checkbox" :disabled="applicationStore.saving || applicationStore.loading" />
+            <span>
+              I agree that Wharton Alumni AI Studio and Research Center may process my information to review membership, operate the community, provide member services, send WAAIS-related communications, and maintain platform security and moderation records.
+              <RouterLink to="/legal">Privacy details</RouterLink>
+            </span>
+          </label>
+          <div v-else-if="applicationStore.application?.privacy_acknowledged_at" class="notice full">
+            <p class="small">Privacy acknowledgement recorded on {{ new Date(applicationStore.application.privacy_acknowledged_at).toLocaleDateString() }}.</p>
+          </div>
 
           <div v-if="Object.keys(validationErrors).length" class="notice error-notice full">
             <p v-for="(messages, field) in validationErrors" :key="field" class="small">{{ messages[0] }}</p>

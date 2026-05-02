@@ -26,7 +26,9 @@ class MembershipApplicationApiTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        $this->postJson('/api/membership-application', $this->payload())
+        $this->postJson('/api/membership-application', $this->payload([
+            'privacy_acknowledgement' => true,
+        ]))
             ->assertCreated()
             ->assertJsonPath('data.approval_status', ApprovalStatus::Submitted->value)
             ->assertJsonPath('data.email', 'applicant@example.com');
@@ -36,6 +38,8 @@ class MembershipApplicationApiTest extends TestCase
         $this->assertSame($user->id, $application->applicant_id);
         $this->assertSame(ApprovalStatus::Submitted, $application->approval_status);
         $this->assertNotNull($application->submitted_at);
+        $this->assertNotNull($application->privacy_acknowledged_at);
+        $this->assertSame('2026-05-02', $application->privacy_acknowledgement_version);
         $this->assertDatabaseHas('application_revisions', [
             'membership_application_id' => $application->id,
             'actor_id' => $user->id,
@@ -46,6 +50,21 @@ class MembershipApplicationApiTest extends TestCase
         $this->assertSame(ApprovalStatus::Submitted, $user->approval_status);
         $this->assertSame(PermissionRole::PendingUser, $user->permission_role);
         $this->assertSame(AffiliationType::Alumni, $user->affiliation_type);
+    }
+
+    #[Test]
+    public function new_application_requires_privacy_acknowledgement(): void
+    {
+        $user = User::factory()->create([
+            'approval_status' => ApprovalStatus::Submitted,
+            'permission_role' => PermissionRole::PendingUser,
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/membership-application', $this->payload())
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['privacy_acknowledgement']);
     }
 
     #[Test]
@@ -93,6 +112,7 @@ class MembershipApplicationApiTest extends TestCase
 
         $this->postJson('/api/membership-application/reapply', $this->payload([
             'experience_summary' => 'More information.',
+            'privacy_acknowledgement' => true,
         ]))
             ->assertOk()
             ->assertJsonPath('data.approval_status', ApprovalStatus::Submitted->value)
