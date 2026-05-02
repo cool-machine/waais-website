@@ -2,7 +2,7 @@
 
 Vue 3 public frontend scaffold for the Wharton Alumni AI Studio platform.
 
-This is the first production-frontend pass converted from the static mockups in `../mockups/`. It is not the Laravel backend, but it now starts the backend-owned Google OAuth flow, reads the current Sanctum user session from `/api/user`, and persists the applicant-owned membership form. It does not persist event registrations, startup listings, announcements, or admin changes yet.
+This is the first production-frontend pass converted from the static mockups in `../mockups/`. It is not the Laravel backend, but it now starts the backend-owned Google OAuth flow, reads the current Sanctum user session from `/api/user`, persists the applicant-owned membership form, and shows the member dashboard profile/application status from authenticated API state. It does not persist event registrations, startup listings, announcements, or admin changes yet.
 
 ## Stack
 
@@ -28,7 +28,7 @@ npm run test:routes
 
 The public site reads live data from the Laravel API via Pinia stores. The startup directory, events calendar, partners directory, and homepage CMS cards are wired to public API endpoints. The HTTP client lives at `src/lib/api.js`. The base URL resolves from `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`, which is Laravel's `php artisan serve` default).
 
-Authenticated frontend requests also go through `src/lib/api.js`. Public stores stay anonymous by default; authenticated stores pass `auth: true`, which sends browser credentials for Laravel Sanctum's session-cookie flow. `sendJson()` handles JSON mutations and sends Laravel's `X-XSRF-TOKEN` header when the cookie is present. The current-user store lives at `src/stores/authUser.js`, calls `/api/user`, treats 401 as an anonymous browser state, and starts Google sign-in by redirecting to `${VITE_API_BASE_URL}/auth/google/redirect`. The membership application store lives at `src/stores/membershipApplication.js` and backs the real `/membership` form.
+Authenticated frontend requests also go through `src/lib/api.js`. Public stores stay anonymous by default; authenticated stores pass `auth: true`, which sends browser credentials for Laravel Sanctum's session-cookie flow. `sendJson()` handles JSON mutations and sends Laravel's `X-XSRF-TOKEN` header when the cookie is present. The current-user store lives at `src/stores/authUser.js`, calls `/api/user`, treats 401 as an anonymous browser state, and starts Google sign-in by redirecting to `${VITE_API_BASE_URL}/auth/google/redirect`. The membership application store lives at `src/stores/membershipApplication.js`; it backs the real `/membership` form and the first member dashboard profile/application status views.
 
 Local dev workflow when you need real startup data on `/startups`:
 
@@ -97,7 +97,7 @@ Live preview: `https://cool-machine.github.io/waais-website/`
 
 ## Still Mocked
 
-- Member dashboard and admin dashboard
+- Member dashboard event/forum/startup surfaces and admin dashboard
 - Admin/super-admin permission gating
 - CMS publishing workflow UI for events, partners, announcements, homepage cards
 - Email and dashboard notifications (UI side — the backend ships them)

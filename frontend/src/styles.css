@@ -550,6 +550,12 @@ textarea:disabled {
   padding: 10px 0;
 }
 
+.app-stack .table-row strong {
+  max-width: 360px;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
 .compact-table {
   margin: 12px 0 18px;
 }

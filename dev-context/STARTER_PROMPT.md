@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Build **member dashboard frontend wiring**. The membership application UI is shipped and uses the authenticated API client/store pattern. Start with one member-owned dashboard surface at a time, likely profile or "my application" status before startup listings. Preserve anonymous public-site stores, keep admin dashboard work separate, and use one Pinia store per backend resource/access surface. If George prioritizes non-Google applicants, treat email-link application start as its own separate slice rather than mixing it into dashboard wiring.
+Build **member dashboard startup ownership wiring**. The member dashboard profile/application status slice is shipped, and the backend already exposes approved-member startup listing endpoints under `/api/startup-listings` (list own, show own, create, update). Add a member-surface Pinia store such as `useMyStartupsStore`, wire one dashboard view for owned startup listings, preserve the public startup store's anonymous behavior, and keep admin startup review work separate.
 ```
 
 ## Maintenance

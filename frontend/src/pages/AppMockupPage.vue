@@ -9,9 +9,11 @@ import {
   permissionRoles,
 } from '../data/platformModel'
 import { useAuthUserStore } from '../stores/authUser'
+import { useMembershipApplicationStore } from '../stores/membershipApplication'
 
 const route = useRoute()
 const authUser = useAuthUserStore()
+const applicationStore = useMembershipApplicationStore()
 
 const navGroups = [
   {
@@ -53,6 +55,45 @@ const accountStatusLabel = computed(() => {
   if (authUser.isPending) return 'Pending admin approval'
   return authUser.user.approval_status || 'Account created'
 })
+const applicationStatusLabel = computed(() => {
+  if (applicationStore.loading) return 'Loading application'
+  const status = applicationStore.status
+  return status ? titleize(status) : 'No application on file'
+})
+const dashboardMetrics = computed(() => [
+  ['Account status', accountStatusLabel.value],
+  ['Application', applicationStatusLabel.value],
+  ['Affiliation', titleize(authUser.user?.affiliation_type) || 'Not set'],
+  ['Role', titleize(authUser.user?.permission_role) || 'Signed out'],
+])
+const profileRows = computed(() => [
+  ['Name', authUser.user?.name || fullName(applicationStore.application) || 'Not provided'],
+  ['Email', authUser.user?.email || applicationStore.application?.email || 'Not provided'],
+  ['Affiliation', titleize(applicationStore.application?.affiliation_type || authUser.user?.affiliation_type) || 'Not provided'],
+  ['School affiliation', applicationStore.application?.school_affiliation || 'Not provided'],
+  ['Graduation year', applicationStore.application?.graduation_year || 'Not provided'],
+  ['Location', applicationStore.application?.primary_location || 'Not provided'],
+])
+const applicationSummaryRows = computed(() => [
+  ['Application status', applicationStatusLabel.value],
+  ['Experience', applicationStore.application?.experience_summary || 'Not provided'],
+  ['Expertise', applicationStore.application?.expertise_summary || 'Not provided'],
+  ['Availability', applicationStore.application?.availability || 'Not provided'],
+])
+const canEditApplication = computed(() => authUser.isAuthenticated && applicationStore.canEdit)
+
+function titleize(value) {
+  return value
+    ? String(value)
+        .replaceAll('_', ' ')
+        .replace(/\b\w/g, (letter) => letter.toUpperCase())
+    : ''
+}
+
+function fullName(application) {
+  const parts = [application?.first_name, application?.last_name].filter(Boolean)
+  return parts.join(' ')
+}
 
 const metrics = {
   admin: [
@@ -61,16 +102,19 @@ const metrics = {
     ['Published events', '12'],
     ['Public cards', '46'],
   ],
-  dashboard: [
-    ['Profile completion', '82%'],
-    ['Upcoming events', '3'],
-    ['Forum replies', '14'],
-    ['Founder intros', '5'],
-  ],
+}
+
+async function loadMemberDashboard() {
+  await authUser.loadCurrentUser()
+  if (authUser.isAuthenticated) {
+    await applicationStore.load().catch((error) => {
+      if (error?.status !== 401) throw error
+    })
+  }
 }
 
 onMounted(() => {
-  authUser.loadCurrentUser().catch(() => {})
+  loadMemberDashboard().catch(() => {})
 })
 </script>
 
@@ -152,27 +196,30 @@ onMounted(() => {
         <div class="app-hero">
           <p class="eyebrow">Member dashboard</p>
           <h1>Welcome back, {{ displayName }}.</h1>
-          <p class="lede">A compact home for events, forum activity, founder updates, and profile completion.</p>
+          <p class="lede">Your WAAIS account, application status, and member access state in one place.</p>
           <p v-if="authUser.initialized && !authUser.canAccessMemberAreas" class="small">This account has not been approved for member areas yet.</p>
         </div>
         <div class="grid four">
-          <div v-for="[label, value] in metrics.dashboard" :key="label" class="metric"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+          <div v-for="[label, value] in dashboardMetrics" :key="label" class="metric"><span>{{ label }}</span><strong>{{ value }}</strong></div>
         </div>
         <div class="grid two">
           <article class="card">
-            <h2>Upcoming events</h2>
+            <h2>Profile snapshot</h2>
             <div class="table">
-              <div class="table-row"><span>AI Founder Salon</span><strong>Registered</strong></div>
-              <div class="table-row"><span>Agentic Workflows</span><strong>Open</strong></div>
-              <div class="table-row"><span>Demo Night</span><strong>Waitlist</strong></div>
+              <div v-for="[label, value] in profileRows" :key="label" class="table-row"><span>{{ label }}</span><strong>{{ value }}</strong></div>
             </div>
+            <RouterLink class="button water" to="/app/profile">View profile</RouterLink>
           </article>
           <article class="card">
-            <h2>Forum pulse</h2>
-            <div class="timeline">
-              <div class="timeline-item"><span class="dot"></span><div><h3>Enterprise AI procurement</h3><p class="small">6 new replies in Operators</p></div></div>
-              <div class="timeline-item"><span class="dot"></span><div><h3>Seed-stage eval tooling</h3><p class="small">3 new replies in Founders</p></div></div>
-            </div>
+            <h2>Application status</h2>
+            <span class="status-pill" :class="{ pending: applicationStore.status === 'submitted' || applicationStore.needsMoreInfo }">{{ applicationStatusLabel }}</span>
+            <p v-if="applicationStore.application?.review_notes" class="small">Admin note: {{ applicationStore.application.review_notes }}</p>
+            <p v-else-if="applicationStore.loading" class="small">Loading the latest application record.</p>
+            <p v-else-if="applicationStore.error" class="small">Could not load your membership application. Confirm the backend is running and try again.</p>
+            <p v-else class="small">This status comes from the authenticated membership application endpoint.</p>
+            <RouterLink v-if="canEditApplication" class="button water" to="/membership">Update application</RouterLink>
+            <RouterLink v-else-if="authUser.isAuthenticated" class="button water" to="/membership">View application</RouterLink>
+            <button v-else class="button primary" type="button" @click="authUser.startGoogleSignIn({ next: '/app/dashboard' })">Sign in with Google</button>
           </article>
         </div>
       </section>
@@ -180,16 +227,25 @@ onMounted(() => {
       <section v-else-if="currentView === 'profile'" class="app-stack">
         <div class="app-hero">
           <p class="eyebrow">Member profile</p>
-          <h1>Shape how other alumni discover you.</h1>
-          <p class="lede">Members can edit profile/application answers, but legal identity fields require admin review after verification.</p>
+          <h1>{{ displayName }}.</h1>
+          <p class="lede">Profile and application fields pulled from the current authenticated session and membership application record.</p>
         </div>
-        <form class="app-form">
-          <label>Name<input value="George Chen"></label>
-          <label>Wharton affiliation<input value="WG'20"></label>
-          <label>Company<input value="WAAIS"></label>
-          <label>Role<input value="Founder"></label>
-          <label class="full">Bio<textarea>Building the Wharton Alumni AI Studio community for alumni working on applied AI, startups, research, and enterprise adoption.</textarea></label>
-        </form>
+        <div class="grid two">
+          <article class="card">
+            <h2>Identity</h2>
+            <div class="table">
+              <div v-for="[label, value] in profileRows" :key="label" class="table-row"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+            </div>
+          </article>
+          <article class="card">
+            <h2>Application answers</h2>
+            <div class="table">
+              <div v-for="[label, value] in applicationSummaryRows" :key="label" class="table-row"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+            </div>
+            <RouterLink v-if="canEditApplication" class="button water" to="/membership">Edit application</RouterLink>
+            <RouterLink v-else class="button water" to="/membership">Open membership page</RouterLink>
+          </article>
+        </div>
       </section>
 
       <section v-else-if="currentView === 'my-events'" class="app-stack">

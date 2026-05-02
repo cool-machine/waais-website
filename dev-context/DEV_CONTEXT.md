@@ -36,8 +36,9 @@ Project root: `/Users/gg1900/coding/waais-website`
 - HTTP client at `frontend/src/lib/api.js` — shared `getJson()` / `sendJson()` wrappers, base URL via `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`), `Accept: application/json`, throws `ApiError` on non-2xx. Public stores stay anonymous by default; authenticated stores pass `auth: true` to send Sanctum session credentials. JSON mutations also send Laravel's `X-XSRF-TOKEN` header when the cookie is present.
 - Auth/current-user store at `frontend/src/stores/authUser.js` — calls `/api/user`, treats 401 as signed-out state, exposes approval/permission access getters, and starts Google sign-in by redirecting to `/auth/google/redirect` on the backend.
 - Membership application UI at `/membership` is backed by `frontend/src/stores/membershipApplication.js` and the authenticated Laravel endpoints (`GET/POST/PATCH /api/membership-application`, `POST /api/membership-application/reapply`). Signed-out users are prompted into Google sign-in; pending/needs-more-info/rejected applicants can submit/update/reapply; approved applications render read-only.
+- Member dashboard profile/application status views at `/app/dashboard` and `/app/profile` consume `useAuthUserStore` plus `useMembershipApplicationStore` for live account, profile, and application status. Other member surfaces (`/app/my-events`, `/app/forum-feed`, future startup ownership views) remain queued.
 - Pinia store at `frontend/src/stores/publicStartups.js` — `loadList`, `loadOne`, in-memory TTL cache so back-navigation between list and detail doesn't refetch. Convention for adding future stores (one per backend resource × access surface) is documented in `frontend/src/stores/README.md`.
-- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 67 specs across `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
+- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 69 specs across `pages/AppMockupPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
 - Build deployed to GitHub Pages via root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg` copied from `frontend/dist`. Deploy steps live in `frontend/README.md`.
 
 ### Backend (live, validated locally)
@@ -68,11 +69,11 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **membership application UI on the public site**. The `/membership` page now gates the questionnaire behind a confirmed authenticated session, supports Google sign-in returning to Membership, lets pending applicants submit/update, keeps rejected reapply and approved read-only behavior wired through `useMembershipApplicationStore`, and preserves anonymous public-site behavior elsewhere. Automated validation is clean: frontend `npm test` 67 passed, `npm run build` clean, `npm run test:routes` clean; backend `composer validate --strict` clean, `php artisan test` 138 passed / 610 assertions, and `php artisan migrate:fresh` clean. Manual browser smoke passed locally: Google sign-in returned to `/membership`, the form appeared, and a submitted application saved successfully.
+No slice in progress. Last shipped slice: **member dashboard profile/application status wiring**. The `/app/dashboard` and `/app/profile` member views now render live current-user and membership-application state instead of static profile/application placeholders. Automated validation is clean: frontend `npm test` 69 passed, `npm run build` clean, `npm run test:routes` clean; backend `composer validate --strict` clean, `php artisan test` 138 passed / 610 assertions, and `php artisan migrate:fresh` clean. Manual browser smoke passed locally: dashboard/profile rendered the expected authenticated account/application fields and the membership edit link returned to `/membership`.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Member dashboard frontend wiring.** Each surface gets its own store (`useMyStartupsStore`, etc.) per the convention in `frontend/src/stores/README.md`.
+1. **Member dashboard startup ownership wiring.** Add `useMyStartupsStore` for authenticated `/api/startup-listings`.
 2. **Admin dashboard frontend wiring** (approvals queue, user management, event management, public content, announcements). Multiple sub-slices.
 3. **Email-link application start** if George wants non-Google applicants to verify by email before the questionnaire opens.
 4. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
@@ -92,6 +93,16 @@ No slice in progress. Last shipped slice: **membership application UI on the pub
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 2, 2026 — Member dashboard profile/application status**
+- Did: rewired `/app/dashboard` to show live account status, membership-application status, affiliation, permission role, and a profile snapshot from `useAuthUserStore` plus `useMembershipApplicationStore`
+- Did: rewired `/app/profile` to show live identity and application summary fields instead of static mock profile data
+- Did: left `/app/my-events`, `/app/forum-feed`, member startup ownership, and all admin dashboard views as future slices so this slice stays scoped to profile/application status
+- Did: added component coverage in `frontend/src/pages/AppMockupPage.test.js`; frontend validation passed at `npm test` 69 specs, `npm run build`, and `npm run test:routes`
+- Did: required backend validation still passed: `composer validate --strict`, `php artisan test` 138 passed / 610 assertions, and `php artisan migrate:fresh`
+- Did: manually smoked the visible dashboard flow locally. `/app/dashboard` and `/app/profile` rendered authenticated account/application fields, and the membership edit link returned to `/membership`
+- Left off at: ready for the next slice — member dashboard startup ownership wiring with `useMyStartupsStore`
+- Watch out for: `php artisan migrate:fresh` resets local SQLite data before browser smoke. Re-sign in and resubmit the membership form if you need populated dashboard application fields in local dev
 
 **May 2, 2026 — Membership application UI**
 - Did: extended the frontend HTTP client with `sendJson()` for authenticated JSON mutations, preserving anonymous public fetch behavior and adding Laravel `X-XSRF-TOKEN` forwarding for mutating requests
