@@ -406,6 +406,86 @@ describe('member dashboard live state', () => {
     expect(wrapper.text()).toContain('Publish')
   })
 
+  it('renders the admin user directory from the admin API', async () => {
+    const TARGET = {
+      id: 22,
+      name: 'Grace Hopper',
+      email: 'grace@example.com',
+      approval_status: 'approved',
+      affiliation_type: 'alumni',
+      permission_role: 'member',
+      created_at: '2026-01-15T10:00:00.000000Z',
+    }
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.includes('/api/admin/users')) {
+        return Promise.resolve(jsonResponse({
+          data: [TARGET],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/users')
+
+    expect(wrapper.text()).toContain('Search the membership and adjust roles.')
+    expect(wrapper.text()).toContain('Grace Hopper')
+    expect(wrapper.text()).toContain('grace@example.com')
+
+    await wrapper.find('.table-button').trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain('Super admin access is required to change roles.')
+  })
+
+  it('lets a super admin promote a member to admin from the user directory', async () => {
+    const SUPER = { ...ADMIN, permission_role: 'super_admin', can_manage_admin_privileges: true }
+    const TARGET = {
+      id: 22,
+      name: 'Grace Hopper',
+      email: 'grace@example.com',
+      approval_status: 'approved',
+      affiliation_type: 'alumni',
+      permission_role: 'member',
+    }
+    const promoted = { ...TARGET, permission_role: 'admin' }
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(SUPER))
+      if (url.includes('/api/admin/users/22/promote-admin')) return Promise.resolve(jsonResponse({ data: promoted }))
+      if (url.match(/\/api\/admin\/users\/22$/)) return Promise.resolve(jsonResponse({ data: TARGET }))
+      if (url.includes('/api/admin/users')) {
+        return Promise.resolve(jsonResponse({
+          data: [TARGET],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+
+    const wrapper = await mountAt('/app/users')
+    await wrapper.find('.table-button').trigger('click')
+    await flushPromises()
+
+    const promoteButton = wrapper.findAll('button').find((node) => node.text() === 'Promote to admin')
+    expect(promoteButton).toBeTruthy()
+    await promoteButton.trigger('click')
+    await flushPromises()
+
+    const promoteRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/users/22/promote-admin'))
+    expect(promoteRequest[1].method).toBe('POST')
+    expect(promoteRequest[1].credentials).toBe('include')
+    expect(wrapper.text()).toContain('Demote admin')
+  })
+
   it('publishes the selected event and removes it from the draft queue', async () => {
     const ADMIN_EVENT = {
       id: 41,

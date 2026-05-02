@@ -12,6 +12,7 @@ import { useAuthUserStore } from '../stores/authUser'
 import { useAdminEventsStore } from '../stores/adminEvents'
 import { useAdminMembershipApplicationsStore } from '../stores/adminMembershipApplications'
 import { useAdminStartupListingsStore } from '../stores/adminStartupListings'
+import { useAdminUsersStore } from '../stores/adminUsers'
 import { useMembershipApplicationStore } from '../stores/membershipApplication'
 import { useMyStartupsStore } from '../stores/myStartups'
 
@@ -20,6 +21,7 @@ const authUser = useAuthUserStore()
 const adminApplicationsStore = useAdminMembershipApplicationsStore()
 const adminStartupListingsStore = useAdminStartupListingsStore()
 const adminEventsStore = useAdminEventsStore()
+const adminUsersStore = useAdminUsersStore()
 const applicationStore = useMembershipApplicationStore()
 const myStartupsStore = useMyStartupsStore()
 
@@ -62,6 +64,11 @@ const eventForm = reactive({
 })
 const eventCancelForm = reactive({
   cancellation_note: '',
+})
+const userFilterForm = reactive({
+  permission_role: 'all',
+  approval_status: 'all',
+  q: '',
 })
 const emailSignInForm = reactive({
   email: '',
@@ -192,6 +199,27 @@ const adminEventSaveLabel = computed(() => {
   return adminEventsStore.isCreatingNew ? 'Create draft event' : 'Save changes'
 })
 const adminEventStatusFilters = ['all', 'draft', 'pending_review', 'published', 'hidden', 'archived']
+const adminUserRoleFilters = ['all', ...permissionRoles]
+const adminUserApprovalFilters = ['all', ...approvalStatuses]
+const selectedAdminUser = computed(() => adminUsersStore.currentUser)
+const adminUserSaveError = computed(() => adminUsersStore.saveError?.body?.message
+  || (adminUsersStore.saveError ? 'Could not update this user.' : null))
+const adminUserCount = computed(() => adminUsersStore.listMeta.total || adminUsersStore.list.length)
+const canManageAdminPrivileges = computed(() => Boolean(authUser.user?.can_manage_admin_privileges))
+const selectedAdminUserRows = computed(() => {
+  const user = selectedAdminUser.value
+  return [
+    ['Email', user?.email || 'Not provided'],
+    ['Approval', titleize(user?.approval_status) || 'Not set'],
+    ['Affiliation', titleize(user?.affiliation_type) || 'Not set'],
+    ['Role', titleize(user?.permission_role) || 'Not set'],
+    ['Email verified', user?.email_verified_at ? formatEventDateTime(user.email_verified_at) : 'No'],
+    ['Member since', user?.created_at ? formatEventDateTime(user.created_at) : 'Unknown'],
+  ]
+})
+const isCurrentAuthUser = computed(() => Boolean(
+  selectedAdminUser.value?.id && authUser.user?.id && selectedAdminUser.value.id === authUser.user.id
+))
 const selectedAdminEventRows = computed(() => {
   const event = selectedAdminEvent.value
   return [
@@ -454,6 +482,53 @@ async function cancelAdminEvent() {
   populateEventForm(adminEventsStore.currentEvent)
 }
 
+async function loadAdminUsers(overrides = {}) {
+  await adminUsersStore.loadList({
+    permissionRole: overrides.permissionRole ?? userFilterForm.permission_role,
+    approvalStatus: overrides.approvalStatus ?? userFilterForm.approval_status,
+    q: overrides.q ?? userFilterForm.q,
+    force: true,
+  })
+}
+
+function selectAdminUser(user) {
+  adminUsersStore.selectUser(user)
+}
+
+async function searchAdminUsers() {
+  await loadAdminUsers()
+}
+
+async function setAdminUserRoleFilter(role) {
+  userFilterForm.permission_role = role
+  await loadAdminUsers({ permissionRole: role })
+}
+
+async function setAdminUserApprovalFilter(status) {
+  userFilterForm.approval_status = status
+  await loadAdminUsers({ approvalStatus: status })
+}
+
+async function promoteAdminUser() {
+  if (!confirm('Promote this user to Admin?')) return
+  await adminUsersStore.promoteAdmin()
+}
+
+async function demoteAdminUser() {
+  if (!confirm('Demote this admin to Member?')) return
+  await adminUsersStore.demoteAdmin()
+}
+
+async function promoteSuperAdminUser() {
+  if (!confirm('Promote this admin to Super Admin?')) return
+  await adminUsersStore.promoteSuperAdmin()
+}
+
+async function demoteSuperAdminUser() {
+  if (!confirm('Demote this super admin to Admin?')) return
+  await adminUsersStore.demoteSuperAdmin()
+}
+
 async function requestAppEmailLink() {
   await authUser.requestEmailSignIn(emailSignInForm.email, { next: '/app/dashboard' })
 }
@@ -465,6 +540,7 @@ async function signOut() {
   adminApplicationsStore.clear()
   adminStartupListingsStore.clear()
   adminEventsStore.clear()
+  adminUsersStore.clear()
 }
 
 const adminMetrics = computed(() => [
@@ -477,7 +553,7 @@ const adminMetrics = computed(() => [
 async function loadMemberDashboard() {
   await authUser.loadCurrentUser()
   const memberViews = ['dashboard', 'profile', 'my-startups']
-  const adminViews = ['admin', 'approvals', 'startup-review', 'events-admin']
+  const adminViews = ['admin', 'approvals', 'startup-review', 'events-admin', 'users']
 
   if (authUser.isAuthenticated && memberViews.includes(currentView.value)) {
     await applicationStore.load().catch((error) => {
@@ -502,6 +578,11 @@ async function loadMemberDashboard() {
     }
     if (currentView.value === 'admin' || currentView.value === 'events-admin') {
       await loadAdminEvents().catch((error) => {
+        if (error?.status !== 401 && error?.status !== 403) throw error
+      })
+    }
+    if (currentView.value === 'admin' || currentView.value === 'users') {
+      await loadAdminUsers().catch((error) => {
         if (error?.status !== 401 && error?.status !== 403) throw error
       })
     }
@@ -996,15 +1077,106 @@ watch(currentView, () => {
       <section v-else-if="currentView === 'users'" class="app-stack">
         <div class="app-hero">
           <p class="eyebrow">User management</p>
-          <h1>Members, admins, students, guests, and suspended accounts.</h1>
-          <p class="lede">Super admins alone can promote users to admin or remove admin privileges.</p>
+          <h1>Search the membership and adjust roles.</h1>
+          <p class="lede">Filter the directory by role, approval, or affiliation. Only super admins can promote or demote admins; regular admins can review profiles only.</p>
+          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
         </div>
-        <article class="card wide-card">
-          <div class="admin-row header"><span>User</span><span>Role</span><span>Status</span><span>Action</span></div>
-          <div class="admin-row"><span>George Chen</span><span>Super admin</span><span>Active</span><span>Protected</span></div>
-          <div class="admin-row"><span>Nina Park</span><span>Member</span><span>Active</span><span>Edit profile</span></div>
-          <div class="admin-row"><span>Alex Li</span><span>Member</span><span>Suspended</span><span>Review</span></div>
-        </article>
+        <div v-if="adminUsersStore.error" class="notice error-notice">
+          <p class="small">Could not load users. Confirm this account has admin access and the backend is running.</p>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="filter-row">
+          <span class="small">Role:</span>
+          <button
+            v-for="role in adminUserRoleFilters"
+            :key="role"
+            class="button secondary"
+            :class="{ active: userFilterForm.permission_role === role }"
+            type="button"
+            @click="setAdminUserRoleFilter(role)"
+          >
+            {{ titleize(role) }}
+          </button>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="filter-row">
+          <span class="small">Approval:</span>
+          <button
+            v-for="status in adminUserApprovalFilters"
+            :key="status"
+            class="button secondary"
+            :class="{ active: userFilterForm.approval_status === status }"
+            type="button"
+            @click="setAdminUserApprovalFilter(status)"
+          >
+            {{ titleize(status) }}
+          </button>
+        </div>
+        <form v-if="canAccessAdminDashboard" class="filter-row" @submit.prevent="searchAdminUsers">
+          <input v-model="userFilterForm.q" type="search" placeholder="Search name or email" />
+          <button class="button water" type="submit" :disabled="adminUsersStore.loading">Search</button>
+          <button class="button secondary" type="button" @click="loadAdminUsers()">Refresh</button>
+        </form>
+        <div v-if="canAccessAdminDashboard" class="grid two">
+          <article class="card">
+            <div class="row">
+              <h2>Users</h2>
+              <span class="small">{{ adminUserCount }} matching</span>
+            </div>
+            <p v-if="adminUsersStore.loading" class="small">Loading users.</p>
+            <p v-else-if="!adminUsersStore.hasUsers" class="small">No users match these filters.</p>
+            <div v-else class="table">
+              <button
+                v-for="user in adminUsersStore.list"
+                :key="user.id"
+                class="table-row table-button"
+                type="button"
+                @click="selectAdminUser(user)"
+              >
+                <span>
+                  {{ user.name || user.email }}
+                  <br>
+                  <small>{{ user.email }}</small>
+                </span>
+                <strong>
+                  {{ titleize(user.permission_role) }}
+                  <small v-if="user.suspended_at"> · Suspended</small>
+                  <small v-else-if="user.approval_status && user.approval_status !== 'approved'"> · {{ titleize(user.approval_status) }}</small>
+                </strong>
+              </button>
+            </div>
+          </article>
+
+          <article v-if="!selectedAdminUser" class="card">
+            <span class="tag">No selection</span>
+            <h2>Select a user.</h2>
+            <p class="small">Choose a row from the directory to view profile context and role actions.</p>
+          </article>
+
+          <article v-else class="card">
+            <div class="row">
+              <div>
+                <span class="tag">{{ titleize(selectedAdminUser.permission_role) }}</span>
+                <h2>{{ adminUsersStore.selectedUserName }}</h2>
+                <p class="small">{{ selectedAdminUser.email }}</p>
+              </div>
+            </div>
+
+            <div class="table">
+              <div v-for="[label, value] in selectedAdminUserRows" :key="label" class="table-row"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+            </div>
+
+            <p v-if="adminUserSaveError" class="notice error-notice small">{{ adminUserSaveError }}</p>
+
+            <div v-if="!canManageAdminPrivileges" class="notice small">Super admin access is required to change roles.</div>
+            <div v-else-if="isCurrentAuthUser" class="notice small">You cannot change your own role from this screen.</div>
+            <div v-else class="button-grid">
+              <button v-if="selectedAdminUser.permission_role === 'member'" class="button water" type="button" :disabled="adminUsersStore.saving || selectedAdminUser.approval_status !== 'approved'" @click="promoteAdminUser">Promote to admin</button>
+              <button v-if="selectedAdminUser.permission_role === 'admin'" class="button secondary" type="button" :disabled="adminUsersStore.saving" @click="demoteAdminUser">Demote admin</button>
+              <button v-if="selectedAdminUser.permission_role === 'admin'" class="button water" type="button" :disabled="adminUsersStore.saving" @click="promoteSuperAdminUser">Promote to super admin</button>
+              <button v-if="selectedAdminUser.permission_role === 'super_admin'" class="button secondary" type="button" :disabled="adminUsersStore.saving" @click="demoteSuperAdminUser">Demote super admin</button>
+            </div>
+            <p v-if="adminUsersStore.currentLoading" class="small">Loading full user detail.</p>
+          </article>
+        </div>
       </section>
 
       <section v-else-if="currentView === 'events-admin'" class="app-stack">

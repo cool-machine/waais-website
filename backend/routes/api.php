@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\AdminHomepageCardController;
 use App\Http\Controllers\Api\Admin\AdminMembershipApplicationController;
 use App\Http\Controllers\Api\Admin\AdminPartnerController;
 use App\Http\Controllers\Api\Admin\AdminStartupListingController;
+use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\Admin\AdminUserRoleController;
 use App\Http\Controllers\Api\MembershipApplicationController;
 use App\Http\Controllers\Api\PublicEventController;
@@ -116,6 +117,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/homepage-cards/{homepageCard}/publish', [AdminHomepageCardController::class, 'publish']);
         Route::post('/homepage-cards/{homepageCard}/hide', [AdminHomepageCardController::class, 'hide']);
         Route::post('/homepage-cards/{homepageCard}/archive', [AdminHomepageCardController::class, 'archive']);
+
+        Route::get('/users', [AdminUserController::class, 'index']);
+        Route::get('/users/{user}', [AdminUserController::class, 'show']);
 
         Route::middleware('super_admin.access')->group(function (): void {
             Route::post('/users/{user}/promote-admin', [AdminUserRoleController::class, 'promoteAdmin']);
