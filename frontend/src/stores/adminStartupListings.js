@@ -17,7 +17,7 @@ function paginationMeta(response) {
   }
 }
 
-export const useAdminMembershipApplicationsStore = defineStore('adminMembershipApplications', {
+export const useAdminStartupListingsStore = defineStore('adminStartupListings', {
   state: () => ({
     list: [],
     listMeta: { ...DEFAULT_META },
@@ -26,7 +26,7 @@ export const useAdminMembershipApplicationsStore = defineStore('adminMembershipA
     loading: false,
     error: null,
 
-    currentApplication: null,
+    currentListing: null,
     currentLoading: false,
     currentError: null,
 
@@ -34,13 +34,8 @@ export const useAdminMembershipApplicationsStore = defineStore('adminMembershipA
     saveError: null,
   }),
   getters: {
-    hasApplications: (state) => state.list.length > 0,
-    selectedApplicantName: (state) => {
-      const application = state.currentApplication
-      if (!application) return ''
-      const parts = [application.first_name, application.last_name].filter(Boolean)
-      return parts.join(' ') || application.applicant?.name || application.email || 'Applicant'
-    },
+    hasListings: (state) => state.list.length > 0,
+    selectedListingName: (state) => state.currentListing?.name || 'Startup listing',
   },
   actions: {
     async loadList({ status = this.listStatus, page = 1, perPage = 25, force = false, signal } = {}) {
@@ -59,7 +54,7 @@ export const useAdminMembershipApplicationsStore = defineStore('adminMembershipA
       this.listStatus = status
 
       try {
-        const response = await getJson('/api/admin/applications', {
+        const response = await getJson('/api/admin/startup-listings', {
           auth: true,
           signal,
           query: {
@@ -73,8 +68,8 @@ export const useAdminMembershipApplicationsStore = defineStore('adminMembershipA
         this.listMeta = paginationMeta(response)
         this.initialized = true
 
-        if (!this.currentApplication && this.list.length > 0) {
-          this.currentApplication = this.list[0]
+        if (!this.currentListing && this.list.length > 0) {
+          this.currentListing = this.list[0]
         }
 
         return this.list
@@ -89,22 +84,22 @@ export const useAdminMembershipApplicationsStore = defineStore('adminMembershipA
 
     async loadOne(id, { signal } = {}) {
       if (!id) {
-        this.currentApplication = null
+        this.currentListing = null
         return null
       }
 
-      const cached = this.list.find((application) => Number(application.id) === Number(id))
+      const cached = this.list.find((listing) => Number(listing.id) === Number(id))
       if (cached) {
-        this.currentApplication = cached
+        this.currentListing = cached
       }
 
       this.currentLoading = true
       this.currentError = null
 
       try {
-        const response = await getJson(`/api/admin/applications/${id}`, { auth: true, signal })
-        this.currentApplication = response?.data ?? null
-        return this.currentApplication
+        const response = await getJson(`/api/admin/startup-listings/${id}`, { auth: true, signal })
+        this.currentListing = response?.data ?? null
+        return this.currentListing
       } catch (error) {
         this.currentError = error
         throw error
@@ -113,25 +108,25 @@ export const useAdminMembershipApplicationsStore = defineStore('adminMembershipA
       }
     },
 
-    selectApplication(application) {
-      this.currentApplication = application ?? null
+    selectListing(listing) {
+      this.currentListing = listing ?? null
       this.currentError = null
       this.saveError = null
     },
 
     async transition(action, payload = {}, { signal } = {}) {
-      if (!this.currentApplication?.id) {
+      if (!this.currentListing?.id) {
         return null
       }
 
       const paths = {
-        approve: `/api/admin/applications/${this.currentApplication.id}/approve`,
-        reject: `/api/admin/applications/${this.currentApplication.id}/reject`,
-        requestInfo: `/api/admin/applications/${this.currentApplication.id}/request-info`,
+        approve: `/api/admin/startup-listings/${this.currentListing.id}/approve`,
+        reject: `/api/admin/startup-listings/${this.currentListing.id}/reject`,
+        requestInfo: `/api/admin/startup-listings/${this.currentListing.id}/request-info`,
       }
       const path = paths[action]
       if (!path) {
-        throw new Error(`Unknown membership application transition: ${action}`)
+        throw new Error(`Unknown startup listing transition: ${action}`)
       }
 
       this.saving = true
@@ -146,8 +141,8 @@ export const useAdminMembershipApplicationsStore = defineStore('adminMembershipA
         const updated = response?.data ?? null
 
         if (updated) {
-          this.currentApplication = updated
-          const index = this.list.findIndex((application) => Number(application.id) === Number(updated.id))
+          this.currentListing = updated
+          const index = this.list.findIndex((listing) => Number(listing.id) === Number(updated.id))
 
           if (updated.approval_status === this.listStatus) {
             if (index === -1) {
@@ -155,13 +150,13 @@ export const useAdminMembershipApplicationsStore = defineStore('adminMembershipA
             } else {
               this.list.splice(index, 1, updated)
             }
-            this.currentApplication = updated
+            this.currentListing = updated
           } else if (index !== -1) {
             this.list.splice(index, 1)
             this.listMeta.total = Math.max(0, this.listMeta.total - 1)
-            this.currentApplication = this.list[0] ?? null
+            this.currentListing = this.list[0] ?? null
           } else {
-            this.currentApplication = null
+            this.currentListing = null
           }
         }
 
@@ -200,7 +195,7 @@ export const useAdminMembershipApplicationsStore = defineStore('adminMembershipA
       this.initialized = false
       this.loading = false
       this.error = null
-      this.currentApplication = null
+      this.currentListing = null
       this.currentLoading = false
       this.currentError = null
       this.saving = false

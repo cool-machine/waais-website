@@ -10,12 +10,14 @@ import {
 } from '../data/platformModel'
 import { useAuthUserStore } from '../stores/authUser'
 import { useAdminMembershipApplicationsStore } from '../stores/adminMembershipApplications'
+import { useAdminStartupListingsStore } from '../stores/adminStartupListings'
 import { useMembershipApplicationStore } from '../stores/membershipApplication'
 import { useMyStartupsStore } from '../stores/myStartups'
 
 const route = useRoute()
 const authUser = useAuthUserStore()
 const adminApplicationsStore = useAdminMembershipApplicationsStore()
+const adminStartupListingsStore = useAdminStartupListingsStore()
 const applicationStore = useMembershipApplicationStore()
 const myStartupsStore = useMyStartupsStore()
 
@@ -33,6 +35,10 @@ const startupForm = reactive({
   linkedin_url: '',
 })
 const adminReviewForm = reactive({
+  review_notes: '',
+  send_email: false,
+})
+const adminStartupReviewForm = reactive({
   review_notes: '',
   send_email: false,
 })
@@ -60,6 +66,7 @@ const navGroups = [
     items: [
       ['admin', 'Admin overview'],
       ['approvals', 'Approvals'],
+      ['startup-review', 'Startup review'],
       ['users', 'User management'],
       ['events-admin', 'Event management'],
       ['content-admin', 'Public content'],
@@ -138,6 +145,21 @@ const selectedApplicationRows = computed(() => {
 })
 const adminValidationErrors = computed(() => adminApplicationsStore.saveError?.body?.errors ?? {})
 const adminQueueCount = computed(() => adminApplicationsStore.listMeta.total || adminApplicationsStore.list.length)
+const selectedAdminStartupListing = computed(() => adminStartupListingsStore.currentListing)
+const selectedAdminStartupRows = computed(() => {
+  const listing = selectedAdminStartupListing.value
+  return [
+    ['Owner', listing?.owner?.name || listing?.owner?.email || 'Not provided'],
+    ['Industry', listing?.industry || 'Not provided'],
+    ['Stage', listing?.stage || 'Not provided'],
+    ['Location', listing?.location || 'Not provided'],
+    ['Founders', arrayToList(listing?.founders) || 'Not provided'],
+    ['Submitter role', listing?.submitter_role || 'Not provided'],
+    ['Content status', titleize(listing?.content_status) || 'Not provided'],
+  ]
+})
+const adminStartupValidationErrors = computed(() => adminStartupListingsStore.saveError?.body?.errors ?? {})
+const adminStartupQueueCount = computed(() => adminStartupListingsStore.listMeta.total || adminStartupListingsStore.list.length)
 
 function titleize(value) {
   return value
@@ -185,6 +207,11 @@ function populateStartupForm(listing) {
 function populateAdminReviewForm(application) {
   adminReviewForm.review_notes = application?.review_notes ?? ''
   adminReviewForm.send_email = false
+}
+
+function populateAdminStartupReviewForm(listing) {
+  adminStartupReviewForm.review_notes = listing?.review_notes ?? ''
+  adminStartupReviewForm.send_email = false
 }
 
 function startupPayload() {
@@ -245,24 +272,52 @@ async function requestApplicationInfo() {
   populateAdminReviewForm(adminApplicationsStore.currentApplication)
 }
 
+async function selectAdminStartupListing(listing) {
+  adminStartupListingsStore.selectListing(listing)
+  populateAdminStartupReviewForm(listing)
+  await adminStartupListingsStore.loadOne(listing.id)
+  populateAdminStartupReviewForm(adminStartupListingsStore.currentListing)
+}
+
+async function loadAdminStartupListings(status = adminStartupListingsStore.listStatus) {
+  await adminStartupListingsStore.loadList({ status, force: true })
+  populateAdminStartupReviewForm(adminStartupListingsStore.currentListing)
+}
+
+async function approveStartupListing() {
+  await adminStartupListingsStore.approve(adminStartupReviewForm.review_notes)
+  populateAdminStartupReviewForm(adminStartupListingsStore.currentListing)
+}
+
+async function rejectStartupListing() {
+  await adminStartupListingsStore.reject(adminStartupReviewForm.review_notes, adminStartupReviewForm.send_email)
+  populateAdminStartupReviewForm(adminStartupListingsStore.currentListing)
+}
+
+async function requestStartupListingInfo() {
+  await adminStartupListingsStore.requestInfo(adminStartupReviewForm.review_notes)
+  populateAdminStartupReviewForm(adminStartupListingsStore.currentListing)
+}
+
 async function signOut() {
   await authUser.signOut()
   applicationStore.clear()
   myStartupsStore.clear()
   adminApplicationsStore.clear()
+  adminStartupListingsStore.clear()
 }
 
 const adminMetrics = computed(() => [
-  ['Pending approvals', String(adminQueueCount.value || 0)],
+  ['Member approvals', String(adminQueueCount.value || 0)],
+  ['Startup reviews', String(adminStartupQueueCount.value || 0)],
   ['Active members', '284'],
   ['Published events', '12'],
-  ['Public cards', '46'],
 ])
 
 async function loadMemberDashboard() {
   await authUser.loadCurrentUser()
   const memberViews = ['dashboard', 'profile', 'my-startups']
-  const adminViews = ['admin', 'approvals']
+  const adminViews = ['admin', 'approvals', 'startup-review']
 
   if (authUser.isAuthenticated && memberViews.includes(currentView.value)) {
     await applicationStore.load().catch((error) => {
@@ -275,14 +330,22 @@ async function loadMemberDashboard() {
     })
   }
   if (canAccessAdminDashboard.value && adminViews.includes(currentView.value)) {
-    await loadAdminApplications().catch((error) => {
-      if (error?.status !== 401 && error?.status !== 403) throw error
-    })
+    if (currentView.value === 'admin' || currentView.value === 'approvals') {
+      await loadAdminApplications().catch((error) => {
+        if (error?.status !== 401 && error?.status !== 403) throw error
+      })
+    }
+    if (currentView.value === 'admin' || currentView.value === 'startup-review') {
+      await loadAdminStartupListings().catch((error) => {
+        if (error?.status !== 401 && error?.status !== 403) throw error
+      })
+    }
   }
 }
 
 watch(() => myStartupsStore.currentListing, populateStartupForm)
 watch(() => adminApplicationsStore.currentApplication, populateAdminReviewForm)
+watch(() => adminStartupListingsStore.currentListing, populateAdminStartupReviewForm)
 watch(currentView, () => {
   loadMemberDashboard().catch(() => {})
 }, { immediate: true })
@@ -551,16 +614,17 @@ watch(currentView, () => {
           <article class="card">
             <h2>Operational queue</h2>
             <div class="table">
-              <div class="table-row"><span>Approve 8 new applicants</span><strong>Needs review</strong></div>
+              <div class="table-row"><span>Review member applications</span><strong>{{ adminQueueCount }}</strong></div>
+              <div class="table-row"><span>Review startup listings</span><strong>{{ adminStartupQueueCount }}</strong></div>
               <div class="table-row"><span>Publish Demo Night</span><strong>Draft</strong></div>
-              <div class="table-row"><span>Review AutoFlow AI listing</span><strong>Pending</strong></div>
             </div>
           </article>
           <article class="card">
             <h2>Quick actions</h2>
             <div class="button-grid">
+              <RouterLink class="button water" to="/app/approvals">Review members</RouterLink>
+              <RouterLink class="button water" to="/app/startup-review">Review startups</RouterLink>
               <RouterLink class="button water" to="/app/events-admin">Create event</RouterLink>
-              <RouterLink class="button water" to="/app/content-admin">Review startup</RouterLink>
               <RouterLink class="button water" to="/app/announcements">Create announcement</RouterLink>
               <button class="button secondary" type="button">Open Discourse admin</button>
             </div>
@@ -668,6 +732,93 @@ watch(currentView, () => {
               <button class="button secondary" type="button" :disabled="adminApplicationsStore.saving" @click="rejectApplication">Reject</button>
             </div>
             <p v-if="adminApplicationsStore.currentLoading" class="small full">Loading full application detail.</p>
+          </form>
+        </div>
+      </section>
+
+      <section v-else-if="currentView === 'startup-review'" class="app-stack">
+        <div class="app-hero">
+          <p class="eyebrow">Startup review</p>
+          <h1>Review submitted startup listings.</h1>
+          <p class="lede">Startup listings come from the authenticated admin API and use the same approve, request-more-info, and reject transitions as member applications.</p>
+          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this queue.</p>
+        </div>
+        <div v-if="adminStartupListingsStore.error" class="notice error-notice">
+          <p class="small">Could not load startup listings. Confirm this account has admin access and the backend is running.</p>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="filter-row">
+          <button
+            v-for="status in ['submitted', 'needs_more_info', 'approved', 'rejected']"
+            :key="status"
+            class="button secondary"
+            :class="{ active: adminStartupListingsStore.listStatus === status }"
+            type="button"
+            @click="loadAdminStartupListings(status)"
+          >
+            {{ titleize(status) }}
+          </button>
+        </div>
+        <div v-if="canAccessAdminDashboard" class="grid two">
+          <article class="card">
+            <div class="row">
+              <h2>Listings</h2>
+              <button class="button secondary" type="button" @click="loadAdminStartupListings(adminStartupListingsStore.listStatus)">Refresh</button>
+            </div>
+            <p v-if="adminStartupListingsStore.loading" class="small">Loading startup listings.</p>
+            <p v-else-if="!adminStartupListingsStore.hasListings" class="small">No startup listings in this status.</p>
+            <div v-else class="table">
+              <button
+                v-for="listing in adminStartupListingsStore.list"
+                :key="listing.id"
+                class="table-row table-button"
+                type="button"
+                @click="selectAdminStartupListing(listing)"
+              >
+                <span>
+                  {{ listing.name }}
+                  <br>
+                  <small>{{ listing.tagline }}</small>
+                </span>
+                <strong>{{ titleize(listing.approval_status) }}</strong>
+              </button>
+            </div>
+          </article>
+
+          <article v-if="!selectedAdminStartupListing" class="card">
+            <span class="tag">No selection</span>
+            <h2>Select a startup listing.</h2>
+            <p class="small">Choose a row from the queue to view listing context and review actions.</p>
+          </article>
+
+          <form v-else class="app-form card" @submit.prevent="approveStartupListing">
+            <div class="full row">
+              <div>
+                <span class="tag">{{ titleize(selectedAdminStartupListing.approval_status) }}</span>
+                <h2>{{ adminStartupListingsStore.selectedListingName }}</h2>
+                <p class="small">{{ selectedAdminStartupListing.tagline }}</p>
+              </div>
+            </div>
+
+            <div class="table full">
+              <div v-for="[label, value] in selectedAdminStartupRows" :key="label" class="table-row"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+            </div>
+
+            <label class="full">Description<textarea :value="selectedAdminStartupListing.description || 'Not provided'" readonly /></label>
+            <label>Website<input :value="selectedAdminStartupListing.website_url || 'Not provided'" readonly /></label>
+            <label>LinkedIn<input :value="selectedAdminStartupListing.linkedin_url || 'Not provided'" readonly /></label>
+            <label class="full">Review notes<textarea v-model="adminStartupReviewForm.review_notes" :disabled="adminStartupListingsStore.saving" /></label>
+            <label class="checkbox-row full"><input v-model="adminStartupReviewForm.send_email" type="checkbox" :disabled="adminStartupListingsStore.saving" /> Send rejection email</label>
+
+            <div v-if="Object.keys(adminStartupValidationErrors).length" class="notice error-notice full">
+              <p v-for="(messages, field) in adminStartupValidationErrors" :key="field" class="small">{{ messages[0] }}</p>
+            </div>
+
+            <div class="button-grid full">
+              <button class="button primary" type="submit" :disabled="adminStartupListingsStore.saving">Approve</button>
+              <button class="button water" type="button" :disabled="adminStartupListingsStore.saving" @click="requestStartupListingInfo">Request info</button>
+              <button class="button secondary" type="button" :disabled="adminStartupListingsStore.saving" @click="rejectStartupListing">Reject</button>
+            </div>
+            <p v-if="adminStartupListingsStore.currentLoading" class="small full">Loading full listing detail.</p>
           </form>
         </div>
       </section>

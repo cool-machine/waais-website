@@ -109,9 +109,27 @@ describe('transitions', () => {
     expect(url).toContain('/api/admin/applications/12/approve')
     expect(init.method).toBe('POST')
     expect(JSON.parse(init.body)).toEqual({ review_notes: 'Approved.' })
-    expect(store.currentApplication).toEqual(approved)
+    expect(store.currentApplication).toBeNull()
     expect(store.list).toEqual([])
     expect(store.listMeta.total).toBe(0)
+  })
+
+  it('selects the next application after approving the current one from the active queue', async () => {
+    const nextApplication = { ...APPLICATION, id: 13, email: 'next@example.com' }
+    const approved = { ...APPLICATION, approval_status: 'approved' }
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: approved }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const store = useAdminMembershipApplicationsStore()
+    store.list = [APPLICATION, nextApplication]
+    store.listMeta.total = 2
+    store.selectApplication(APPLICATION)
+
+    await store.approve()
+
+    expect(store.list).toEqual([nextApplication])
+    expect(store.currentApplication).toEqual(nextApplication)
+    expect(store.listMeta.total).toBe(1)
   })
 
   it('sends required notes and the rejection email flag when rejecting', async () => {

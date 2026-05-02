@@ -79,6 +79,17 @@ const STARTUP = {
   content_status: 'pending_review',
 }
 
+const ADMIN_STARTUP = {
+  ...STARTUP,
+  owner: {
+    id: 44,
+    name: 'Grace Hopper',
+    email: 'grace@example.com',
+  },
+  website_url: 'https://autoflow.example',
+  linkedin_url: 'https://www.linkedin.com/company/autoflow',
+}
+
 async function mountAt(path) {
   const router = createRouter({
     history: createMemoryHistory(),
@@ -235,7 +246,68 @@ describe('member dashboard live state', () => {
     expect(approveRequest[1].method).toBe('POST')
     expect(approveRequest[1].credentials).toBe('include')
     expect(JSON.parse(approveRequest[1].body)).toEqual({ review_notes: null })
-    expect(wrapper.text()).toContain('Approved')
+    expect(wrapper.text()).toContain('No applications in this status.')
+    expect(wrapper.text()).toContain('Select an application.')
+  })
+
+  it('renders the admin startup review queue from the admin API', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.includes('/api/admin/startup-listings/7')) return Promise.resolve(jsonResponse({ data: ADMIN_STARTUP }))
+      if (url.includes('/api/admin/startup-listings')) {
+        return Promise.resolve(jsonResponse({
+          data: [ADMIN_STARTUP],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/startup-review')
+
+    expect(wrapper.text()).toContain('Review submitted startup listings.')
+    expect(wrapper.text()).toContain('AutoFlow AI')
+    expect(wrapper.text()).toContain('Workflow automation for B2B teams.')
+    expect(wrapper.text()).toContain('Grace Hopper')
+    expect(wrapper.text()).toContain('Approve')
+
+    const listRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/startup-listings?'))
+    expect(listRequest[1].credentials).toBe('include')
+  })
+
+  it('posts an approval transition from the selected admin startup listing', async () => {
+    const approved = { ...ADMIN_STARTUP, approval_status: 'approved', content_status: 'published' }
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.includes('/api/admin/startup-listings/7/approve')) return Promise.resolve(jsonResponse({ data: approved }))
+      if (url.includes('/api/admin/startup-listings/7')) return Promise.resolve(jsonResponse({ data: ADMIN_STARTUP }))
+      if (url.includes('/api/admin/startup-listings')) {
+        return Promise.resolve(jsonResponse({
+          data: [ADMIN_STARTUP],
+          current_page: 1,
+          last_page: 1,
+          per_page: 25,
+          total: 1,
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/startup-review')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    const approveRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/startup-listings/7/approve'))
+    expect(approveRequest[1].method).toBe('POST')
+    expect(approveRequest[1].credentials).toBe('include')
+    expect(JSON.parse(approveRequest[1].body)).toEqual({ review_notes: null })
+    expect(wrapper.text()).toContain('No startup listings in this status.')
+    expect(wrapper.text()).toContain('Select a startup listing.')
   })
 
   it('shows a sign-out action for authenticated users and clears app state after logout', async () => {

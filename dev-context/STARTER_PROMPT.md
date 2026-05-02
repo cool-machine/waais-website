@@ -33,7 +33,7 @@ Working rules (also documented in DEV_CONTEXT.md):
 - If a slice would need human visual or manual testing to verify, stop and ask the user before continuing.
 
 Likely next immediate step:
-Build **admin dashboard startup-listing review wiring**. The membership approvals queue + sign-out slice shipped on May 2, 2026 at 15:29 CEST and added `useAdminMembershipApplicationsStore`, live `/app/approvals` membership review actions, and mutually-exclusive sign-in/sign-out UI backed by `POST /api/logout`. The backend already exposes matching admin startup-listing review endpoints under `/api/admin/startup-listings`. Add a separate admin-surface startup review store and wire the next admin dashboard view or tab using the same queue/detail/transition shape. Preserve member/public stores and keep super-admin user management separate.
+Build **email-link application start** if non-Google applicants should be able to verify by email before the questionnaire opens. The admin startup-listing review slice shipped on May 2, 2026 at 15:46 CEST and added `useAdminStartupListingsStore` plus live `/app/startup-review` actions against `/api/admin/startup-listings`. If email-link applications are not the priority, the next admin dashboard surface can be user management, event management, public content, or announcements.
 ```
 
 ## Maintenance

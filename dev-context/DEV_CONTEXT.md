@@ -39,9 +39,10 @@ Project root: `/Users/gg1900/coding/waais-website`
 - Member dashboard profile/application status views at `/app/dashboard` and `/app/profile` consume `useAuthUserStore` plus `useMembershipApplicationStore` for live account, profile, and application status. Other member surfaces (`/app/my-events`, `/app/forum-feed`, future startup ownership views) remain queued.
 - Member dashboard startup ownership view at `/app/my-startups` consumes `frontend/src/stores/myStartups.js`, backed by authenticated member endpoints (`GET/POST/PATCH /api/startup-listings`). Approved members can submit new listings and update non-approved listings; approved listings render as not editable.
 - Admin dashboard membership approvals view at `/app/approvals` consumes `frontend/src/stores/adminMembershipApplications.js`, backed by authenticated admin endpoints (`GET /api/admin/applications`, `GET /api/admin/applications/{id}`, and approve/reject/request-info transitions). It is the first live admin review surface; startup listing review remains the next admin queue surface.
+- Admin dashboard startup-listing review view at `/app/startup-review` consumes `frontend/src/stores/adminStartupListings.js`, backed by authenticated admin endpoints (`GET /api/admin/startup-listings`, `GET /api/admin/startup-listings/{id}`, and approve/reject/request-info transitions). It mirrors the membership queue but stays separate from public/member startup stores.
 - Auth UI now has mutually exclusive states: signed-out users see "Sign in with Google" and disabled future "Sign in with email"; signed-in users see account context plus "Sign out". Backend `POST /api/logout` clears browser-session auth when present and the frontend clears authenticated stores after logout.
 - Pinia store at `frontend/src/stores/publicStartups.js` — `loadList`, `loadOne`, in-memory TTL cache so back-navigation between list and detail doesn't refetch. Convention for adding future stores (one per backend resource × access surface) is documented in `frontend/src/stores/README.md`.
-- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 88 specs across `pages/AppMockupPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/myStartups`, `stores/adminMembershipApplications`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
+- Vitest + @vue/test-utils + jsdom configured in `frontend/vitest.config.js`. Specs live next to source as `*.test.js`. `npm test` runs them. Current coverage: 98 specs across `pages/AppMockupPage`, `lib/api`, `stores/authUser`, `stores/membershipApplication`, `stores/myStartups`, `stores/adminMembershipApplications`, `stores/adminStartupListings`, `stores/publicStartups`, `stores/publicEvents`, `stores/publicPartners`, and `stores/publicHomepageCards`.
 - Build deployed to GitHub Pages via root-level `index.html`, `404.html`, `assets/`, `favicon.svg`, `icons.svg` copied from `frontend/dist`. Deploy steps live in `frontend/README.md`.
 
 ### Backend (live, validated locally)
@@ -72,12 +73,12 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No slice in progress. Last shipped slice: **admin dashboard membership approvals queue wiring + sign-out** on May 2, 2026 at 15:29 CEST. The `/app/approvals` admin view now lists membership applications from `/api/admin/applications`, loads application detail, and supports approve, request-more-info, and reject transitions through `useAdminMembershipApplicationsStore`. Signed-out users see sign-in choices; signed-in users see sign-out only, backed by `POST /api/logout`. Automated validation is clean: frontend `npm test` 88 passed, `npm run build` clean, `npm run test:routes` clean; backend `composer validate --strict` clean, `php artisan test` 139 passed / 612 assertions, and `php artisan migrate:fresh` clean. Manual browser smoke passed locally: George saw Ada Lovelace in the queue; sign-out was then simplified to the mutually-exclusive state and still needs one final visual click check after refresh.
+No slice in progress. Last shipped slice: **admin dashboard startup-listing review wiring** on May 2, 2026 at 15:46 CEST. The `/app/startup-review` admin view now lists startup listings from `/api/admin/startup-listings`, loads listing detail, and supports approve, request-more-info, and reject transitions through `useAdminStartupListingsStore`. After a listing leaves the active status filter, the queue clears the detail pane or selects the next item so approved/rejected/request-info records do not linger in the submitted review form. Automated validation is clean: frontend `npm test` 98 passed, `npm run build` clean, `npm run test:routes` clean; backend `composer validate --strict` clean, `php artisan test` 139 passed / 612 assertions, and `php artisan migrate:fresh` clean. Manual browser smoke passed locally: George saw and approved `AutoFlow AI`, then confirmed the approved record moved out of the submitted queue.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Admin dashboard startup-listing review wiring.** Extend the admin approvals queue pattern from membership applications to `/api/admin/startup-listings`, keeping it in a separate admin-surface store and preserving super-admin user management as its own later surface.
-2. **Email-link application start** if George wants non-Google applicants to verify by email before the questionnaire opens.
+1. **Email-link application start** if George wants non-Google applicants to verify by email before the questionnaire opens.
+2. **Next admin dashboard surface** — user management, event management, public content, or announcements.
 3. **Discourse SSO relay.** When Discourse is provisioned at `forum.whartonai.studio`.
 4. **Event reminder dispatch.** Scheduled job that sends a reminder email `reminder_days_before` each upcoming event.
 5. **Brand/logo asset replacement** when George provides it.
@@ -95,6 +96,17 @@ No slice in progress. Last shipped slice: **admin dashboard membership approvals
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 2, 2026 15:46 CEST — Admin dashboard startup-listing review wiring**
+- Did: added `frontend/src/stores/adminStartupListings.js`, backed by authenticated admin startup-listing endpoints (`GET /api/admin/startup-listings`, `GET /api/admin/startup-listings/{id}`, `POST approve`, `POST reject`, `POST request-info`) with list pagination metadata, selected detail loading, transition actions, validation-error state, and queue removal after terminal status changes
+- Did: added `/app/startup-review` as a live admin startup review surface. Approved admins can filter by status, select a listing, review owner/listing context, add review notes, approve, request more info, reject, and choose whether to send the optional rejection email
+- Did: kept this store separate from `usePublicStartupsStore` and `useMyStartupsStore`; startup public/member/admin projections remain isolated
+- Did: updated membership and startup admin queue stores so records that leave the active filter after approve/reject/request-info no longer remain open in the submitted review form; the detail pane clears or advances to the next item
+- Did: added focused store and component tests for queue loading, approve transition, and post-transition queue behavior. Frontend validation passed at `npm test` 98 specs, `npm run build`, and `npm run test:routes`
+- Did: required backend validation still passed: `composer validate --strict`, `php artisan test` 139 passed / 612 assertions, and `php artisan migrate:fresh`
+- Did: manually smoked `/app/startup-review` locally. George saw `AutoFlow AI`, approved it, then confirmed it moved out of the submitted queue
+- Left off at: ready for the next slice — email-link application start for non-Google applicants, or another admin dashboard surface
+- Watch out for: approved startup listings move to the `Approved` filter; they are not deleted. `php artisan migrate:fresh` resets local SQLite data, so reseed an approved admin and submitted startup if continuing manual browser checks
 
 **May 2, 2026 15:29 CEST — Admin dashboard membership approvals queue + sign-out**
 - Did: added `frontend/src/stores/adminMembershipApplications.js`, backed by authenticated admin membership endpoints (`GET /api/admin/applications`, `GET /api/admin/applications/{id}`, `POST approve`, `POST reject`, `POST request-info`) with list pagination metadata, selected detail loading, transition actions, validation-error state, and queue removal after terminal status changes
@@ -296,4 +308,4 @@ No slice in progress. Last shipped slice: **admin dashboard membership approvals
 
 ---
 
-*Last updated: May 2, 2026 15:29 CEST*
+*Last updated: May 2, 2026 15:46 CEST*
