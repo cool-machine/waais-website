@@ -20,15 +20,15 @@ const links = [
       <div class="topbar-inner">
         <RouterLink class="brand brand--logo" to="/">
           <img
-            class="brand-logo"
-            src="/brand/wac-uk-h2-white.png"
-            alt="Wharton Alumni Club United Kingdom"
-            width="725"
-            height="151"
+            class="brand-logo brand-logo--mark"
+            src="/brand/waais-mark.svg"
+            alt="Wharton Alumni AI Studio"
+            width="100"
+            height="100"
           />
           <span class="brand-text">
             <strong>Wharton Alumni AI Studio</strong>
-            <small>AI affinity group, WAC United Kingdom</small>
+            <small>AI affinity group, sanctioned by WAC United Kingdom</small>
           </span>
         </RouterLink>
 
@@ -52,7 +52,10 @@ const links = [
     <footer class="footer">
       <div>
         <strong>Wharton Alumni AI Studio</strong>
-        <p>Static Vue frontend scaffold. Backend, auth, CMS, and Discourse SSO come next.</p>
+        <p class="footer-affiliation">
+          An AI-focused affinity group within the Wharton Alumni Club United Kingdom,
+          built for the global Wharton alumni community.
+        </p>
       </div>
       <RouterLink to="/legal">Privacy, cookies, and GDPR</RouterLink>
     </footer>

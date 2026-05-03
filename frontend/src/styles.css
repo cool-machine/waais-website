@@ -85,18 +85,25 @@ textarea {
   font-weight: 800;
 }
 
-/* Wharton Alumni Club United Kingdom co-brand mark used as the temporary
-   site logo on top of dark surfaces (water-blue navbar, navy app sidebar).
-   White-on-transparent so the underlying surface color shows through. */
+/* WAAIS "AI" mark used as the site logo on top of dark surfaces
+   (water-blue navbar, navy app sidebar). White-on-transparent SVG so
+   the underlying surface color shows through. The mark is square, so
+   width follows height. */
 .brand-logo {
   display: block;
-  height: 40px;
-  width: auto;
+  height: 44px;
+  width: 44px;
   object-fit: contain;
 }
 
+.brand-logo--mark {
+  height: 44px;
+  width: 44px;
+}
+
 .brand-logo--vertical {
-  height: 64px;
+  height: 72px;
+  width: 72px;
   max-width: 100%;
 }
 
@@ -651,6 +658,14 @@ textarea:disabled {
   padding-top: 30px;
   padding-bottom: 30px;
   color: #cbd5e1;
+}
+
+.footer .footer-affiliation {
+  margin-top: 6px;
+  max-width: 56ch;
+  color: rgba(203, 213, 225, 0.78);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .app-shell {
