@@ -46,7 +46,7 @@ Start small and scale only after real usage:
 - Use the smallest PostgreSQL Flexible Server burstable SKU that supports the workload.
 - Keep storage modest; avoid geo-redundant add-ons unless needed.
 - Keep Discourse deferred because it adds another always-on compute resource.
-- Set Azure budgets/alerts at conservative thresholds, for example 50%, 75%, and 90% of monthly target.
+- Set Azure budgets/alerts at conservative thresholds, for example 50%, 75%, and 90% of monthly target. Status: live as of May 3, 2026 — subscription-level monthly budget `waais-monthly-grant-pace` at amount `167` (subscription currency) with five notifications (actual at 50/75/90/100%, forecasted at 100%) routed to `cool.lstm@gmail.com` and `george@whartonai.studio`. Spending limit is `Off` on the Sponsorship subscription, so the budget is alert-only.
 
 Before creating resources, check current prices in the Azure pricing calculator for **West Europe**. Pricing changes and grant currency conversion can move.
 
