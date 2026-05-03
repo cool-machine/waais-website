@@ -95,6 +95,8 @@ Production endpoint: `https://api.whartonai.studio/up` — returns HTTP 200. `/a
 
 Laravel honors the App Service load balancer's `X-Forwarded-Proto`/`X-Forwarded-Host`/`X-Forwarded-For` headers via `$middleware->trustProxies(at: '*', ...)` in `bootstrap/app.php`. Pagination URLs and `Request::isSecure()` correctly use `https://api.whartonai.studio`. `at: '*'` is safe because the container is only reachable through the platform LB; if Cloudflare is ever flipped to proxied mode for `api.whartonai.studio`, tighten the trusted-proxy list to Cloudflare's published ranges or `Request::ip()` will report the LB IP instead of the real client.
 
+The Laravel scheduler runs through the scheduled WebJob at `App_Data/jobs/triggered/waais-scheduler`. App Service's Kudu WebJobs host discovers `run.sh`, reads `settings.job`, and runs `php artisan schedule:run --no-interaction` every minute. Always On is enabled on the B1 plan so scheduled jobs are not idled out. WebJob logs are available through the App Service/Kudu WebJobs UI and App Service diagnostics.
+
 The first production migration ran on May 3, 2026 (16 migrations, batch 1, all Ran). The GitHub runner cannot reach PostgreSQL through the firewall (which allows only Azure services), and basic publishing-credentials auth is disabled on SCM/FTP, so subsequent migrations must be run from inside the App Service container via `az webapp ssh`. Because that command is interactive-only, drive it with `expect`:
 
 ```sh

@@ -1,6 +1,6 @@
 # WAAIS Azure Production Plan
 
-> Deployment/runbook draft for Wharton Alumni AI Studio and Research Center. This document describes the recommended production shape before any Azure resources are created. Keep secrets out of git.
+> Deployment/runbook for Wharton Alumni AI Studio and Research Center. This document describes the current production shape plus the remaining launch operations. Keep secrets out of git.
 
 ## Decisions So Far
 
@@ -16,11 +16,11 @@
 
 | Surface | Azure service | Proposed hostname | Notes |
 |---|---|---|---|
-| Frontend Vue app | Azure Static Web Apps, or keep GitHub Pages temporarily | `whartonai.studio` | Static Web Apps gives Azure-native custom domain and SSL. GitHub Pages can remain a preview path until launch. |
+| Frontend Vue app | Azure Static Web Apps Free | `whartonai.studio` | Shipped. SWA managed TLS is bound to the apex custom hostname. GitHub Pages remains a preview path at `cool-machine.github.io/waais-website/`. |
 | Laravel API | Azure App Service for Linux | `api.whartonai.studio` | Managed app hosting avoids VM patching/PHP-FPM/nginx ownership. |
 | Database | Azure Database for PostgreSQL Flexible Server | `psql-waais-prod-neu.postgres.database.azure.com` | Deployed in **North Europe** because the West Europe restriction on this subscription is subscription-wide for Flexible Server (all editions blocked, not just `Standard_B1ms`). Burstable `Standard_B1ms`, PostgreSQL 16, 32 GiB storage with auto-grow, 7-day backup retention, geo-redundant backup disabled. Public network access `Enabled` with one firewall rule `AllowAllAzureServicesAndResourcesWithinAzureIps` (`0.0.0.0`–`0.0.0.0`); auth + TLS still required. Application database `waais_production` exists. Local dev/test stays SQLite. |
-| Email | Azure Communication Services Email over SMTP | `noreply@whartonai.studio` | Domain is reported approved. SMTP secrets stay in App Service settings. |
-| Scheduler | Azure App Service WebJob or cron-equivalent command runner | n/a | Must run `php artisan schedule:run` every minute. |
+| Email | Azure Communication Services Email over SMTP | `DoNotReply@b513a906-9280-42e3-9601-21e033722c36.azurecomm.net` now; `noreply@mail.whartonai.studio` later | Shipped with an Azure-managed sender domain. Custom-domain sender is optional follow-up polish. SMTP secrets stay in App Service settings. |
+| Scheduler | App Service scheduled WebJob | n/a | Deploys with the backend under `App_Data/jobs/triggered/waais-scheduler` and runs `php artisan schedule:run` every minute through Kudu. |
 | Discourse | Azure VM with official Docker install | `forum.whartonai.studio` | Defer until final stage. |
 
 Avoid running Laravel, PostgreSQL, and Discourse on one hand-managed VM for v1. A VM may look cheaper, but it shifts OS patching, TLS, backups, process supervision, database operations, security hardening, and scheduler reliability onto us. Use managed services for the main app; reserve VM complexity for Discourse.
@@ -48,7 +48,7 @@ Start small and scale only after real usage:
 - Keep Discourse deferred because it adds another always-on compute resource.
 - Set Azure budgets/alerts at conservative thresholds, for example 50%, 75%, and 90% of monthly target. Status: live as of May 3, 2026 — subscription-level monthly budget `waais-monthly-grant-pace` at amount `167` (subscription currency) with five notifications (actual at 50/75/90/100%, forecasted at 100%) routed to `cool.lstm@gmail.com` and `george@whartonai.studio`. Spending limit is `Off` on the Sponsorship subscription, so the budget is alert-only.
 
-Before creating resources, check current prices in the Azure pricing calculator for **West Europe**. Pricing changes and grant currency conversion can move.
+Before adding new paid resources, check current prices in the Azure pricing calculator for the target region. Pricing changes and grant currency conversion can move.
 
 ## Production Environment Variables
 
@@ -94,7 +94,7 @@ The frontend calls the API with browser credentials. Production custom domains m
 
 ### Google OAuth
 
-Production OAuth should be created under the organization Google for Nonprofits/admin account, not a personal testing account.
+Production OAuth is under the organization Google for Nonprofits/admin account, not a personal testing account.
 
 ```env
 GOOGLE_CLIENT_ID=...
@@ -108,6 +108,8 @@ Google Cloud console setup:
 - Authorized redirect URI: `https://api.whartonai.studio/auth/google/callback`.
 - OAuth consent screen should use the organization identity and production domain.
 
+Status: shipped on May 3, 2026. The production OAuth client lives under George's organization Workspace account, and `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` are set on `app-waais-api-prod-weu`.
+
 ### Email
 
 ```env
@@ -116,17 +118,19 @@ ACS_MAIL_HOST=smtp.azurecomm.net
 ACS_MAIL_PORT=587
 ACS_MAIL_USERNAME=...
 ACS_MAIL_PASSWORD=...
-MAIL_FROM_ADDRESS=noreply@whartonai.studio
+MAIL_FROM_ADDRESS=DoNotReply@b513a906-9280-42e3-9601-21e033722c36.azurecomm.net
 MAIL_FROM_NAME="${APP_NAME}"
 MAIL_EHLO_DOMAIN=whartonai.studio
 ```
 
-Azure Communication Services Email setup remains outside code:
+Azure Communication Services Email setup is live:
 
-- Confirm the sending domain is verified/approved.
-- Create or confirm SMTP credentials.
-- Store credentials as App Service settings.
-- Send one production smoke email to an admin before member launch.
+- Email Communication Service `emailcomms-waais-prod` hosts the Azure-managed domain `AzureManagedDomain`.
+- Communication Service `acs-waais-prod` is linked to that domain.
+- SMTP authentication uses the Entra app `acs-smtp-waais-prod`, scoped narrowly to the ACS resource.
+- `MAIL_MAILER`, `ACS_MAIL_*`, `MAIL_FROM_ADDRESS`, and `MAIL_FROM_NAME` are App Service settings on `app-waais-api-prod-weu`.
+- A production smoke email landed in `gvishiani@gmail.com`'s main Gmail inbox on May 3, 2026.
+- Custom-domain sender `mail.whartonai.studio` remains a non-blocking deliverability/brand follow-up.
 
 ### Discourse Placeholders
 
@@ -163,32 +167,32 @@ Scheduled commands:
 - `announcements:send-emails` hourly.
 - `events:send-reminders` daily at 09:00.
 
-Production must run:
+Production runs:
 
 ```sh
 php artisan schedule:run
 ```
 
-every minute. On Azure App Service, use a WebJob or equivalent scheduled runner. The App Service should have Always On enabled if the selected plan supports it; otherwise scheduled work can be unreliable.
+every minute through the scheduled WebJob at `backend/App_Data/jobs/triggered/waais-scheduler`. `settings.job` uses the NCRONTAB expression `0 * * * * *`, and `run.sh` changes into `/home/site/wwwroot` before running `php artisan schedule:run --no-interaction`. The App Service has Always On enabled on the B1 plan; keep that setting enabled or scheduled work can become unreliable.
 
 ## Deployment Steps
 
-First production deployment should follow this order. Steps 1–4 (database half) are already done. The remaining work is the rest of the App Service application settings, the deploy pipeline, the first migration, and custom domains.
+First production deployment follows this order. Steps 1–14 are done; final smoke checks remain after the scheduler deploy is observed.
 
 1. Create resource group in West Europe. (`rg-waais-prod-weu` — done.)
 2. Create PostgreSQL Flexible Server. (`psql-waais-prod-neu` in North Europe — done. Public access `Enabled` with `AllowAllAzureServicesAndResourcesWithinAzureIps` firewall rule. Application database `waais_production` created.)
 3. Create Linux App Service for Laravel backend. (`asp-waais-prod-weu-b1` plan + `app-waais-api-prod-weu` web app — done.)
-4. Configure backend App Service environment variables. DB block done: `DB_CONNECTION=pgsql`, `DB_HOST`, `DB_PORT=5432`, `DB_DATABASE=waais_production`, `DB_USERNAME=waaisadmin`, `DB_PASSWORD` (rotated), `DB_SSLMODE=require`. Core Laravel block done: `APP_NAME=WAAIS`, `APP_ENV=production`, `APP_KEY=base64:…` (32-byte random generated directly into App Service settings, never stored elsewhere), `APP_DEBUG=false`, `APP_URL=https://api.whartonai.studio`, `FRONTEND_URL=https://whartonai.studio`, `LOG_CHANNEL=stack`, `LOG_LEVEL=info`, `SESSION_DRIVER=database`, `SESSION_DOMAIN=.whartonai.studio`, `SESSION_SECURE_COOKIE=true`, `SANCTUM_STATEFUL_DOMAINS=whartonai.studio,api.whartonai.studio`, `FRONTEND_CORS_ORIGINS=https://whartonai.studio`. Remaining blocks: Google OAuth (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`) and ACS Email (`MAIL_MAILER`, `ACS_MAIL_HOST`, `ACS_MAIL_PORT`, `ACS_MAIL_USERNAME`, `ACS_MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`, `MAIL_EHLO_DOMAIN`).
+4. Configure backend App Service environment variables. Done: DB block (`DB_CONNECTION=pgsql`, `DB_HOST`, `DB_PORT=5432`, `DB_DATABASE=waais_production`, `DB_USERNAME=waaisadmin`, `DB_PASSWORD` rotated, `DB_SSLMODE=require`), Laravel core block (`APP_NAME=WAAIS`, `APP_ENV=production`, `APP_KEY=base64:…`, `APP_DEBUG=false`, `APP_URL=https://api.whartonai.studio`, `FRONTEND_URL=https://whartonai.studio`, `LOG_CHANNEL=stack`, `LOG_LEVEL=info`, `SESSION_DRIVER=database`, `SESSION_DOMAIN=.whartonai.studio`, `SESSION_SECURE_COOKIE=true`, `SANCTUM_STATEFUL_DOMAINS=whartonai.studio,api.whartonai.studio`, `FRONTEND_CORS_ORIGINS=https://whartonai.studio`), Google OAuth block, and ACS Email block.
 5. Deploy backend code. Done — automated via `.github/workflows/deploy-backend.yml`. AAD app `gh-waais-deploy` (appId `47ab24d1-5d10-477e-b493-c29728910f3d`, sp `76135382-a0fe-4a3d-a939-0df6f7c5f8b1`) holds Contributor narrowly on the App Service; federated credential `github-cool-machine-waais-website-main` trusts `repo:cool-machine/waais-website:ref:refs/heads/main`. First deploy ran green on May 3, 2026 (run `25277933567`); `https://app-waais-api-prod-weu.azurewebsites.net/up` returns HTTP 200.
 6. Run `composer install --no-dev --optimize-autoloader`. Done — runs in the GitHub Actions workflow.
 7. Run `php artisan migrate --force`. Done on May 3, 2026 — 16 migrations applied cleanly in batch 1 against `waais_production`. Subsequent migrations must run inside the App Service container because the GitHub runner can't reach PostgreSQL through the firewall (allows only Azure services) and Kudu's `/api/command` endpoint runs in the Kudu sidecar without PHP. The `az webapp ssh` command is interactive-only on Linux App Service; drive it non-interactively with `expect`. Output of the first run is in `/home/LogFiles/first-prod-migrate.log` on the App Service.
 8. Run `php artisan config:cache` and `php artisan route:cache` if compatible with the deployed environment. Done — `backend/startup.sh` runs `config:cache`, `route:cache`, `view:cache`, and `storage:link` on every container boot. App Service startup command points to `/home/site/wwwroot/startup.sh`. The same script also copies `backend/nginx-default.conf` over `/etc/nginx/sites-available/default` so requests are routed through `public/`. The deploy zip includes `mkdir -p storage/framework/{cache/data,sessions,views,testing}` + `bootstrap/cache` so the Laravel view compiler has writable directories — without this step the first deploy returned HTTP 500.
 9. Configure `api.whartonai.studio` custom domain and TLS. Done on May 3, 2026. DNS lives at Cloudflare; records added are CNAME `api → app-waais-api-prod-weu.azurewebsites.net.` (proxy disabled / DNS only) and TXT `asuid.api → AC7D220F99290650452AB5078CFAD6C8D45A44442DF50B8FBB66790CA6CAC200`. Custom domain bound via `az webapp config hostname add`. App Service Managed Certificate created via `az webapp config ssl create --hostname api.whartonai.studio` (issuer GeoTrust TLS RSA CA G1, thumbprint `20695ED28B5892D01E2E449AC28472F26CD10A24`, valid May 3 → Nov 3, 2026, auto-renewing) and bound via `az webapp config ssl bind --ssl-type SNI`. `https://api.whartonai.studio/up` returns HTTP 200 and HTTP requests redirect 301 to HTTPS.
-10. Create production Google OAuth client and update App Service settings.
-11. Configure ACS Email SMTP settings and send a smoke email.
-12. Configure scheduler runner for `php artisan schedule:run`.
-13. Deploy frontend with `VITE_API_BASE_URL=https://api.whartonai.studio`.
-14. Configure `whartonai.studio` custom domain and TLS.
+10. Create production Google OAuth client and update App Service settings. Done on May 3, 2026; end-to-end Google sign-in works and user #1 `gvishiani@gmail.com` is promoted to super_admin.
+11. Configure ACS Email SMTP settings and send a smoke email. Done on May 3, 2026; Azure-managed sender delivers to inbox.
+12. Configure scheduler runner for `php artisan schedule:run`. Done in code via the scheduled WebJob at `backend/App_Data/jobs/triggered/waais-scheduler`; deploy to production by merging this slice to `main` and watching the backend workflow.
+13. Deploy frontend with `VITE_API_BASE_URL=https://api.whartonai.studio`. Done via `.github/workflows/deploy-frontend.yml`.
+14. Configure `whartonai.studio` custom domain and TLS. Done on May 3, 2026 via Azure Static Web Apps managed TLS.
 15. Run production smoke checks.
 
 ## Production Smoke Checks
@@ -277,12 +281,10 @@ Notification checks:
 
 ## Open Deployment Questions
 
-- Final frontend hosting: Azure Static Web Apps vs GitHub Pages for first launch.
-- Exact Azure subscription/resource group naming.
-- Exact App Service plan/SKU after checking West Europe pricing.
-- Exact PostgreSQL Flexible Server SKU/storage/backup retention.
 - Whether to add staging after initial launch.
 - Final privacy contact email, for example `privacy@whartonai.studio`.
+- Whether to migrate PostgreSQL back to West Europe if the subscription-wide Flexible Server restriction is lifted and the operational benefit justifies a maintenance window.
+- Whether to replace the Azure-managed ACS sender with `mail.whartonai.studio` before a larger member launch.
 
 ## References
 
