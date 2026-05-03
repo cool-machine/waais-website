@@ -126,7 +126,7 @@ Reasoning:
 - Laravel already supports SMTP through Symfony Mailer, so no provider-specific package is required for the current notification flow.
 - Local development remains provider-independent with `MAIL_MAILER=log`.
 
-Production environment variables (current shipped configuration uses the Azure-managed sender; the custom `mail.whartonai.studio` sender is a deferred deliverability/brand follow-up):
+Production environment variables:
 
 ```env
 MAIL_MAILER=azure_communication_services
@@ -134,18 +134,20 @@ ACS_MAIL_HOST=smtp.azurecomm.net
 ACS_MAIL_PORT=587
 ACS_MAIL_USERNAME=acs-waais-prod.<entra-app-id>.<entra-tenant-id>
 ACS_MAIL_PASSWORD=<entra-app-client-secret>
-MAIL_FROM_ADDRESS=DoNotReply@<azure-managed-subdomain>.azurecomm.net
+MAIL_FROM_ADDRESS=noreply@mail.whartonai.studio
 MAIL_FROM_NAME="${APP_NAME}"
 ```
 
 Operational setup completed for production:
 
-- Email Communication Service `emailcomms-waais-prod` hosts the Azure-managed sender domain.
-- Communication Service `acs-waais-prod` is linked to that domain.
+- Email Communication Service `emailcomms-waais-prod` hosts the customer-managed sender domain `mail.whartonai.studio` (Domain, SPF, DKIM1, DKIM2 all `Verified` on May 3, 2026) alongside the original `AzureManagedDomain` (kept linked for rollback safety).
+- Communication Service `acs-waais-prod` has both domains in `linkedDomains`.
+- Sender username `noreply` (display name `WAAIS`) is registered on the custom domain. Customer-managed domains only auto-provision `DoNotReply`; any other sender must be created via `az communication email domain sender-username create` BEFORE the first send, otherwise ACS returns `550 5.3.5 Email sender's username is invalid`.
 - SMTP authentication uses the Entra app `acs-smtp-waais-prod` (Contributor on the ACS resource); the 2-year client secret rotation is calendared for early Q1 2028.
 - All `MAIL_*` and `ACS_MAIL_*` settings live in App Service application settings, never in git.
+- The subdomain SPF (`include:spf.protection.outlook.com`) is intentionally separate from the apex SPF (`include:_spf.google.com` for Google Workspace mailboxes on @whartonai.studio) — recipients evaluate SPF per envelope-from domain, so splitting them is correct, not redundant.
 
-Custom-domain sender follow-up (deferred): provision and verify `mail.whartonai.studio` via `az communication email domain create --domain-management CustomerManaged`, add SPF/DKIM/MX records to Cloudflare, link the new domain into `acs-waais-prod.linkedDomains`, then flip `MAIL_FROM_ADDRESS` on App Service. No code change required because the from-address is env-driven.
+Optional follow-ups: drop `AzureManagedDomain` from `acs-waais-prod.linkedDomains` after ~1 week of stable delivery on the custom-domain sender; add a `_dmarc.mail.whartonai.studio` TXT record starting at `v=DMARC1; p=none; rua=mailto:postmaster@whartonai.studio` (monitor mode) and graduating to `p=quarantine`/`p=reject` once aggregate reports look healthy.
 
 References:
 
