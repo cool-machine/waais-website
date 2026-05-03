@@ -124,6 +124,10 @@ No code slice in progress. Azure production setup has continued: resource group,
 - Local dev/test stays on SQLite. Production target is Postgres on Azure. Don't introduce Postgres-only or MySQL-only SQL in migrations or queries.
 - If a slice would need human visual or manual testing to verify, stop and tell the user before continuing.
 
+## Operational Cadence (production)
+
+The recurring security/maintenance schedule for the live system — daily monitoring, weekly cost/log review, monthly dependency and certificate checks, quarterly secret rotations and backup-restore tests, annual region/SKU/legal reviews, plus on-change tasks — lives in `AZURE_PRODUCTION.md` under "Security & Maintenance Cadence." Update that file whenever the cadence changes. Do not duplicate the schedule here.
+
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.

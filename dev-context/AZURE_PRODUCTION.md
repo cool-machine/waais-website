@@ -216,6 +216,65 @@ Notification checks:
 - `announcements:send-emails` can run without error.
 - `events:send-reminders` can run without error.
 
+## Security & Maintenance Cadence
+
+> Recurring tasks that keep the production system safe and compliant. Each item has an owner column once George designates owners; until then, all owners are George. "Action" means an actual hands-on task, not just observing a green dashboard.
+
+### Daily (automated; review only if alerted)
+
+- Azure Service Health alerts for `westeurope` and `northeurope` Flexible Server, App Service, and Static Web Apps. Configure alert email to George on first deploy.
+- Azure Monitor / App Service alerts for HTTP 5xx error rate, response time p95, and CPU/memory pressure on `app-waais-api-prod-weu` and `psql-waais-prod-neu`.
+- Laravel queued/scheduled command failures: surface via `LOG_CHANNEL=stack` to App Service log stream; alert if `events:send-reminders` or `announcements:send-emails` errors.
+
+### Weekly
+
+- Skim Azure Cost Management against the EUR 1,700/year (roughly USD 167/month) grant cap. Investigate any week with month-to-date trending above pace.
+- Skim Laravel application logs for unhandled exceptions, repeated 5xx, or auth/Sanctum errors. Open issues for any pattern.
+- Confirm scheduled jobs ran: there should be daily `events:send-reminders` rows in `event_reminder_deliveries` and hourly `announcements:send-emails` retry attempts as expected.
+- Review the admin approvals queue (`/app/approvals`) and startup-listing review queue (`/app/startup-review`); pending applications should not languish.
+
+### Monthly
+
+- Apply Composer security updates: `composer update --with-dependencies` against the backend, then run `composer validate --strict`, `php artisan test`, and `php artisan migrate:fresh` locally before deploying.
+- Apply npm security updates: `npm audit` and `npm update` in `frontend/`, then `npm test`, `npm run build`, and `npm run test:routes`.
+- Patch PHP runtime version on App Service if Microsoft has issued a new 8.3.x. App Service surfaces this in the runtime stack settings.
+- Review Sanctum personal access tokens table for stale entries; revoke any that were issued for one-off scripts or testing.
+- Review the application audit log for any unexpected role transitions, content publish/hide actions, or admin operations.
+- Verify Azure backup retention on `psql-waais-prod-neu`: 7-day point-in-time backups should be present and recent.
+- Verify App Service managed TLS certificate for `api.whartonai.studio` is not within 30 days of expiry. App Service auto-renews, but a stuck renewal is worth catching before the cert expires.
+- Verify Static Web Apps managed TLS certificate for `whartonai.studio` is not within 30 days of expiry. Same reasoning.
+- Review Azure RBAC on the subscription and `rg-waais-prod-weu`: ensure only the `g1900@whartonaistudio.onmicrosoft.com` organization account (and any explicitly-approved co-admins) have Owner/Contributor access.
+
+### Quarterly
+
+- Rotate the PostgreSQL admin password: `az postgres flexible-server update --admin-password <new>` and `az webapp config appsettings set --settings DB_PASSWORD=<new>` in one shell session, never echoing the value. Confirm the App Service can still reach the database after rotation.
+- Rotate ACS Email SMTP credentials. Update `ACS_MAIL_USERNAME` / `ACS_MAIL_PASSWORD` in App Service settings. Send a test email afterward.
+- Rotate `DISCOURSE_CONNECT_SECRET` once Discourse is deployed. Update both Laravel and Discourse in lockstep so SSO never breaks.
+- Test database restore: do a point-in-time-restore to a throwaway server name in the same region, run `\dt` to verify schema and a row count on `users`, then delete the restore. This proves the backups are usable.
+- Review the Google OAuth client: confirm authorized origins and redirect URIs still match production hostnames; remove any test/dev origins that crept in.
+- Review long-suspended or never-approved user records; decide whether to delete per the privacy policy retention approach.
+- Test the GDPR data-rights request flow end to end: an internal test request should produce export and deletion results within the documented turnaround.
+
+### Annually (or on major Laravel/PHP/Vue release)
+
+- Audit production secrets inventory: every App Service application setting documented above plus any added later. Confirm none have leaked into git history (`git log -p -- backend/.env` should return nothing).
+- Re-evaluate Azure region strategy: the West Europe Flexible Server restriction may have lifted. Run `az postgres flexible-server list-skus --location westeurope` and check `supportedServerEditions`. If lifted and migration is desirable, plan a maintenance window — but only if the operational benefit clears the migration cost.
+- Re-evaluate Azure App Service plan tier (currently B1) and PostgreSQL SKU (currently `Standard_B1ms`). Right-size based on actual CPU/memory/IOPS metrics, not headroom anxiety.
+- Right-size PostgreSQL storage. Auto-grow is enabled, so over-provisioning is unlikely, but check actual usage.
+- Plan PHP minor/major version bump (e.g., 8.3 → 8.4) once Laravel and the Composer lockfile support it cleanly. Update `composer.json` platform pin in the same slice.
+- Plan Laravel and Vue minor/major version bumps. Test full coverage before deploying.
+- Counsel review of `/legal` privacy/cookie/data-rights copy. Update the privacy acknowledgement version string only if substantive changes warrant re-acknowledgement.
+- Confirm the Azure non-profit grant is still active and the EUR 1,700/year balance is intact. Renew Wharton Alumni AI Studio and Research Center organizational records as needed.
+
+### On-change (event-driven, not time-based)
+
+- Whenever the App Service plan tier or scale unit changes, refresh the firewall posture. Today's `AllowAllAzureServicesAndResourcesWithinAzureIps` rule survives plan changes, but a future move to Private Endpoint requires removing that rule and provisioning the VNet/Endpoint plumbing.
+- Whenever a new admin or super-admin is added, confirm the audit log row landed (`role.promote_admin` or `role.promote_super_admin`) and that there are still at most three super-admins per the product rules.
+- Whenever a new processor/vendor is added (new email provider, new analytics, new file store, etc.), update `PRIVACY_READINESS.md` and the `/legal` Privacy Policy to reflect the change before going live.
+- Whenever a secret may have been exposed (laptop loss, accidental git commit, screen share leak), rotate that specific secret immediately and audit the App Service settings change history.
+- Whenever Discourse goes live, finish the Discourse SSO admin/group sync configuration in lockstep with Laravel's relay.
+- Whenever a member submits a GDPR request, log it, action it within the policy's stated turnaround, and capture the resolution in the audit trail.
+
 ## Open Deployment Questions
 
 - Final frontend hosting: Azure Static Web Apps vs GitHub Pages for first launch.
