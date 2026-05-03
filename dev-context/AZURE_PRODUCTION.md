@@ -19,7 +19,7 @@
 | Frontend Vue app | Azure Static Web Apps Free | `whartonai.studio` | Shipped. SWA managed TLS is bound to the apex custom hostname. GitHub Pages remains a preview path at `cool-machine.github.io/waais-website/`. |
 | Laravel API | Azure App Service for Linux | `api.whartonai.studio` | Managed app hosting avoids VM patching/PHP-FPM/nginx ownership. |
 | Database | Azure Database for PostgreSQL Flexible Server | `psql-waais-prod-neu.postgres.database.azure.com` | Deployed in **North Europe** because the West Europe restriction on this subscription is subscription-wide for Flexible Server (all editions blocked, not just `Standard_B1ms`). Burstable `Standard_B1ms`, PostgreSQL 16, 32 GiB storage with auto-grow, 7-day backup retention, geo-redundant backup disabled. Public network access `Enabled` with one firewall rule `AllowAllAzureServicesAndResourcesWithinAzureIps` (`0.0.0.0`–`0.0.0.0`); auth + TLS still required. Application database `waais_production` exists. Local dev/test stays SQLite. |
-| Email | Azure Communication Services Email over SMTP | `DoNotReply@b513a906-9280-42e3-9601-21e033722c36.azurecomm.net` now; `noreply@mail.whartonai.studio` later | Shipped with an Azure-managed sender domain. Custom-domain sender is optional follow-up polish. SMTP secrets stay in App Service settings. |
+| Email | Azure Communication Services Email over SMTP | `noreply@mail.whartonai.studio` | Shipped with a custom-domain sender (`mail.whartonai.studio`, customer-managed, all four Azure verifications green). The original Azure-managed sender remains linked to `acs-waais-prod` for rollback safety. SMTP secrets stay in App Service settings. |
 | Scheduler | App Service scheduled WebJob | n/a | Shipped. Deploys with the backend under `App_Data/jobs/triggered/waais-scheduler` and runs `php artisan schedule:run` every minute through Kudu. App Service site config has `webJobsEnabled=true`. |
 | Discourse | Azure VM with official Docker install | `forum.whartonai.studio` | Defer until final stage. |
 
@@ -116,21 +116,22 @@ Status: shipped on May 3, 2026. The production OAuth client lives under George's
 MAIL_MAILER=azure_communication_services
 ACS_MAIL_HOST=smtp.azurecomm.net
 ACS_MAIL_PORT=587
-ACS_MAIL_USERNAME=...
-ACS_MAIL_PASSWORD=...
-MAIL_FROM_ADDRESS=DoNotReply@b513a906-9280-42e3-9601-21e033722c36.azurecomm.net
+ACS_MAIL_USERNAME=acs-waais-prod.<entra-app-id>.<entra-tenant-id>
+ACS_MAIL_PASSWORD=<entra-app-client-secret>
+MAIL_FROM_ADDRESS=noreply@mail.whartonai.studio
 MAIL_FROM_NAME="${APP_NAME}"
-MAIL_EHLO_DOMAIN=whartonai.studio
 ```
 
-Azure Communication Services Email setup is live:
+Azure Communication Services Email setup is live with a custom-domain sender:
 
-- Email Communication Service `emailcomms-waais-prod` hosts the Azure-managed domain `AzureManagedDomain`.
-- Communication Service `acs-waais-prod` is linked to that domain.
+- Email Communication Service `emailcomms-waais-prod` hosts both the original `AzureManagedDomain` and the customer-managed domain `mail.whartonai.studio`.
+- The custom-managed domain is verified end-to-end on Azure: Domain ownership (TXT `ms-domain-verification=…`), SPF (TXT `v=spf1 include:spf.protection.outlook.com -all`), DKIM1 and DKIM2 (CNAMEs to `selector1-azurecomm-prod-net._domainkey.azurecomm.net` / `selector2-…`), all `Verified` on May 3, 2026. DMARC remains `NotStarted` because no DMARC record was emitted by ACS — adding `_dmarc.mail.whartonai.studio` is a deliverability-hardening follow-up, not a blocker.
+- Sender username `noreply` (display name `WAAIS`) is registered on the custom domain. Customer-managed domains only auto-provision `DoNotReply`; any other sender must be created via `az communication email domain sender-username create` BEFORE the first send, otherwise ACS returns `550 5.3.5 Email sender's username is invalid`.
+- Communication Service `acs-waais-prod` has both domain ARM IDs in `linkedDomains` so a rollback to the Azure-managed sender is one App Service appsettings flip + restart.
 - SMTP authentication uses the Entra app `acs-smtp-waais-prod`, scoped narrowly to the ACS resource.
-- `MAIL_MAILER`, `ACS_MAIL_*`, `MAIL_FROM_ADDRESS`, and `MAIL_FROM_NAME` are App Service settings on `app-waais-api-prod-weu`.
-- A production smoke email landed in `gvishiani@gmail.com`'s main Gmail inbox on May 3, 2026.
-- Custom-domain sender `mail.whartonai.studio` remains a non-blocking deliverability/brand follow-up.
+- `MAIL_MAILER`, `ACS_MAIL_*`, `MAIL_FROM_ADDRESS=noreply@mail.whartonai.studio`, and `MAIL_FROM_NAME='Wharton Alumni AI Studio'` are App Service settings on `app-waais-api-prod-weu`.
+- A production smoke email from `noreply@mail.whartonai.studio` landed in `gvishiani@gmail.com`'s main Gmail inbox at `2026-05-03T18:25:52Z`.
+- Optional follow-ups: drop `AzureManagedDomain` from `acs-waais-prod.linkedDomains` after ~1 week of stable delivery; add a `_dmarc.mail.whartonai.studio` TXT record starting at `p=none` and graduating to `p=quarantine`/`p=reject`.
 
 ### Discourse Placeholders
 
