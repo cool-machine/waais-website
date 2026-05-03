@@ -85,6 +85,18 @@ The local `.env`, `vendor/`, and SQLite database are ignored development artifac
 
 `composer.json` pins Composer's platform PHP to `8.3.0`. Keep that guard unless the production target changes; otherwise Composer on a newer local PHP can lock dependencies that require PHP 8.4+.
 
+## Production Deploy
+
+The backend deploys to Azure App Service `app-waais-api-prod-weu` (Linux PHP 8.3, West Europe) via `.github/workflows/deploy-backend.yml`. Triggers on pushes to `main` that touch `backend/**` or the workflow file, plus `workflow_dispatch`. Authentication is federated OIDC — Azure AD app `gh-waais-deploy` with a federated credential trusting the repository's `main` branch holds Contributor narrowly on the App Service. No secrets in GitHub.
+
+The container's startup command is `/home/site/wwwroot/startup.sh`, which copies `backend/nginx-default.conf` over `/etc/nginx/sites-available/default` (so nginx serves Laravel from `public/`), reloads nginx, and runs `php artisan config:cache`, `route:cache`, `view:cache`, `storage:link`. The deploy zip explicitly creates `storage/framework/{cache/data,sessions,views,testing}` and `bootstrap/cache` before zipping; without those directories Laravel's view compiler fails and every request returns 500.
+
+Production endpoint: `https://app-waais-api-prod-weu.azurewebsites.net/up` — returns HTTP 200 once deployed. Custom domain `api.whartonai.studio` not yet configured. Until it is, do not auth-smoke-test on the default `*.azurewebsites.net` host because `SESSION_DOMAIN=.whartonai.studio` will silently drop session cookies.
+
+The first production migration has not been run yet. The GitHub runner cannot reach PostgreSQL through the firewall (which allows only Azure services), so run from inside the App Service container: `az webapp ssh -c 'cd /home/site/wwwroot && php artisan migrate --force'`.
+
+Full Azure deployment plan, environment variable reference, and security/maintenance cadence live in `../dev-context/AZURE_PRODUCTION.md`.
+
 ## Production Email Provider
 
 Production email target: **Azure Communication Services Email over SMTP**.
