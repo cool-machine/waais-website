@@ -91,9 +91,21 @@ The backend deploys to Azure App Service `app-waais-api-prod-weu` (Linux PHP 8.3
 
 The container's startup command is `/home/site/wwwroot/startup.sh`, which copies `backend/nginx-default.conf` over `/etc/nginx/sites-available/default` (so nginx serves Laravel from `public/`), reloads nginx, and runs `php artisan config:cache`, `route:cache`, `view:cache`, `storage:link`. The deploy zip explicitly creates `storage/framework/{cache/data,sessions,views,testing}` and `bootstrap/cache` before zipping; without those directories Laravel's view compiler fails and every request returns 500.
 
-Production endpoint: `https://app-waais-api-prod-weu.azurewebsites.net/up` — returns HTTP 200 once deployed. Custom domain `api.whartonai.studio` not yet configured. Until it is, do not auth-smoke-test on the default `*.azurewebsites.net` host because `SESSION_DOMAIN=.whartonai.studio` will silently drop session cookies.
+Production endpoint: `https://app-waais-api-prod-weu.azurewebsites.net/up` — returns HTTP 200. `/api/public/events` and `/api/public/startup-listings` also return HTTP 200 with empty paginated envelopes. Custom domain `api.whartonai.studio` not yet configured. Until it is, do not auth-smoke-test on the default `*.azurewebsites.net` host because `SESSION_DOMAIN=.whartonai.studio` will silently drop session cookies.
 
-The first production migration has not been run yet. The GitHub runner cannot reach PostgreSQL through the firewall (which allows only Azure services), so run from inside the App Service container: `az webapp ssh -c 'cd /home/site/wwwroot && php artisan migrate --force'`.
+The first production migration ran on May 3, 2026 (16 migrations, batch 1, all Ran). The GitHub runner cannot reach PostgreSQL through the firewall (which allows only Azure services), and basic publishing-credentials auth is disabled on SCM/FTP, so subsequent migrations must be run from inside the App Service container via `az webapp ssh`. Because that command is interactive-only, drive it with `expect`:
+
+```sh
+expect <<'EOF'
+set timeout 240
+spawn az webapp ssh --resource-group rg-waais-prod-weu --name app-waais-api-prod-weu
+expect -re {root@[^#]+# $}
+send "cd /home/site/wwwroot && php artisan migrate --force; echo MIGRATE_EXIT=$?\r"
+expect -re {MIGRATE_EXIT=[0-9]+}
+send "exit\r"
+expect eof
+EOF
+```
 
 Full Azure deployment plan, environment variable reference, and security/maintenance cadence live in `../dev-context/AZURE_PRODUCTION.md`.
 
