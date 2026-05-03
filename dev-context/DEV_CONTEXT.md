@@ -110,17 +110,16 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No code slice in progress. The custom domain `api.whartonai.studio` is now bound to the App Service with App Service Managed Certificate (SNI, GeoTrust TLS RSA CA G1, valid May 3 – Nov 3, 2026, auto-renewing). DNS is on Cloudflare (NS `deborah.ns.cloudflare.com` / `fred.ns.cloudflare.com`); the records are CNAME `api → app-waais-api-prod-weu.azurewebsites.net` (proxy off / DNS only) and TXT `asuid.api → AC7D220F99290650452AB5078CFAD6C8D45A44442DF50B8FBB66790CA6CAC200`. `https://api.whartonai.studio/up`, `/api/public/events`, and `/api/public/startup-listings` all return HTTP 200; HTTP requests redirect to HTTPS with 301. The next slice is a small backend code change to teach Laravel to honor `X-Forwarded-Proto` from the App Service load balancer.
+No code slice in progress. Backend is fully wired for production: custom domain `api.whartonai.studio` bound with App Service Managed Certificate (SNI, GeoTrust TLS RSA CA G1, valid May 3 – Nov 3, 2026, auto-renewing); Cloudflare DNS records in place (CNAME proxy off + asuid TXT); Laravel TrustProxies middleware now honors the App Service load balancer's `X-Forwarded-Proto`/`X-Forwarded-Host` headers, so pagination URLs and `Request::isSecure()` correctly use `https://api.whartonai.studio`. Backend smoke checks all green over HTTPS. The next slice is the production frontend deploy + `whartonai.studio` custom domain.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Trust App Service load balancer in Laravel.** Add `$middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR | HEADER_X_FORWARDED_HOST | HEADER_X_FORWARDED_PORT | HEADER_X_FORWARDED_PROTO | HEADER_X_FORWARDED_AWS_ELB)` in `bootstrap/app.php`. Without it, Laravel sees the loopback HTTP request from the LB and emits `http://api.whartonai.studio/...` in pagination URLs even though the client used HTTPS. App Service's HTTPS-only redirect masks the wrongness for browsers, but the JSON payload still misleads any client that reads `links.*.url` literally. `at: '*'` is safe because the container is only reachable via the App Service load balancer; direct port 80/443 access to the worker isn't possible. Tests can assert `Request::isSecure()` after applying the middleware.
-2. **Frontend production deploy.** Wire `swa-waais-prod-weu` to the GitHub repo (or push the static build directly), set `VITE_API_BASE_URL=https://api.whartonai.studio`, configure custom domain + TLS for `whartonai.studio`.
-3. **Production Google OAuth client + `GOOGLE_*` settings.** Create the OAuth client under the organization Google for Nonprofits/admin account; set authorized origins/redirect URIs to the production domains; populate `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` on the App Service.
-4. **ACS Email setup + `MAIL_*` / `ACS_MAIL_*` settings.** Verify the sending domain in Azure Communication Services, create SMTP credentials backed by a Microsoft Entra application, populate App Service settings, send a smoke email.
-5. **Scheduler runner for `php artisan schedule:run`.** Wire up a WebJob (or `cron` via App Service startup) so `events:send-reminders` and `announcements:send-emails` actually fire in production.
-6. **Brand/logo asset replacement** when George provides it.
-7. **Forum/Discourse final stage.** Discourse SSO is implemented, but forum install/feed wiring waits until the final stage.
+1. **Frontend production deploy.** Wire `swa-waais-prod-weu` to the GitHub repo (or push the static build directly), set `VITE_API_BASE_URL=https://api.whartonai.studio`, configure custom domain + TLS for `whartonai.studio`.
+2. **Production Google OAuth client + `GOOGLE_*` settings.** Create the OAuth client under the organization Google for Nonprofits/admin account; set authorized origins/redirect URIs to the production domains; populate `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` on the App Service.
+3. **ACS Email setup + `MAIL_*` / `ACS_MAIL_*` settings.** Verify the sending domain in Azure Communication Services, create SMTP credentials backed by a Microsoft Entra application, populate App Service settings, send a smoke email.
+4. **Scheduler runner for `php artisan schedule:run`.** Wire up a WebJob (or `cron` via App Service startup) so `events:send-reminders` and `announcements:send-emails` actually fire in production.
+5. **Brand/logo asset replacement** when George provides it.
+6. **Forum/Discourse final stage.** Discourse SSO is implemented, but forum install/feed wiring waits until the final stage.
 
 Optional follow-ups not in the critical path:
 
@@ -142,6 +141,14 @@ The recurring security/maintenance schedule for the live system — daily monito
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 3, 2026 — Trust App Service load balancer in Laravel (shipped)**
+- Did: added `$middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR | HEADER_X_FORWARDED_HOST | HEADER_X_FORWARDED_PORT | HEADER_X_FORWARDED_PROTO | HEADER_X_FORWARDED_AWS_ELB)` to `backend/bootstrap/app.php`. `at: '*'` is safe because the container is only reachable through the App Service load balancer; direct port 80/443 access to the worker isn't possible.
+- Did: added `tests/Feature/TrustProxiesTest.php` with two cases — (1) `X-Forwarded-Proto: https` + `X-Forwarded-Host: api.whartonai.studio` causes pagination URLs to use `https://api.whartonai.studio`, (2) absent forwarded headers fall back to the request scheme. Both pass.
+- Did: validated locally — `composer validate --strict` clean, `php artisan test` 187 passed / 822 assertions, `php artisan migrate:fresh` clean.
+- Did: shipped via the GitHub Actions OIDC pipeline (run `25279219627` succeeded). Smoke-tested production: `https://api.whartonai.studio/up` HTTP 200, `/api/public/events` HTTP 200 with `first_page_url` = `https://api.whartonai.studio/api/public/events?page=1`, all `links[*].url` values now `https://`. The previous slice's caveat about scheme is resolved.
+- Left off at: next slice is the production frontend deploy — wire `swa-waais-prod-weu` to GitHub, set `VITE_API_BASE_URL=https://api.whartonai.studio`, configure `whartonai.studio` custom domain and TLS.
+- Watch out for: trusting `*` is correct only as long as the App Service container stays sealed behind the platform LB. If we ever flip Cloudflare to proxied for `api.whartonai.studio` (the optional follow-up in section 3), the trusted-proxy list must be tightened to Cloudflare's published IP ranges, otherwise the LB IP is treated as the client and `Request::ip()` will lie. The TrustProxiesTest stays useful in either world.
 
 **May 3, 2026 — Custom domain + TLS for api.whartonai.studio (shipped)**
 - Did: pulled `customDomainVerificationId` from `az webapp show` and confirmed `whartonai.studio` is on Cloudflare DNS (NS `deborah.ns.cloudflare.com` / `fred.ns.cloudflare.com`; apex is currently CF-proxied). Asked George to add two records: CNAME `api` → `app-waais-api-prod-weu.azurewebsites.net.` (proxy OFF / DNS only / grey cloud) and TXT `asuid.api` → the verification ID. Both propagated within seconds; verified through Cloudflare 1.1.1.1 and Google 8.8.8.8 resolvers.

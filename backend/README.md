@@ -53,14 +53,14 @@ php artisan migrate
 php artisan test
 ```
 
-Validation was completed locally on May 2, 2026 after the legal/privacy readiness slice:
+Validation was completed locally on May 3, 2026 after the TrustProxies slice:
 
 ```text
 PHP 8.5.5
 Composer 2.9.7
 composer install
 composer validate --strict
-php artisan test       # last verified: 185 tests, 815 assertions
+php artisan test       # last verified: 187 tests, 822 assertions
 php artisan migrate:fresh
 ```
 
@@ -93,7 +93,7 @@ The container's startup command is `/home/site/wwwroot/startup.sh`, which copies
 
 Production endpoint: `https://api.whartonai.studio/up` — returns HTTP 200. `/api/public/events` and `/api/public/startup-listings` also return HTTP 200 with empty paginated envelopes. Custom domain bound to the App Service via App Service Managed Certificate (SNI, GeoTrust TLS RSA CA G1, valid through Nov 3, 2026). DNS is on Cloudflare with CNAME `api → app-waais-api-prod-weu.azurewebsites.net` (proxy disabled / DNS only) and TXT `asuid.api`. HTTP requests redirect 301 to HTTPS.
 
-Pagination URLs in JSON responses currently emit `http://api.whartonai.studio/...` because Laravel's `TrustProxies` middleware isn't configured to honor the App Service load balancer's `X-Forwarded-Proto` header. Add `$middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR | HEADER_X_FORWARDED_HOST | HEADER_X_FORWARDED_PORT | HEADER_X_FORWARDED_PROTO | HEADER_X_FORWARDED_AWS_ELB)` in `bootstrap/app.php` to fix it. `at: '*'` is safe because the container is only reachable through the App Service load balancer.
+Laravel honors the App Service load balancer's `X-Forwarded-Proto`/`X-Forwarded-Host`/`X-Forwarded-For` headers via `$middleware->trustProxies(at: '*', ...)` in `bootstrap/app.php`. Pagination URLs and `Request::isSecure()` correctly use `https://api.whartonai.studio`. `at: '*'` is safe because the container is only reachable through the platform LB; if Cloudflare is ever flipped to proxied mode for `api.whartonai.studio`, tighten the trusted-proxy list to Cloudflare's published ranges or `Request::ip()` will report the LB IP instead of the real client.
 
 The first production migration ran on May 3, 2026 (16 migrations, batch 1, all Ran). The GitHub runner cannot reach PostgreSQL through the firewall (which allows only Azure services), and basic publishing-credentials auth is disabled on SCM/FTP, so subsequent migrations must be run from inside the App Service container via `az webapp ssh`. Because that command is interactive-only, drive it with `expect`:
 
