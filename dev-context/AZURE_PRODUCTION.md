@@ -18,7 +18,7 @@
 |---|---|---|---|
 | Frontend Vue app | Azure Static Web Apps, or keep GitHub Pages temporarily | `whartonai.studio` | Static Web Apps gives Azure-native custom domain and SSL. GitHub Pages can remain a preview path until launch. |
 | Laravel API | Azure App Service for Linux | `api.whartonai.studio` | Managed app hosting avoids VM patching/PHP-FPM/nginx ownership. |
-| Database | Azure Database for PostgreSQL Flexible Server | `psql-waais-prod-neu.postgres.database.azure.com` | Deployed in **North Europe** (West Europe was restricted for `Standard_B1ms` on this subscription). Burstable `Standard_B1ms`, PostgreSQL 16, 32 GiB storage with auto-grow, 7-day backup retention, geo-redundant backup disabled. Public network access currently `Disabled`. Local dev/test stays SQLite. |
+| Database | Azure Database for PostgreSQL Flexible Server | `psql-waais-prod-neu.postgres.database.azure.com` | Deployed in **North Europe** because the West Europe restriction on this subscription is subscription-wide for Flexible Server (all editions blocked, not just `Standard_B1ms`). Burstable `Standard_B1ms`, PostgreSQL 16, 32 GiB storage with auto-grow, 7-day backup retention, geo-redundant backup disabled. Public network access `Enabled` with one firewall rule `AllowAllAzureServicesAndResourcesWithinAzureIps` (`0.0.0.0`–`0.0.0.0`); auth + TLS still required. Application database `waais_production` exists. Local dev/test stays SQLite. |
 | Email | Azure Communication Services Email over SMTP | `noreply@whartonai.studio` | Domain is reported approved. SMTP secrets stay in App Service settings. |
 | Scheduler | Azure App Service WebJob or cron-equivalent command runner | n/a | Must run `php artisan schedule:run` every minute. |
 | Discourse | Azure VM with official Docker install | `forum.whartonai.studio` | Defer until final stage. |
@@ -173,13 +173,12 @@ every minute. On Azure App Service, use a WebJob or equivalent scheduled runner.
 
 ## Deployment Steps
 
-First production deployment should follow this order. Steps 1–3 are already done; step 2 was completed in North Europe rather than West Europe due to a regional restriction. Step 2a (database connectivity from the App Service) is the current open decision.
+First production deployment should follow this order. Steps 1–4 (database half) are already done. The remaining work is the rest of the App Service application settings, the deploy pipeline, the first migration, and custom domains.
 
 1. Create resource group in West Europe. (`rg-waais-prod-weu` — done.)
-2. Create PostgreSQL Flexible Server. (`psql-waais-prod-neu` in North Europe — done. Application database `waais_production` not yet created via `az postgres flexible-server db create`.)
-2a. Decide PostgreSQL connectivity from the App Service: Private Endpoint into a VNet shared with the App Service via Regional VNet Integration, or enabling public network access and adding firewall rules for the App Service outbound IPs / "Allow Azure services". Reset admin password (or move to Microsoft Entra auth + managed identity) and store in App Service settings or Key Vault, never in the repo.
+2. Create PostgreSQL Flexible Server. (`psql-waais-prod-neu` in North Europe — done. Public access `Enabled` with `AllowAllAzureServicesAndResourcesWithinAzureIps` firewall rule. Application database `waais_production` created.)
 3. Create Linux App Service for Laravel backend. (`asp-waais-prod-weu-b1` plan + `app-waais-api-prod-weu` web app — done.)
-4. Configure backend App Service environment variables.
+4. Configure backend App Service environment variables. (DB block done: `DB_CONNECTION=pgsql`, `DB_HOST`, `DB_PORT=5432`, `DB_DATABASE=waais_production`, `DB_USERNAME=waaisadmin`, `DB_PASSWORD` (rotated), `DB_SSLMODE=require`. Remaining: `APP_NAME`, `APP_ENV=production`, `APP_KEY` (generate with `php artisan key:generate --show`), `APP_DEBUG=false`, `APP_URL=https://api.whartonai.studio`, `FRONTEND_URL=https://whartonai.studio`, `LOG_CHANNEL=stack`, `LOG_LEVEL=info`, `SESSION_DRIVER=database`, `SESSION_DOMAIN=.whartonai.studio`, `SESSION_SECURE_COOKIE=true`, `SANCTUM_STATEFUL_DOMAINS=whartonai.studio,api.whartonai.studio`, plus Google OAuth and ACS Email blocks.)
 5. Deploy backend code.
 6. Run `composer install --no-dev --optimize-autoloader`.
 7. Run `php artisan migrate --force`.
