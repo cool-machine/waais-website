@@ -114,15 +114,19 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-No code slice in progress. Brand swap shipped: the public navbar (`PublicLayout.vue`) and the app/admin sidebar (`AppMockupPage.vue`) now render a WAAIS-native **"AI"** square mark (white-on-transparent SVG, redrawn from the Wharton Alumni AI Studio billboard mockup that George commissioned). The mark is a single square SVG used at both surfaces — `frontend/public/brand/waais-mark.svg` — sized 44×44 in the water-blue navbar and 72×72 in the navy app sidebar. The brand text next to it reads "Wharton Alumni AI Studio" with a small subtitle "AI affinity group, sanctioned by WAC United Kingdom" so the chapter relationship stays explicit at a glance, framed as sanctioning rather than identity (WAAIS is global; WAC UK is the sanctioning chapter). The public footer adds a one-liner ("An AI-focused affinity group within the Wharton Alumni Club United Kingdom, built for the global Wharton alumni community") for completeness. The old `wac-uk-h2-white.png` / `wac-uk-v-white.png` PNGs are removed from `frontend/public/brand/`.
+No code slice in progress. **Discourse self-host plan confirmed (Sweden Central, B2as_v2)** but provisioning has not started — see `## 3. Future` and the Sponsorship SKU Probe Appendix. The forum landing page (`frontend/src/pages/ForumPreviewPage.vue`) is a "Coming soon" placeholder; `frontend/src/data/forum.js` exposes industry/region taxonomy only (no fake topics). Brand swap shipped: the public navbar (`PublicLayout.vue`) and the app/admin sidebar (`AppMockupPage.vue`) now render a WAAIS-native **"AI"** square mark (white-on-transparent SVG, redrawn from the Wharton Alumni AI Studio billboard mockup that George commissioned). The mark is a single square SVG used at both surfaces — `frontend/public/brand/waais-mark.svg` — sized 44×44 in the water-blue navbar and 72×72 in the navy app sidebar. The brand text next to it reads "Wharton Alumni AI Studio" with a small subtitle "AI affinity group, sanctioned by WAC United Kingdom" so the chapter relationship stays explicit at a glance, framed as sanctioning rather than identity (WAAIS is global; WAC UK is the sanctioning chapter). The public footer adds a one-liner ("An AI-focused affinity group within the Wharton Alumni Club United Kingdom, built for the global Wharton alumni community") for completeness. The old `wac-uk-h2-white.png` / `wac-uk-v-white.png` PNGs are removed from `frontend/public/brand/`.
 
 Favicon shipped in the same slice. The favicon is generated two ways: (a) a clean SVG variant `frontend/public/favicon.svg` (navy panel + white "AI", path-based, perfect at any size), and (b) photographic PNG variants intelligently cropped from `assets/ai-studio-logo.png` (the AI-generated billboard photo George provided). The crop is a 420×420 square centered on the "AI" letters at panel coords (557, 724); panel content is then flattened — text mask isolated by brightness + low saturation, navy fill replaces any photographic noise (sky/tree/building bleed-through) — so the resulting square is solid navy with crisp white "AI" letters and a hand-drawn texture preserved on the letter edges (a deliberate nod to the source photo). Sizes shipped: `favicon-16.png`, `favicon-32.png`, `favicon-48.png`, `apple-touch-icon.png` (180), `android-chrome-192.png`, `android-chrome-512.png`, `og-icon-512.png`, plus a multi-size `favicon.ico` (16/32/48). `frontend/public/site.webmanifest` declares the PWA icons and theme color `#011f5b`. `frontend/index.html` is wired with the SVG, ICO, two PNG sizes, apple-touch-icon, manifest, and `theme-color` meta. The original 3.1 MB billboard photo `assets/ai-studio-logo.png` is preserved at the repo root as the canonical brand source for future re-cuts.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Forum/Discourse final stage.** Discourse SSO is implemented, but forum install/feed wiring waits until the final stage.
+> **Discourse next slice — self-host on `Standard_B2as_v2` in Sweden Central.** Decision was reversed on May 3, 2026 after a broader EU-region probe: the Sponsorship subscription's SKU lockout is region-scoped, not global. The first probe (West Europe + North Europe only) suggested only `Standard_D2s_v5` (~€88/mo) was provisionable, which made self-hosting unjustifiable vs CDCK Hosted Basic ($20/mo) and we briefly deferred. The second probe (`dev-context/probe-eu-regions.sh` — 4 SKUs × 12 EU/UK regions in parallel via `az vm create --validate`) found that `Standard_B2as_v2` (2 vCPU / 8 GB / AMD burstable / ~€38/mo) IS provisionable in five EU/EEA regions: **Sweden Central, Spain Central, Norway East, Poland Central, Switzerland North** (Switzerland is non-EEA but has GDPR adequacy; the other four are EEA). `Standard_B2s`, `Standard_B2ms`, and `Standard_DS1_v2` are restricted in all 12 regions tested. France Central and Germany West Central — which appeared "available" in the Azure portal's region picker — are restricted for THIS subscription on the SKUs we want; the portal-level view does not reflect Sponsorship-specific carve-outs. Net: B2as_v2 actually has 8 GB RAM (vs B2s's 4 GB), so it's a better Discourse target than the original — same 2 vCPU but 2× memory headroom for `./launcher rebuild app`. Total cost lands at ~€42/mo (VM + static IP + OS disk), still ~2× CDCK hosted but back inside the "reasonable for an EEA-sovereign forum" envelope. Plan: self-host Discourse on `Standard_B2as_v2` in **Sweden Central** (EEA, primary). The full per-region/per-SKU probe matrix is captured in the **Sponsorship SKU Probe Appendix** at the bottom of this file. The Laravel `DiscourseConnect` SSO controller is unchanged and ready.
+
+1. **Discourse self-host provisioning slice.** Provision `vm-waais-discourse-prod` (Standard_B2as_v2, Ubuntu 22.04 LTS, Sweden Central), 64 GB Premium SSD, static public IP, NSG rules for 22/80/443. Mount Azure Files for `/var/discourse/shared/standalone/uploads` so user uploads survive VM rebuilds. Reuse the existing PostgreSQL Flexible Server (`psql-waais-prod-neu` in North Europe — cross-region latency to Sweden Central is acceptable for forum reads/writes), create database `discourse` and role `discourse` with a fresh password stored only on the VM in `app.yml`. Outbound mail via the existing ACS sender `noreply@mail.whartonai.studio`. Install Discourse via the official `discourse_docker` repo (`./discourse-setup` interactive bootstrap → `./launcher rebuild app`). Bind `forum.whartonai.studio` (Cloudflare CNAME → VM static IP, DNS-only) with Let's Encrypt via Discourse's built-in certbot template. Wire `DiscourseConnect` SSO against `https://api.whartonai.studio` per the existing Laravel controller. Replace `frontend/src/pages/ForumPreviewPage.vue` (currently the "Coming soon" placeholder) with the real linked-feed component — or just redirect `/forum` → `forum.whartonai.studio` once members are flowing.
 
 Optional follow-ups not in the critical path:
+
+- **CDCK Hosted Discourse fallback.** If self-host provisioning hits another Sponsorship-subscription gotcha (storage SKU restrictions, Azure Files quota, etc.), CDCK Hosted Basic ($20/mo) is the no-ops fallback. SSO already works against either backend.
 
 - **WAAIS-specific brand polish from a designer.** The current "AI" square mark and favicon were redrawn in-house from George's billboard mockup. If/when Penn/Wharton's brand team or a designer produces a WAAIS-specific brand kit (refined wordmark, alternate aspect ratios, dedicated lockups), supersede `frontend/public/brand/waais-mark.svg` and the favicon set. The current mark is intentionally simple and easy to swap.
 - **OG/Twitter social preview card.** The favicon set ships an `og-icon-512.png` square but `og:image` typically wants 1200×630. Build a horizontal social card (logo + tagline) and wire `<meta property="og:image">` / `<meta name="twitter:image">` into `index.html`.
@@ -146,6 +150,23 @@ The recurring security/maintenance schedule for the live system — daily monito
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 3, 2026 — Discourse self-host plan REVERSED back on (decision; provisioning still pending)**
+- Did: ran a broader EU-region SKU probe (`dev-context/probe-eu-regions.sh`) — 4 candidate Discourse-viable SKUs (`Standard_B2s`, `Standard_B2as_v2`, `Standard_B2ms`, `Standard_DS1_v2`) × 12 EU/UK regions (`westeurope northeurope francecentral germanywestcentral uksouth ukwest swedencentral switzerlandnorth norwayeast italynorth polandcentral spaincentral`), 48 `az vm create --validate` calls in parallel.
+- Found: the Sponsorship subscription's SKU lockout is region-scoped, NOT global. `Standard_B2as_v2` (2 vCPU / 8 GB / AMD burstable / ~€38/mo) is AVAILABLE in 5 regions: **Sweden Central, Spain Central, Norway East, Poland Central, Switzerland North** (4 EEA + Switzerland which has GDPR adequacy). `Standard_B2s`, `Standard_B2ms`, `Standard_DS1_v2` are all restricted in all 12 regions tested. France Central and Germany West Central — which the Azure portal lists as "available" — are restricted for this subscription on every SKU we want; the portal's region picker doesn't reflect Sponsorship carve-outs. Full matrix in the new "Sponsorship SKU Probe Appendix" at the bottom of this file.
+- Decided: REVERSE the deferral inside the same session. Self-host Discourse on `Standard_B2as_v2` in **Sweden Central** (EEA primary). Total cost lands at ~€42/mo (VM €38 + static IP + 64 GB Premium SSD), still ~2× CDCK hosted ($20/mo) but back inside the "reasonable for an EEA-sovereign forum" envelope — and B2as_v2 has 8 GB RAM (vs B2s's 4 GB) so it's actually a better Discourse host than the original target. The earlier "defer" decision was made before the multi-region probe and is now superseded.
+- Did (in code, this session): kept `frontend/src/pages/ForumPreviewPage.vue` as a "Coming soon" placeholder (now matches the previous slice's rewrite) — it's still the right UX until the provisioning slice ships a real Discourse feed. Forum data (`frontend/src/data/forum.js`) still exposes industries/regions but no fake topics.
+- Did (in docs, this session): rewrote the `## 3. Future` blockquote and #1 next-slice to "Discourse self-host provisioning on B2as_v2 in Sweden Central"; added the **Sponsorship SKU Probe Appendix** at the bottom capturing the full per-region/per-SKU matrix so a future session doesn't re-walk this; updated `STARTER_PROMPT.md`'s "Likely next immediate step" paragraph to match.
+- Did NOT do this session: the actual provisioning. No VM exists yet. The next session should run the probe script to re-confirm capacity (Azure capacity changes), then proceed with `az vm create --location swedencentral --size Standard_B2as_v2 --image Ubuntu2204 ...`, attach a Premium SSD, allocate static public IP, configure NSG (22/80/443), and bootstrap Discourse via the official `discourse_docker` repo.
+- Watch-outs: (1) Sweden Central is a different geography from the existing resources in West Europe / North Europe; latency from the Sweden VM to `psql-waais-prod-neu` (North Europe) is in the ~25–35 ms range, fine for Discourse but worth knowing. (2) The Sponsorship lockout pattern may also affect **storage SKUs** in Sweden Central — validate the Premium SSD before committing. (3) Capacity availability can flip; re-run `dev-context/probe-eu-regions.sh` immediately before provisioning. (4) If Sweden Central is unavailable when provisioning starts, fall back through the list in priority order: Spain Central → Norway East → Poland Central → Switzerland North.
+
+**May 3, 2026 — Discourse deferred for v1 launch (decision; SUPERSEDED later same day by the EU-region probe above)**
+- Did: started a self-hosted Discourse provisioning slice (B2s VM in West Europe, Azure Files for uploads, sharing the existing Postgres flex server, ACS for outbound email). Wrote `dev-context/discourse-cloud-init.yaml` with Docker + fail2ban + 2 GB swapfile, attempted `az vm create` with `Standard_B2s` in WEU.
+- Found: `SkuNotAvailable - Capacity Restrictions` on `Standard_B2s` in both West Europe and North Europe. Probed alternatives via `az vm create --validate` BUT ONLY IN WEU/NEU: `Standard_B2as_v2`, `Standard_B2ms`, `Standard_DS1_v2`, `Standard_A2_v2`, `Standard_F2s_v2`, `Standard_D2as_v5` were all RESTRICTED in WEU. Only `Standard_D2s_v5` (2 vCPU / 8 GB / ~€88/mo) validated clean in WEU. **Mistake: did not probe other EU regions before deciding.**
+- Decided (later reversed): defer Discourse for v1 launch on the assumption that D2s_v5 was the only viable SKU and €88/mo was unjustifiable. Reversed the same day — see the entry above — once the multi-region probe found B2as_v2 available in 5 other EU regions.
+- Did (in code): rewrote `frontend/src/pages/ForumPreviewPage.vue` from a fake-topic preview into a clean "Forum is coming soon" landing — keeps the planned industry/region category teasers, drops the seeded fake topic cards, calls out that membership is the way to get in early. Removed the unused `forumTopics` export from `frontend/src/data/forum.js` (kept `forumIndustries` and `forumRegions`). Deleted `dev-context/discourse-cloud-init.yaml` and `dev-context/probe-vm-skus.sh` as no-longer-relevant cruft. (The "Coming soon" page itself stays — it's still the right UX until the provisioning slice actually ships a real Discourse feed.)
+- Lesson: when an Azure SKU is restricted on a Sponsorship subscription, probe the full set of in-geography regions before reframing the project plan around a single high-cost SKU. The Sponsorship lockout is region-scoped, not subscription-wide. Use `dev-context/probe-eu-regions.sh` as the template.
+- Watch-outs (still valid): the Sponsorship subscription's compute lockout may extend to other resource families (Container Apps, Container Instances, App Service plans larger than B-series). If a future slice needs new compute, validate the SKU first via `az ... --validate` BEFORE committing to a plan. The existing App Service plan `asp-waais-prod-weu-b1` (B1 Linux) is already deployed and stays unaffected — the lockout is on NEW provisioning, not running resources.
 
 **May 3, 2026 — WAAIS "AI" mark + photographic favicon (shipped)**
 - Did: replaced the WAC UK chapter PNGs in the public navbar and app/admin sidebar with a WAAIS-native "AI" square SVG mark (`frontend/public/brand/waais-mark.svg`, 100×100 viewBox, white-on-transparent, hand-drawn path geometry — solid wedge "A" with triangle counter via `fill-rule="evenodd"` plus crossbar notch, clean rectangle "I"). Subtitle copy refactored to make the relationship explicit but de-emphasized: navbar reads "AI affinity group, sanctioned by WAC United Kingdom"; sidebar reads "AI affinity group, sanctioned by WAC UK". The public footer gained a 13-px affiliation paragraph ("An AI-focused affinity group within the Wharton Alumni Club United Kingdom, built for the global Wharton alumni community") for the same reason. Rationale: WAAIS is global and at some point will be independent of the regional chapter; framing WAC UK as sanctioning rather than as the brand keeps the door open.
@@ -631,4 +652,66 @@ The recurring security/maintenance schedule for the live system — daily monito
 
 ---
 
-*Last updated: May 2, 2026 21:47 CEST*
+## Appendix — Sponsorship Subscription SKU Probe (May 3, 2026)
+
+This is the empirical record of which Azure compute SKUs the **Sponsorship subscription** (`Azure subscription 1`, id `a66b1770-137e-49cc-a9c2-0ab3186e9752`, tenant `9d7271ab-ab49-4b9b-a134-6905a15fdb38`) can actually provision. Captured here so a future session does not re-walk the same dead ends. Methodology: `az vm create --validate` with each SKU × region pair (no actual deployment); response inspected for `SkuNotAvailable - Capacity Restrictions` vs `"error": null`. The script is `dev-context/probe-eu-regions.sh` (kept in the repo as the canonical re-probe tool). Capacity availability does change — re-run the script before any new provisioning slice.
+
+**Subscription-wide observations**
+- Restrictions are **region-scoped**, not subscription-wide. The same SKU can be restricted in West Europe and available in Sweden Central on the same subscription, on the same day.
+- The Azure portal's "available regions" picker does NOT reflect Sponsorship subscription carve-outs. France Central and Germany West Central appear in the portal but every Discourse-viable SKU we tried is restricted there for this subscription.
+- The lockout pattern almost certainly extends to non-VM compute (Container Apps, Container Instances, App Service plans larger than B-series). Validate before committing.
+- The lockout applies to **NEW provisioning**, not running resources. Existing `asp-waais-prod-weu-b1`, `app-waais-api-prod-weu`, `psql-waais-prod-neu`, `swa-waais-prod-weu`, `acs-waais-prod`, `emailcomms-waais-prod` are all unaffected.
+
+**SKU × region matrix (May 3, 2026; ✓ = AVAILABLE, ✗ = RESTRICTED)**
+
+| Region (EEA unless noted)              | B2s (2/4) | B2as_v2 (2/8) | B2ms (2/8) | DS1_v2 (1/3.5) |
+|----------------------------------------|:---------:|:-------------:|:----------:|:--------------:|
+| West Europe (Netherlands)              | ✗         | ✗             | ✗          | ✗              |
+| North Europe (Ireland)                 | ✗         | ✗             | ✗          | ✗              |
+| France Central                         | ✗         | ✗             | ✗          | ✗              |
+| Germany West Central                   | ✗         | ✗             | ✗          | ✗              |
+| UK South                               | ✗         | ✗             | ✗          | ✗              |
+| UK West                                | ✗         | ✗             | ✗          | ✗              |
+| **Sweden Central**                     | ✗         | **✓**         | ✗          | ✗              |
+| Switzerland North (non-EEA, GDPR-OK)   | ✗         | **✓**         | ✗          | ✗              |
+| Norway East                            | ✗         | **✓**         | ✗          | ✗              |
+| Italy North                            | ✗         | ✗             | ✗          | ✗              |
+| **Poland Central**                     | ✗         | **✓**         | ✗          | ✗              |
+| **Spain Central**                      | ✗         | **✓**         | ✗          | ✗              |
+
+**Earlier (WEU/NEU-only) probe — for completeness**
+
+In the same session, before the multi-region probe, these additional SKUs were validated in WEU only and all returned RESTRICTED: `Standard_A2_v2`, `Standard_F2s_v2`, `Standard_D2as_v5`. `Standard_D2s_v5` (2 vCPU / 8 GB / ~€88/mo) validated clean in WEU. The multi-region probe didn't re-test these heavier SKUs because B2as_v2 in Sweden Central is the better choice on cost and footprint.
+
+**Self-host cost estimate (Sweden Central, B2as_v2)**
+
+| Line item                                       | Monthly (EUR) |
+|-------------------------------------------------|--------------:|
+| Standard_B2as_v2 VM (730h)                      | ~€38          |
+| Static public IPv4                              | ~€3           |
+| Premium SSD 64 GB OS disk                       | ~€8           |
+| Egress (estimate, low forum traffic)            | ~€1           |
+| **Total**                                       | **~€50**      |
+
+Compare to CDCK Discourse Hosted Basic ($20/mo ≈ €18.50). Self-host wins on data sovereignty (full EEA), plugin freedom, and SSO control; loses on ~€30/mo and ~30 min/quarter of George time for `./launcher rebuild app`.
+
+**Region priority order for Discourse provisioning**
+1. **Sweden Central** (EEA, primary — Azure has invested heavily here, capacity tends to be plentiful, low-carbon power mix is a soft plus).
+2. Spain Central (EEA, newer region, capacity headroom).
+3. Norway East (EEA, hydropower).
+4. Poland Central (EEA, newer region).
+5. Switzerland North (non-EEA but GDPR-adequate; pricier and only use as last resort).
+
+**Re-running the probe**
+
+```bash
+# From the repo root, with az CLI logged in to the WAAIS organization tenant
+bash dev-context/probe-eu-regions.sh
+cat /tmp/eu-probe.txt
+```
+
+If the matrix has shifted unfavorably (e.g. Sweden Central B2as_v2 has flipped to RESTRICTED), the fall-through is the priority order above. If ALL five regions have flipped, options are: (a) wait + retry (capacity often returns within days), (b) file an Azure support ticket for "VM SKU exception on Sponsorship subscription," (c) fall back to CDCK Discourse Hosted Basic, or (d) accept `Standard_D2s_v5` at ~€88/mo as the only available self-host SKU.
+
+---
+
+*Last updated: May 4, 2026 — Discourse plan reversed back to self-host on B2as_v2 in Sweden Central after multi-region SKU probe.*

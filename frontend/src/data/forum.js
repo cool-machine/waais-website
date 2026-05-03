@@ -1,3 +1,6 @@
+// Planned forum taxonomy. Used by the public "Forum coming soon" page to
+// preview category structure. Real topic data will come from Discourse's
+// public API once the forum ships at forum.whartonai.studio.
 export const forumIndustries = [
   'Finance',
   'Fintech',
@@ -13,19 +16,4 @@ export const forumRegions = [
   'San Francisco',
   'London',
   'Paris',
-]
-
-export const forumTopics = [
-  {
-    id: 'ai-in-finance',
-    title: 'Where AI is actually changing finance workflows',
-    category: 'Finance',
-    visibility: 'Public teaser',
-  },
-  {
-    id: 'agent-patterns',
-    title: 'Reliable agent patterns for enterprise teams',
-    category: 'AI Engineering',
-    visibility: 'Members',
-  },
 ]
