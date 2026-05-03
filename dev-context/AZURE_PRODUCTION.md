@@ -7,7 +7,7 @@
 - Organization: Wharton Alumni AI Studio and Research Center.
 - Public domain: `whartonai.studio`.
 - Budget: Azure non-profit grant, about EUR 1,700/year, roughly USD 2,000/year. Target steady-state spend should stay well below USD 150/month before Discourse.
-- Primary region: **West Europe** unless Azure pricing or service availability forces a change.
+- Primary region: **West Europe** for app/static frontend. Database is **North Europe** because `Standard_B1ms` PostgreSQL Flexible Server creation in West Europe failed with `The location is restricted from performing this operation` on this subscription. North Europe was approved on May 3, 2026 as the database region. Both stay in the Azure Europe geography.
 - Environment count: **production only for now**. Add staging later when traffic or operational risk justifies the added monthly cost.
 - Primary data residency: keep Laravel app, PostgreSQL, storage, and email resources in the Azure Europe geography where available.
 - Discourse: last stage, likely its own VM at `forum.whartonai.studio`.
@@ -18,7 +18,7 @@
 |---|---|---|---|
 | Frontend Vue app | Azure Static Web Apps, or keep GitHub Pages temporarily | `whartonai.studio` | Static Web Apps gives Azure-native custom domain and SSL. GitHub Pages can remain a preview path until launch. |
 | Laravel API | Azure App Service for Linux | `api.whartonai.studio` | Managed app hosting avoids VM patching/PHP-FPM/nginx ownership. |
-| Database | Azure Database for PostgreSQL Flexible Server | private Azure hostname | Small burstable tier to start. Local dev/test stays SQLite. |
+| Database | Azure Database for PostgreSQL Flexible Server | `psql-waais-prod-neu.postgres.database.azure.com` | Deployed in **North Europe** (West Europe was restricted for `Standard_B1ms` on this subscription). Burstable `Standard_B1ms`, PostgreSQL 16, 32 GiB storage with auto-grow, 7-day backup retention, geo-redundant backup disabled. Public network access currently `Disabled`. Local dev/test stays SQLite. |
 | Email | Azure Communication Services Email over SMTP | `noreply@whartonai.studio` | Domain is reported approved. SMTP secrets stay in App Service settings. |
 | Scheduler | Azure App Service WebJob or cron-equivalent command runner | n/a | Must run `php artisan schedule:run` every minute. |
 | Discourse | Azure VM with official Docker install | `forum.whartonai.studio` | Defer until final stage. |
@@ -173,11 +173,12 @@ every minute. On Azure App Service, use a WebJob or equivalent scheduled runner.
 
 ## Deployment Steps
 
-First production deployment should follow this order:
+First production deployment should follow this order. Steps 1–3 are already done; step 2 was completed in North Europe rather than West Europe due to a regional restriction. Step 2a (database connectivity from the App Service) is the current open decision.
 
-1. Create resource group in West Europe.
-2. Create PostgreSQL Flexible Server and production database.
-3. Create Linux App Service for Laravel backend.
+1. Create resource group in West Europe. (`rg-waais-prod-weu` — done.)
+2. Create PostgreSQL Flexible Server. (`psql-waais-prod-neu` in North Europe — done. Application database `waais_production` not yet created via `az postgres flexible-server db create`.)
+2a. Decide PostgreSQL connectivity from the App Service: Private Endpoint into a VNet shared with the App Service via Regional VNet Integration, or enabling public network access and adding firewall rules for the App Service outbound IPs / "Allow Azure services". Reset admin password (or move to Microsoft Entra auth + managed identity) and store in App Service settings or Key Vault, never in the repo.
+3. Create Linux App Service for Laravel backend. (`asp-waais-prod-weu-b1` plan + `app-waais-api-prod-weu` web app — done.)
 4. Configure backend App Service environment variables.
 5. Deploy backend code.
 6. Run `composer install --no-dev --optimize-autoloader`.

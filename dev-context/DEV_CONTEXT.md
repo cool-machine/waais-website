@@ -96,19 +96,21 @@ Project root: `/Users/gg1900/coding/waais-website`
   - App Service plan `asp-waais-prod-weu-b1`: Linux Basic B1, West Europe, paid tier.
   - Web App `app-waais-api-prod-weu`: Linux/PHP 8.3, default host `app-waais-api-prod-weu.azurewebsites.net`, HTTPS-only enabled, Always On enabled, HTTP/2 enabled, FTPS-only enabled.
   - Static Web App `swa-waais-prod-weu`: Free tier, West Europe, default host `proud-moss-0ec457703.7.azurestaticapps.net`, no repo integration configured yet.
-- PostgreSQL Flexible Server was approved for `Standard_B1ms` but was not created. `Microsoft.DBforPostgreSQL` was registered successfully, then `az postgres flexible-server create ... --location westeurope --sku-name Standard_B1ms ...` failed with `The location is restricted from performing this operation.`
-- Default Azure region: West Europe, keeping primary app/database data in the Azure Europe geography. International users can use the Europe-hosted app; do not create country-specific databases for v1.
+  - PostgreSQL Flexible Server `psql-waais-prod-neu`: North Europe, Burstable `Standard_B1ms`, PostgreSQL 16, 32 GiB storage with auto-grow enabled, 7-day backup retention, geo-redundant backup disabled, FQDN `psql-waais-prod-neu.postgres.database.azure.com`, admin user `waaisadmin`. Created May 3, 2026. State `Ready`. **Public network access is Disabled**, so the West Europe App Service cannot reach it yet — connectivity (Private Endpoint vs. enabling public access + firewall rule for the App Service outbound IPs) is the next decision.
+- West Europe `Standard_B1ms` PostgreSQL Flexible Server creation was blocked with `The location is restricted from performing this operation`. After George approved it, the server was deployed to North Europe (`northeurope`) instead, which carries a small (~10–15 ms) cross-region latency from the West Europe App Service but unblocks production storage. The resource group remains `rg-waais-prod-weu`; resource groups are metadata containers and can hold resources from different regions.
+- The temporary admin password generated at server creation time is not stored in this session. Before configuring App Service `DB_PASSWORD`, reset it with `az postgres flexible-server update --admin-password <new>` and write the new value directly into App Service application settings (or an Azure Key Vault secret) — never to the repo. Microsoft Entra authentication with a managed identity is also an option and is the more durable production answer.
+- Default Azure region: West Europe for app/static frontend; database currently North Europe due to the West Europe PostgreSQL restriction. Both stay in the Azure Europe geography. International users can use the Europe-hosted app; do not create country-specific databases for v1.
 - Production OAuth should be created under the organization Google for Nonprofits/admin account, not George's personal test OAuth client.
 - Deployment plan lives in `dev-context/AZURE_PRODUCTION.md`; privacy launch checklist lives in `dev-context/PRIVACY_READINESS.md`.
 
 ## 2. Present — Current Slice
 
-No code slice in progress. Azure production setup has started: resource group, B1 App Service plan, PHP 8.3 web app, and Free Static Web App exist. PostgreSQL is blocked by a West Europe subscription/location restriction; email, storage, custom domains, scheduler, deployment, Google OAuth, and Discourse are not created/configured yet.
+No code slice in progress. Azure production setup has continued: resource group, B1 App Service plan, PHP 8.3 web app, Free Static Web App, and PostgreSQL Flexible Server `psql-waais-prod-neu` (North Europe, B1ms, PG 16, Ready) all exist. PostgreSQL public network access is currently Disabled — the next decision is how the West Europe App Service should reach it (Private Endpoint vs. public access + App Service outbound IP firewall rule). Email, storage, custom domains, scheduler, deployment, Google OAuth, and Discourse are still not created/configured yet.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Resolve PostgreSQL location restriction.** Decide whether to request/unblock West Europe PostgreSQL quota/region access in Azure support or use another Europe geography region such as North Europe. Do not silently move the production database region without explicit approval.
-2. **Azure deployment configuration.** Configure production secrets/app settings, deployment, database connection, custom domains/TLS, budget alerts, scheduler, and smoke checks.
+1. **PostgreSQL connectivity from the App Service.** Decide between (a) keeping `publicNetworkAccess = Disabled` and adding a Private Endpoint into a VNet shared with the App Service via Regional VNet Integration, or (b) enabling public access and adding firewall rules for the App Service outbound IPs / "Allow Azure services". Reset the admin password (or move to Microsoft Entra auth + managed identity) and store the secret in App Service settings or Key Vault, never the repo. Create the application database (e.g., `waais_production`) via `az postgres flexible-server db create`.
+2. **Azure deployment configuration.** Configure remaining production secrets/app settings (Laravel core, Sanctum/sessions/CORS, Google OAuth, ACS Email), deploy the backend code, run migrations, configure custom domains/TLS for `api.whartonai.studio` and `whartonai.studio`, scheduler runner for `php artisan schedule:run`, budget alerts, and production smoke checks per `AZURE_PRODUCTION.md`.
 3. **Brand/logo asset replacement** when George provides it.
 4. **Forum/Discourse final stage.** Discourse SSO is implemented, but forum install/feed wiring waits until the final stage.
 
@@ -124,6 +126,15 @@ No code slice in progress. Azure production setup has started: resource group, B
 ## Session Log
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
+
+**May 3, 2026 — PostgreSQL Flexible Server deployed in North Europe (shipped)**
+- Did: confirmed Azure CLI account is still `g1900@whartonaistudio.onmicrosoft.com` in subscription `Azure subscription 1` (`a66b1770-137e-49cc-a9c2-0ab3186e9752`) and tenant `9d7271ab-ab49-4b9b-a134-6905a15fdb38`.
+- Did: George explicitly approved switching the production PostgreSQL region from West Europe to North Europe to bypass the `The location is restricted from performing this operation` failure documented in the previous session log entry.
+- Did: re-attempted `az postgres flexible-server create` with `--location northeurope`; the command returned `Specified server name is already used`. Investigation showed that `psql-waais-prod-neu` already existed in `rg-waais-prod-weu` (North Europe), created at `2026-05-03T00:31:39Z`, indicating a prior provisioning attempt outside this session log had succeeded but had not been recorded.
+- Did: verified the existing server matches the approved spec — Burstable `Standard_B1ms`, PostgreSQL 16, 32 GiB storage with auto-grow `Enabled`, 7-day backup retention, geo-redundant backup `Disabled`, admin user `waaisadmin`, public network access `Disabled`, FQDN `psql-waais-prod-neu.postgres.database.azure.com`. Polled provisioning state until `Ready`.
+- Did: updated DEV_CONTEXT and STARTER_PROMPT to reflect the new database region, the existing Azure resource list, and the next-slice direction (App Service ↔ PostgreSQL connectivity).
+- Left off at: choose connectivity approach (Private Endpoint vs. public access + App Service outbound IP firewall rule), reset the admin password into App Service settings (or move to Microsoft Entra auth + managed identity), and create the application database `waais_production` via `az postgres flexible-server db create`. Then continue with the rest of the Azure deployment configuration.
+- Watch out for: the temporary admin password from the original create call is not known to this session and is not stored in the repo. Resetting via `az postgres flexible-server update --admin-password` is required before App Service can connect over username/password. Cross-region traffic from the West Europe App Service to the North Europe database adds a small (~10–15 ms) latency tax. Resource group `rg-waais-prod-weu` now contains a North Europe resource — that's expected and supported, but the `weu` suffix in the RG name no longer perfectly describes its contents.
 
 **May 3, 2026 01:15 CEST — Azure B1 app resources created; PostgreSQL blocked**
 - Did: George approved `App Service B1 + PostgreSQL B1ms + Static Web Apps Free`
