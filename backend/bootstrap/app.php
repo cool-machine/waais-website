@@ -33,6 +33,19 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping();
     })
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust the platform load balancer in front of the Laravel container so
+        // Request::isSecure(), Request::getScheme(), and url() honor
+        // X-Forwarded-Proto / X-Forwarded-Host / X-Forwarded-For. Used in
+        // production by Azure App Service (Linux) which terminates TLS at the
+        // edge and forwards plain HTTP to the worker. `at: '*'` is safe here
+        // because the container is only reachable through the App Service load
+        // balancer; direct port 80/443 access to the worker is not possible.
+        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR
+            | Request::HEADER_X_FORWARDED_HOST
+            | Request::HEADER_X_FORWARDED_PORT
+            | Request::HEADER_X_FORWARDED_PROTO
+            | Request::HEADER_X_FORWARDED_AWS_ELB);
+
         $middleware->statefulApi();
         $middleware->redirectGuestsTo(fn (): ?string => null);
 
