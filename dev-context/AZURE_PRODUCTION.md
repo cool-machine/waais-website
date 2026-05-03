@@ -20,7 +20,7 @@
 | Laravel API | Azure App Service for Linux | `api.whartonai.studio` | Managed app hosting avoids VM patching/PHP-FPM/nginx ownership. |
 | Database | Azure Database for PostgreSQL Flexible Server | `psql-waais-prod-neu.postgres.database.azure.com` | Deployed in **North Europe** because the West Europe restriction on this subscription is subscription-wide for Flexible Server (all editions blocked, not just `Standard_B1ms`). Burstable `Standard_B1ms`, PostgreSQL 16, 32 GiB storage with auto-grow, 7-day backup retention, geo-redundant backup disabled. Public network access `Enabled` with one firewall rule `AllowAllAzureServicesAndResourcesWithinAzureIps` (`0.0.0.0`–`0.0.0.0`); auth + TLS still required. Application database `waais_production` exists. Local dev/test stays SQLite. |
 | Email | Azure Communication Services Email over SMTP | `DoNotReply@b513a906-9280-42e3-9601-21e033722c36.azurecomm.net` now; `noreply@mail.whartonai.studio` later | Shipped with an Azure-managed sender domain. Custom-domain sender is optional follow-up polish. SMTP secrets stay in App Service settings. |
-| Scheduler | App Service scheduled WebJob | n/a | Deploys with the backend under `App_Data/jobs/triggered/waais-scheduler` and runs `php artisan schedule:run` every minute through Kudu. |
+| Scheduler | App Service scheduled WebJob | n/a | Shipped. Deploys with the backend under `App_Data/jobs/triggered/waais-scheduler` and runs `php artisan schedule:run` every minute through Kudu. App Service site config has `webJobsEnabled=true`. |
 | Discourse | Azure VM with official Docker install | `forum.whartonai.studio` | Defer until final stage. |
 
 Avoid running Laravel, PostgreSQL, and Discourse on one hand-managed VM for v1. A VM may look cheaper, but it shifts OS patching, TLS, backups, process supervision, database operations, security hardening, and scheduler reliability onto us. Use managed services for the main app; reserve VM complexity for Discourse.
@@ -173,11 +173,11 @@ Production runs:
 php artisan schedule:run
 ```
 
-every minute through the scheduled WebJob at `backend/App_Data/jobs/triggered/waais-scheduler`. `settings.job` uses the NCRONTAB expression `0 * * * * *`, and `run.sh` changes into `/home/site/wwwroot` before running `php artisan schedule:run --no-interaction`. The App Service has Always On enabled on the B1 plan; keep that setting enabled or scheduled work can become unreliable.
+every minute through the scheduled WebJob at `backend/App_Data/jobs/triggered/waais-scheduler`. `settings.job` uses the NCRONTAB expression `0 * * * * *`, and `run.sh` changes into `/home/site/wwwroot` before running `php artisan schedule:run --no-interaction`. The App Service has Always On enabled on the B1 plan and site config `webJobsEnabled=true`; keep both settings enabled or scheduled work can become unreliable/disabled.
 
 ## Deployment Steps
 
-First production deployment follows this order. Steps 1–14 are done; final smoke checks remain after the scheduler deploy is observed.
+First production deployment follows this order. Steps 1–14 are done; final smoke checks remain.
 
 1. Create resource group in West Europe. (`rg-waais-prod-weu` — done.)
 2. Create PostgreSQL Flexible Server. (`psql-waais-prod-neu` in North Europe — done. Public access `Enabled` with `AllowAllAzureServicesAndResourcesWithinAzureIps` firewall rule. Application database `waais_production` created.)
@@ -190,7 +190,7 @@ First production deployment follows this order. Steps 1–14 are done; final smo
 9. Configure `api.whartonai.studio` custom domain and TLS. Done on May 3, 2026. DNS lives at Cloudflare; records added are CNAME `api → app-waais-api-prod-weu.azurewebsites.net.` (proxy disabled / DNS only) and TXT `asuid.api → AC7D220F99290650452AB5078CFAD6C8D45A44442DF50B8FBB66790CA6CAC200`. Custom domain bound via `az webapp config hostname add`. App Service Managed Certificate created via `az webapp config ssl create --hostname api.whartonai.studio` (issuer GeoTrust TLS RSA CA G1, thumbprint `20695ED28B5892D01E2E449AC28472F26CD10A24`, valid May 3 → Nov 3, 2026, auto-renewing) and bound via `az webapp config ssl bind --ssl-type SNI`. `https://api.whartonai.studio/up` returns HTTP 200 and HTTP requests redirect 301 to HTTPS.
 10. Create production Google OAuth client and update App Service settings. Done on May 3, 2026; end-to-end Google sign-in works and user #1 `gvishiani@gmail.com` is promoted to super_admin.
 11. Configure ACS Email SMTP settings and send a smoke email. Done on May 3, 2026; Azure-managed sender delivers to inbox.
-12. Configure scheduler runner for `php artisan schedule:run`. Done in code via the scheduled WebJob at `backend/App_Data/jobs/triggered/waais-scheduler`; deploy to production by merging this slice to `main` and watching the backend workflow.
+12. Configure scheduler runner for `php artisan schedule:run`. Done via the scheduled WebJob at `backend/App_Data/jobs/triggered/waais-scheduler`; backend deploy run `25285668657` shipped it, App Service `webJobsEnabled=true` is set, and production WebJob history shows successful runs.
 13. Deploy frontend with `VITE_API_BASE_URL=https://api.whartonai.studio`. Done via `.github/workflows/deploy-frontend.yml`.
 14. Configure `whartonai.studio` custom domain and TLS. Done on May 3, 2026 via Azure Static Web Apps managed TLS.
 15. Run production smoke checks.
@@ -219,6 +219,12 @@ Notification checks:
 - Membership application submission writes a mail/log/send event.
 - `announcements:send-emails` can run without error.
 - `events:send-reminders` can run without error.
+
+Scheduler runner check:
+
+- App Service config `webJobsEnabled=true` and `alwaysOn=true`.
+- Triggered WebJob `waais-scheduler` exists with schedule `0 * * * * *`.
+- Latest WebJob history has status `Success` and output includes `php artisan schedule:run`.
 
 ## Security & Maintenance Cadence
 

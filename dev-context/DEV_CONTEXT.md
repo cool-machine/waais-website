@@ -112,15 +112,14 @@ Project root: `/Users/gg1900/coding/waais-website`
 
 ## 2. Present — Current Slice
 
-Current code slice: scheduler runner. ACS Email is live, and the backend now includes an App Service scheduled WebJob at `backend/App_Data/jobs/triggered/waais-scheduler` to run `php artisan schedule:run --no-interaction` every minute after this branch is deployed. This uses the existing App Service/Kudu WebJobs host rather than adding a separate Container Apps image/build pipeline. After deployment, verify WebJob execution in production, then run the final smoke checks for event reminders and `email_dashboard` announcement fan-out.
+No code slice in progress. The production scheduler runner is live: App Service WebJobs are enabled on `app-waais-api-prod-weu`, and Kudu is running the scheduled WebJob at `App_Data/jobs/triggered/waais-scheduler` every minute. The latest verified run executed `php artisan schedule:run --no-interaction` and exited `Success`. Next slice is final production smoke checks for event reminders and `email_dashboard` announcement fan-out; because those checks require publishing test content and confirming real email arrival, stop for George's approval before running them.
 
 ## 3. Future — Ordered Next Slices
 
-1. **Deploy and verify scheduler runner.** Merge this slice so the scheduled WebJob reaches App Service, then verify the Kudu WebJob host is running `waais-scheduler` every minute and that `schedule:run` exits cleanly.
-2. **Final production smoke checks** from `AZURE_PRODUCTION.md` — publish a test event with a reminder window, publish an `email_dashboard` announcement, verify the reminder and fan-out emails actually arrive after the scheduler fires.
-3. **Custom-domain ACS sender `mail.whartonai.studio`.** Improves deliverability and replaces `DoNotReply@b513a906-….azurecomm.net` with `noreply@mail.whartonai.studio`. Steps: `az communication email domain create --domain-management CustomerManaged`, emit verification + SPF + DKIM TXT/CNAME records, ask George to add them to Cloudflare, wait for verification, link the new domain into `acs-waais-prod.linkedDomains`, flip `MAIL_FROM_ADDRESS` on App Service, restart, smoke. Not blocking on launch.
-4. **Brand/logo asset replacement** when George provides it.
-5. **Forum/Discourse final stage.** Discourse SSO is implemented, but forum install/feed wiring waits until the final stage.
+1. **Final production smoke checks** from `AZURE_PRODUCTION.md` — publish a test event with a reminder window, publish an `email_dashboard` announcement, verify the reminder and fan-out emails actually arrive after the scheduler fires. This needs George's approval/manual inbox confirmation before proceeding.
+2. **Custom-domain ACS sender `mail.whartonai.studio`.** Improves deliverability and replaces `DoNotReply@b513a906-….azurecomm.net` with `noreply@mail.whartonai.studio`. Steps: `az communication email domain create --domain-management CustomerManaged`, emit verification + SPF + DKIM TXT/CNAME records, ask George to add them to Cloudflare, wait for verification, link the new domain into `acs-waais-prod.linkedDomains`, flip `MAIL_FROM_ADDRESS` on App Service, restart, smoke. Not blocking on launch.
+3. **Brand/logo asset replacement** when George provides it.
+4. **Forum/Discourse final stage.** Discourse SSO is implemented, but forum install/feed wiring waits until the final stage.
 
 Optional follow-ups not in the critical path:
 
@@ -143,12 +142,14 @@ The recurring security/maintenance schedule for the live system — daily monito
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
 
-**May 3, 2026 — Scheduler WebJob runner (code ready)**
+**May 3, 2026 — Scheduler WebJob runner (shipped)**
 - Did: added an App Service scheduled WebJob under `backend/App_Data/jobs/triggered/waais-scheduler`. `settings.job` schedules it every minute with `0 * * * * *`, `is_singleton=true`, and `stopping_wait_time=60`; `run.sh` changes into `/home/site/wwwroot` and runs `php artisan schedule:run --no-interaction`.
 - Did: updated `.github/workflows/deploy-backend.yml` so WebJob shell scripts are marked executable before the backend zip is built. This keeps the scheduler in the existing App Service deployment package and avoids adding a Container Apps image/build pipeline just to run Laravel's scheduler.
+- Did: merged commit `c3225fd` to `main`; backend deploy workflow run `25285668657` completed successfully. Enabled App Service site config `webJobsEnabled=true` via ARM (`config/web`) and explicitly restarted the App Service. `/up` returned HTTP 200 after restart.
+- Did: verified production WebJob discovery through ARM: triggered WebJob `waais-scheduler`, run command `run.sh`, schedule `0 * * * * *`, latest run status `Success`. Read the latest output log from `/home/data/jobs/triggered/waais-scheduler/202605031726000860/output_log.txt`; Kudu ran `run.sh`, the script printed `[waais-scheduler] ... running php artisan schedule:run`, Laravel reported `INFO No scheduled commands are ready to run.`, and the run ended `Success`.
 - Validation: `composer validate --strict`, `php artisan test` (187 tests / 822 assertions), `php artisan migrate:fresh`, and `bash -n App_Data/jobs/triggered/waais-scheduler/run.sh` all passed locally on May 3, 2026.
-- Left off at: merge this branch to `main`, watch the backend deploy workflow, then verify Kudu/App Service WebJobs shows successful `waais-scheduler` executions. After that, run final production smoke checks for event reminders and `email_dashboard` announcement fan-out.
-- Watch out for: App Service Always On must stay enabled on the B1 plan or scheduled WebJobs can become unreliable. If the WebJob does not appear after deploy, inspect the zip contents and Kudu WebJobs discovery under `site/wwwroot/App_Data/jobs/triggered/waais-scheduler`.
+- Left off at: final production smoke checks for event reminders and `email_dashboard` announcement fan-out. Those require publishing test content and confirming real inbox delivery, so get George's approval/manual inbox confirmation before proceeding.
+- Watch out for: App Service Always On and `webJobsEnabled=true` must stay enabled on the B1 plan or scheduled WebJobs can become unreliable/disabled. If the WebJob stops appearing, inspect Kudu WebJobs discovery under `site/wwwroot/App_Data/jobs/triggered/waais-scheduler` and logs under `/home/data/jobs/triggered/waais-scheduler`.
 
 **May 3, 2026 — ACS Email setup with Azure-managed sender (shipped)**
 - Did: registered the `Microsoft.Communication` resource provider on subscription `a66b1770-137e-49cc-a9c2-0ab3186e9752` (was `NotRegistered`; now `Registered`). Installed the `communication` Azure CLI extension (1.14.0; was already present) so `az communication email *` commands work.
