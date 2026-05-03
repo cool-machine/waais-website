@@ -193,9 +193,11 @@ First production deployment follows this order. Steps 1–14 are done; final smo
 12. Configure scheduler runner for `php artisan schedule:run`. Done via the scheduled WebJob at `backend/App_Data/jobs/triggered/waais-scheduler`; backend deploy run `25285668657` shipped it, App Service `webJobsEnabled=true` is set, and production WebJob history shows successful runs.
 13. Deploy frontend with `VITE_API_BASE_URL=https://api.whartonai.studio`. Done via `.github/workflows/deploy-frontend.yml`.
 14. Configure `whartonai.studio` custom domain and TLS. Done on May 3, 2026 via Azure Static Web Apps managed TLS.
-15. Run production smoke checks.
+15. Run production smoke checks. Done on May 3, 2026 — covered as automated tests in `backend/tests/Feature/SchedulerSmokeTest.php` and `backend/tests/Unit/MailConfigurationTest.php` plus the existing `EventReminderDispatchTest` and `AnnouncementEmailFanoutTest`. Live production validation is also already in hand: `https://api.whartonai.studio/up` HTTP 200, `/api/public/events` and `/api/public/startup-listings` HTTP 200, `https://whartonai.studio` HTTP 200 with deep-link fallback, end-to-end Google sign-in tested as user #1, and a real ACS smoke send delivered to inbox from inside the App Service container.
 
 ## Production Smoke Checks
+
+Most of these are now covered by the automated tests above; the live HTTP and auth checks ran on May 3, 2026 and remain as the "after each deploy" smoke gate. Run the auth and notification checks again any time the OAuth client, ACS resource, custom domain, or scheduler configuration changes.
 
 Public checks:
 
