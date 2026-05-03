@@ -140,6 +140,14 @@ The recurring security/maintenance schedule for the live system — daily monito
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
 
+**May 3, 2026 — First production deploy GREEN (shipped)**
+- Did: first GitHub Actions deploy pushed and ran successfully (run `25277737159`), but `/up` returned HTTP 500. Inspected `/home/site/wwwroot/storage/logs/laravel.log` via Kudu vfs and found `RuntimeException: View path not found.` followed by repeated `InvalidArgumentException: Please provide a valid cache path.` Root cause: the workflow's zip exclusions for `storage/framework/{cache/data,sessions,views}/*` collapsed the empty directories entirely; on App Service Laravel could not write compiled views and every request fanned out to a 500.
+- Did: fixed in `.github/workflows/deploy-backend.yml` — added a step that creates `storage/framework/{cache/data,sessions,views,testing}`, `storage/app/public`, `storage/logs`, and `bootstrap/cache` before zipping, drops a `.gitkeep` marker in each, and removed the now-unneeded zip exclusions. Second deploy (run `25277933567`) ran green.
+- Did: smoke-tested `https://app-waais-api-prod-weu.azurewebsites.net/up` → HTTP 200 returning Laravel's health page. Production application is live.
+- Did: temporarily flipped `APP_DEBUG=true` to read the error trace; reverted to `APP_DEBUG=false` after diagnosis.
+- Left off at: next slice is the first production migration — run `php artisan migrate --force` against `waais_production` from inside the App Service container (Kudu/SSH) since the GitHub runner is not behind the Azure-services firewall rule.
+- Watch out for: `/up` works because it does not touch the database or sessions. The first /api/public/events smoke check will fail until migrations run. `SESSION_DOMAIN=.whartonai.studio` still means auth flows will silently break on the default `*.azurewebsites.net` host — wait for the custom domain slice before testing auth.
+
 **May 3, 2026 — Backend deploy pipeline via GitHub Actions OIDC (shipped)**
 - Did: created Azure AD app registration `gh-waais-deploy` (appId `47ab24d1-5d10-477e-b493-c29728910f3d`), service principal `76135382-a0fe-4a3d-a939-0df6f7c5f8b1`, and federated credential `github-cool-machine-waais-website-main` (subject `repo:cool-machine/waais-website:ref:refs/heads/main`, issuer `https://token.actions.githubusercontent.com`, audience `api://AzureADTokenExchange`).
 - Did: granted `Contributor` to the service principal scoped narrowly to `/subscriptions/a66b1770-137e-49cc-a9c2-0ab3186e9752/resourceGroups/rg-waais-prod-weu/providers/Microsoft.Web/sites/app-waais-api-prod-weu` — not on the whole resource group.
