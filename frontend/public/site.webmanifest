@@ -1,0 +1,19 @@
+{
+  "name": "Wharton Alumni AI Studio",
+  "short_name": "WAAIS",
+  "icons": [
+    {
+      "src": "/android-chrome-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#011f5b",
+  "background_color": "#011f5b",
+  "display": "standalone"
+}

@@ -866,14 +866,14 @@ watch(currentView, () => {
       <RouterLink class="brand brand--sidebar" to="/">
         <img
           class="brand-logo brand-logo--vertical"
-          src="/brand/wac-uk-v-white.png"
-          alt="Wharton Alumni Club United Kingdom"
-          width="467"
-          height="281"
+          src="/brand/waais-mark.svg"
+          alt="Wharton Alumni AI Studio"
+          width="100"
+          height="100"
         />
         <span class="brand-text">
           <strong>WAAIS App</strong>
-          <small>AI affinity group, WAC UK</small>
+          <small>AI affinity group, sanctioned by WAC UK</small>
         </span>
       </RouterLink>
 
