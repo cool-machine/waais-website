@@ -55,7 +55,9 @@ jobs:
         run: composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
       - name: Make startup script executable
-        run: chmod +x startup.sh
+        run: |
+          chmod +x startup.sh
+          find App_Data/jobs -name '*.sh' -exec chmod +x {} \;
 
       - name: Ensure runtime storage directories exist
         run: |

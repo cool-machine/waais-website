@@ -56,7 +56,7 @@ The final policy should state:
 - Domain: `whartonai.studio`.
 - What data is collected.
 - Why it is collected: membership review, account access, events, announcements, community operation, moderation, security, auditability.
-- Where primary data is hosted: Azure Europe geography, planned West Europe region.
+- Where primary data is hosted: Azure Europe geography. The Laravel app and frontend are in West Europe; PostgreSQL is in North Europe because the subscription currently blocks Flexible Server provisioning in West Europe.
 - Processors/vendors: Microsoft Azure, Azure Communication Services Email, Google OAuth, GitHub/GitHub Pages if still used, and Discourse once launched.
 - Who can access data: approved admins/super-admins for operations and review.
 - Retention approach: retain membership/application/audit records while account/community relationship exists unless deletion or legal retention rules apply.
@@ -69,7 +69,7 @@ Users in the United States, India, China, and other countries can use a Europe-h
 
 For launch, do:
 
-- Host primary app/database data in West Europe.
+- Host primary app/database data in the Azure Europe geography. Current production is West Europe for app/frontend and North Europe for PostgreSQL.
 - Give clear notice and request handling.
 - Avoid importing unsolicited alumni lists.
 - Let users apply/sign in themselves.
@@ -105,10 +105,10 @@ Before launch:
 - Create/confirm privacy mailbox.
 - Frontend legal placeholders replaced with launch-readiness copy; counsel review still recommended.
 - Membership application notice/checkbox implemented for first submit/reapply.
-- Confirm Azure region choice is documented as West Europe.
+- Confirm Azure region choice is documented as West Europe for app/frontend and North Europe for PostgreSQL.
 - Confirm all production secrets are in Azure settings, not git.
-- Confirm Google OAuth production client is owned by the organization account.
-- Confirm ACS Email sender/domain is organization controlled.
+- Confirm Google OAuth production client is owned by the organization account. Status: done May 3, 2026.
+- Confirm ACS Email sender/domain is organization controlled. Status: Azure-managed sender is live; custom-domain sender remains a deliverability/brand follow-up.
 - Decide retention policy for rejected applications and old audit logs.
 
 ## References
