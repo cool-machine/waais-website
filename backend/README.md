@@ -60,7 +60,7 @@ PHP 8.5.5
 Composer 2.9.7
 composer install
 composer validate --strict
-php artisan test       # last verified: 187 tests, 822 assertions
+php artisan test       # last verified: 194 tests, 848 assertions
 php artisan migrate:fresh
 ```
 
@@ -126,26 +126,26 @@ Reasoning:
 - Laravel already supports SMTP through Symfony Mailer, so no provider-specific package is required for the current notification flow.
 - Local development remains provider-independent with `MAIL_MAILER=log`.
 
-Production environment variables:
+Production environment variables (current shipped configuration uses the Azure-managed sender; the custom `mail.whartonai.studio` sender is a deferred deliverability/brand follow-up):
 
 ```env
 MAIL_MAILER=azure_communication_services
 ACS_MAIL_HOST=smtp.azurecomm.net
 ACS_MAIL_PORT=587
-ACS_MAIL_USERNAME=...
-ACS_MAIL_PASSWORD=...
-MAIL_FROM_ADDRESS=noreply@whartonai.studio
+ACS_MAIL_USERNAME=acs-waais-prod.<entra-app-id>.<entra-tenant-id>
+ACS_MAIL_PASSWORD=<entra-app-client-secret>
+MAIL_FROM_ADDRESS=DoNotReply@<azure-managed-subdomain>.azurecomm.net
 MAIL_FROM_NAME="${APP_NAME}"
-MAIL_EHLO_DOMAIN=whartonai.studio
 ```
 
-Operational setup still required outside the repo:
+Operational setup completed for production:
 
-- Create an Azure Communication Email Resource.
-- Provision and verify the sending domain for `whartonai.studio`.
-- Connect the Email Resource to an Azure Communication Services Resource.
-- Create SMTP credentials using a Microsoft Entra application with access to the Communication Services Resource.
-- Store the SMTP username and Entra application client secret as production secrets.
+- Email Communication Service `emailcomms-waais-prod` hosts the Azure-managed sender domain.
+- Communication Service `acs-waais-prod` is linked to that domain.
+- SMTP authentication uses the Entra app `acs-smtp-waais-prod` (Contributor on the ACS resource); the 2-year client secret rotation is calendared for early Q1 2028.
+- All `MAIL_*` and `ACS_MAIL_*` settings live in App Service application settings, never in git.
+
+Custom-domain sender follow-up (deferred): provision and verify `mail.whartonai.studio` via `az communication email domain create --domain-management CustomerManaged`, add SPF/DKIM/MX records to Cloudflare, link the new domain into `acs-waais-prod.linkedDomains`, then flip `MAIL_FROM_ADDRESS` on App Service. No code change required because the from-address is env-driven.
 
 References:
 
