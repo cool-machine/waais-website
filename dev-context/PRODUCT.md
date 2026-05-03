@@ -4,7 +4,7 @@
 
 ## Project Identity
 
-WAAIS is the Wharton Alumni AI Studio platform — a community platform for Wharton alumni working in or interested in AI. It includes a public website, an approved-member dashboard, an admin dashboard, and a future Discourse forum.
+WAAIS is the Wharton Alumni AI Studio platform — a community platform for Wharton alumni working in or interested in AI. WAAIS is an AI-focused affinity group within the **Wharton Alumni Club United Kingdom** chapter; the chapter has sanctioned WAAIS using the chapter's official co-brand mark on its public web property. WAAIS includes a public website, an approved-member dashboard, an admin dashboard, and a future Discourse forum.
 
 - Domain: `whartonai.studio`
 - Forum subdomain: `forum.whartonai.studio` (Discourse, hosted on its own Azure VM)
@@ -53,7 +53,7 @@ WAAIS is the Wharton Alumni AI Studio platform — a community platform for Whar
 - Body text white / muted `#94A3B8`.
 - Homepage uses a dark video hero, then white/off-white scroll sections for readability.
 - Dashboard, admin, auth surfaces remain dark.
-- Logo is a placeholder until George provides the WAAIS club brand mark (the official Wharton logo cannot be used).
+- Logo: the temporary site mark is the official **Wharton Alumni Club United Kingdom** co-brand lockup (white-on-transparent variants), used under the chapter's sanction since WAAIS is an affinity group within that chapter. Files live at `frontend/public/brand/wac-uk-h2-white.png` (horizontal, navbar) and `frontend/public/brand/wac-uk-v-white.png` (vertical, app sidebar). A WAAIS-specific brand mark from Penn/Wharton's brand team — if/when produced — would supersede this. The earlier billboard render is shelved until separately approved.
 - Subtle animations only: reveal-on-scroll, stat count-ups, hero parallax with `prefers-reduced-motion` fallback.
 
 The static visual references live in `/mockups/`:
@@ -174,5 +174,5 @@ Each event has:
 - PennKey feasibility — can WAAIS verify PennKey without institutional approval, or is Penn/Wharton IT approval required?
 - Final initial Discourse industry/region categories beyond the launch list above.
 - Other admins/super admins besides George.
-- Production email domain/Sender verification in Azure Communication Services.
-- Final brand/logo asset from George.
+- Production email domain/Sender verification in Azure Communication Services. — Resolved: custom-domain sender `noreply@mail.whartonai.studio` is shipped under WAAIS's own ACS resource.
+- Whether to commission a WAAIS-specific brand variant from Penn/Wharton's brand team to supersede the current WAC UK chapter mark.
