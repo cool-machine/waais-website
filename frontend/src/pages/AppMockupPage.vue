@@ -863,11 +863,17 @@ watch(currentView, () => {
 <template>
   <div class="app-shell">
     <aside class="app-sidebar">
-      <RouterLink class="brand" to="/">
-        <span class="brand-mark">WA</span>
-        <span>
+      <RouterLink class="brand brand--sidebar" to="/">
+        <img
+          class="brand-logo brand-logo--vertical"
+          src="/brand/wac-uk-v-white.png"
+          alt="Wharton Alumni Club United Kingdom"
+          width="467"
+          height="281"
+        />
+        <span class="brand-text">
           <strong>WAAIS App</strong>
-          <small>Frontend mockup only</small>
+          <small>AI affinity group, WAC UK</small>
         </span>
       </RouterLink>
 

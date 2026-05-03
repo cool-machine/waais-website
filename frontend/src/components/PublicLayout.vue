@@ -18,11 +18,17 @@ const links = [
   <div class="site-shell">
     <header class="topbar">
       <div class="topbar-inner">
-        <RouterLink class="brand" to="/">
-          <span class="brand-mark">WA</span>
-          <span>
+        <RouterLink class="brand brand--logo" to="/">
+          <img
+            class="brand-logo"
+            src="/brand/wac-uk-h2-white.png"
+            alt="Wharton Alumni Club United Kingdom"
+            width="725"
+            height="151"
+          />
+          <span class="brand-text">
             <strong>Wharton Alumni AI Studio</strong>
-            <small>AI community for Wharton alumni</small>
+            <small>AI affinity group, WAC United Kingdom</small>
           </span>
         </RouterLink>
 
