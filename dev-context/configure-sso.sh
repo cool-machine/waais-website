@@ -33,7 +33,15 @@ SiteSetting.enable_discourse_connect = true
 SiteSetting.auth_overrides_email = true
 SiteSetting.auth_overrides_name = true
 SiteSetting.discourse_connect_overrides_avatar = true
-SiteSetting.discourse_connect_overrides_groups = true
+# Group sync is OFF until matching Discourse groups exist.  The Laravel SSO
+# payload sends groups=waais_members,waais_admins; if `overrides_groups=true`
+# AND those groups do not exist in Discourse, sso_login 500s.  Re-enable AFTER
+# creating the groups in Discourse admin.
+SiteSetting.discourse_connect_overrides_groups = false
+# Verbose SSO logging stays on through the post-launch period so any future
+# sign-in failures land in /shared/log/rails/production.log with backtraces.
+# Turn off once stable.
+SiteSetting.verbose_discourse_connect_logging = true
 SiteSetting.logout_redirect = "https://whartonai.studio/"
 SiteSetting.title = "WAAIS Forum"
 SiteSetting.site_description = "Wharton Alumni AI Studio member forum."

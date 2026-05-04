@@ -153,6 +153,36 @@ The recurring security/maintenance schedule for the live system — daily monito
 
 > Newest entry at the top. Each entry: date, what was done, what was left, watch-outs.
 
+**May 4, 2026 — Discourse first-sign-in debugging (wizard + 500 + groups override)**
+
+After the provisioning slice landed, George tried his first SSO sign-in and hit two distinct problems back-to-back. Both are now fixed in the canonical scripts so re-running from scratch produces the working state.
+
+Problem 1 — **the setup wizard intercepts before SSO redirects.** Discourse renders `/finish_installation/index` (and `/finish-installation/register`) until at least one user with `admin=true` exists. The wizard route is hit BEFORE the regular auth flow, so even with `enable_discourse_connect=true` the user lands on the wizard's "create the first admin" form and never gets bounced to Laravel for SSO. The fix: pre-create the first admin via rails runner so the wizard goes away. Script: `dev-context/create-first-admin.sh` (idempotent; defaults to `gvishiani@gmail.com` / username `gvishiani` / Laravel external_id `waais-user-1` to match the existing super_admin in production). After running it, the front-page route flips from `finish_installation/index` to `list/latest` and `/session/sso` redirects to Laravel as expected.
+
+Problem 2 — **`SessionController#sso_login` returned HTTP 500 on the first real SSO sign-in.** The `sso` payload signature verified (so the secret matches on both sides), the controller entered, but the user-create-or-link path threw an unhandled exception. `production_errors.log` was empty (Discourse 8.x doesn't write 500s there by default), and the rails-runner repro broke on a `DiscourseConnect.parse(...)` API change that now requires `server_session:` keyword. Two suspected causes were addressed simultaneously:
+- (a) `discourse_connect_overrides_groups=true` while the SSO payload references `waais_members,waais_admins` — those groups don't exist in Discourse, and with overrides_groups on, Discourse tries to apply them and 500s. Fixed by setting `discourse_connect_overrides_groups=false`.
+- (b) No `SingleSignOnRecord` existed for `external_id=waais-user-1`, so Discourse fell back to the email-match path (`auth_overrides_email=true`) which collided with the pre-seeded admin user in some way that surfaced as a 500 rather than a friendly error. Fixed by pre-creating a `SingleSignOnRecord(user_id: 1, external_id: "waais-user-1", external_email/name/username: matching Laravel)` so Discourse takes the external_id-match path on first sign-in.
+
+Both fixes were applied live AND folded back into the canonical scripts:
+- `configure-sso.sh` now sets `discourse_connect_overrides_groups=false` and `verbose_discourse_connect_logging=true` (verbose stays on through the post-launch period; turn off once stable).
+- `create-first-admin.sh` now also creates the `SingleSignOnRecord` with a 4th positional arg for the external_id (default `waais-user-1`).
+
+Removed obsolete scratch scripts from `dev-context/`: `repro-sso.rb` (broken — needed `server_session:`) and `fix-sso-groups.rb` (its work is now in the canonical scripts). Kept `debug-sso.rb` (turns on verbose logging + dumps recent Logster errors — useful as an ongoing ops tool) and `list-discourse-settings.rb` (handy for finding setting names after future Discourse renames).
+
+Operational lessons (worth re-reading before the next major Discourse change):
+1. **With SSO + the setup wizard, ALWAYS pre-create the first admin BEFORE the first SSO sign-in attempt.** The wizard intercepts at the path level and is invisible to the SSO config. The fix is one rails runner call (now in `create-first-admin.sh`).
+2. **Don't enable `discourse_connect_overrides_groups` until the matching Discourse groups exist.** The Laravel SSO payload sends `groups=waais_members,waais_admins`; those groups must be created in Discourse admin first, otherwise sign-in 500s.
+3. **Pre-link `SingleSignOnRecord` for the first user** to avoid the email-match path on bootstrap. Subsequent users (signing up via Google for the first time) will go through the email-match path and Discourse handles that fine — it's only the bootstrap-collision case that needs a manual link.
+4. **Discourse's setting names changed across versions.** `discourse_connect_overrides_email/name/username` are gone — use the auth-method-agnostic `auth_overrides_email/name/username`. `list-discourse-settings.rb` is the canonical "what's actually available" probe; run it after any major Discourse upgrade.
+5. **If `repro-sso.rb`-style debugging is needed in the future**, the modern API is `DiscourseConnect.parse(payload, secret, server_session: <some_session_like_object>)` — the `server_session:` keyword arg is required since Discourse added CSRF protection on the nonce.
+
+Watch-outs (live runtime state diverges from defaults):
+- Setting `discourse_connect_overrides_groups=false` is INTENTIONAL until matching Discourse groups exist; do NOT flip it back to `true` without first creating `waais_members` and `waais_admins` as Discourse groups (they can be auto-managed once they exist).
+- `verbose_discourse_connect_logging=true` is INTENTIONAL through the post-launch period. Logs at `/shared/log/rails/production.log` will be more verbose than usual; turn off once SSO is stable for a few weeks.
+- The `SingleSignOnRecord` for user_id=1 was created manually (not by the SSO flow itself). Future SSO sign-ins for other users will create their own records normally.
+
+Status at end of this round: SSO end-to-end NOT yet verified by a real human sign-in. George to retry; if successful, the next session can mark the smoke-test complete and replace the "Coming soon" forum landing page with a "Visit the forum" CTA.
+
 **May 4, 2026 — Discourse self-host SHIPPED at `forum.whartonai.studio` (provisioning + SSO live)**
 
 Azure resources provisioned in **`rg-waais-discourse-swc`** (Sweden Central, separate RG from `rg-waais-prod-weu` so the forum stack can be torn down independently): `nsg-waais-discourse-swc` (allow 22/80/443 from Internet, applied at subnet level), `vnet-waais-discourse-swc` (10.10.0.0/16) + subnet `snet-discourse` (10.10.0.0/24), `pip-waais-discourse-swc` (Standard SKU, static IPv4 = **`20.91.215.43`**), `nic-waais-discourse-swc`, and `vm-waais-discourse-swc` (Standard_B2as_v2, Ubuntu 22.04 LTS gen2, 64 GB Premium SSD `osdisk-vm-waais-discourse-swc`, admin user `waaisops`, ssh key `~/.ssh/id_ed25519.pub`). Tagged `project=waais slice=discourse owner=george environment=prod`.
@@ -177,8 +207,8 @@ Secrets locations (NOT committed):
 Cost (estimated, Sweden Central): VM €38/mo + static public IPv4 €3/mo + 64 GB Premium SSD €8/mo + low egress €1/mo ≈ **€50/mo**. Compare CDCK Discourse Hosted Basic at $20/mo (~€18/mo) — self-host costs ~€32/mo more for full data sovereignty (EEA), plugin freedom, and SSO control.
 
 Watch-outs:
-1. **No first end-to-end SSO sign-in yet** — George must visit `forum.whartonai.studio` from a browser, click sign in, complete Google OAuth via the existing api.whartonai.studio flow, and verify he lands back on the forum as the admin user. The signature handshake works (verified above), but actual user creation and admin promotion only happens on the first real sign-in. If the round trip fails (most likely cause: `auth_overrides_email` setup-error edge cases), inspect `sudo docker logs --tail 200 app` and the Laravel App Service logs.
-2. **Setup wizard still appears for crawlers** — Discourse renders `finish_installation/index` until the first admin signs in. After George's first SSO sign-in, the wizard goes away. The dev-emails fallback (`DISCOURSE_DEVELOPER_EMAILS`) will also auto-grant admin on first signup, in addition to the SSO `admin: 'true'` payload.
+1. **First end-to-end SSO sign-in NOT yet confirmed by a human** — see the May 4 follow-up entry above for the wizard + 500 debugging round and the two live-state divergences from the canonical scripts (`discourse_connect_overrides_groups=false`, pre-seeded `SingleSignOnRecord`). Both fixes are now folded back into `configure-sso.sh` and `create-first-admin.sh`. George to retry; if the retry succeeds, the smoke-test is finally green.
+2. **Setup wizard quirk** — Discourse renders `finish_installation/index` UNTIL at least one admin user exists, and the wizard intercepts BEFORE SSO redirects, so the first admin must be pre-seeded via `create-first-admin.sh`. This is now done; future Discourse rebuilds (`./launcher destroy app && ./launcher start app` does NOT lose state, but a full re-bootstrap into a fresh container would) need to re-run that script.
 3. **Embedded Postgres lives only in the container's `/shared/postgres_data`** — if the VM is re-imaged without `/var/discourse/shared` snapshotted first, all forum data is gone. Discourse's `./launcher backup app` writes a tarball to `/var/discourse/shared/standalone/backups/`; queue setting up an Azure Blob backup target as an optional follow-up.
 4. **VM is the single point of failure.** No HA, no replica. Acceptable for an MVP forum with low traffic; revisit when Discourse becomes load-bearing.
 5. **The "Coming soon" page on `whartonai.studio/forum` is now stale** — see optional follow-up to swap it for a "Visit the forum" CTA after George smoke-tests SSO.
