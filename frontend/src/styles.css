@@ -121,6 +121,11 @@ textarea {
 .brand-text {
   display: inline-flex;
   flex-direction: column;
+  /* Cap brand text width so a long brand or subtitle can't push the nav grid
+     into the right-side CTA on the desktop layout. Below 1120px the topbar
+     collapses the nav onto its own row, so this cap only matters above that. */
+  max-width: 240px;
+  min-width: 0;
 }
 
 .brand strong,

@@ -873,7 +873,7 @@ watch(currentView, () => {
         />
         <span class="brand-text">
           <strong>WAAIS App</strong>
-          <small>AI affinity group, sanctioned by WAC UK</small>
+          <small>AI affinity group</small>
         </span>
       </RouterLink>
 

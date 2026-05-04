@@ -1,16 +1,18 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 
+// Inline nav links. "Become a member" is intentionally NOT in this list
+// because it's already the right-side CTA — duplicating it caused the nav
+// row to overflow into the CTA on narrower viewports. "Legal" is in the
+// footer only for the same reason.
 const links = [
   { label: 'Home', to: '/' },
   { label: 'Events', to: '/events' },
   { label: 'Startups', to: '/startups' },
   { label: 'About', to: '/about' },
   { label: 'Partners', to: '/partners' },
-  { label: 'Become a member', to: '/membership' },
   { label: 'Forum', to: '/forum' },
   { label: 'Contact', to: '/contact' },
-  { label: 'Legal', to: '/legal' },
 ]
 </script>
 
@@ -28,7 +30,7 @@ const links = [
           />
           <span class="brand-text">
             <strong>Wharton Alumni AI Studio</strong>
-            <small>AI affinity group, sanctioned by WAC United Kingdom</small>
+            <small>AI affinity group</small>
           </span>
         </RouterLink>
 
@@ -53,8 +55,7 @@ const links = [
       <div>
         <strong>Wharton Alumni AI Studio</strong>
         <p class="footer-affiliation">
-          An AI-focused affinity group within the Wharton Alumni Club United Kingdom,
-          built for the global Wharton alumni community.
+          An AI affinity group for the global Wharton alumni community.
         </p>
       </div>
       <RouterLink to="/legal">Privacy, cookies, and GDPR</RouterLink>
