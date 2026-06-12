@@ -46,7 +46,8 @@ const isAnonymous = computed(() => authUser.initialized && !hasSession.value)
 const emailVerified = computed(() => authUser.user?.email_verified === true)
 const justRegistered = computed(() => authUser.registered)
 const awaitingVerification = computed(() => justRegistered.value || (hasSession.value && !emailVerified.value))
-const showApplicationForm = computed(() => hasSession.value && emailVerified.value)
+const isApprovedMember = computed(() => applicationStore.status === 'approved')
+const showApplicationForm = computed(() => hasSession.value && emailVerified.value && !isApprovedMember.value)
 const canEditFields = computed(() => showApplicationForm.value && applicationStore.canEdit && !applicationStore.saving && !applicationStore.loading)
 const requiresPrivacyAcknowledgement = computed(() => !applicationStore.hasApplication || applicationStore.mustReapply)
 const canSubmit = computed(() => {
@@ -215,18 +216,28 @@ onMounted(() => {
     <PageHero compact eyebrow="Membership" title="Become a WAAIS member." lede="Create your account, verify your email, then complete the membership application for admin review." />
     <section class="section paper">
       <div class="section-inner">
-        <div v-if="hasSession" class="notice" style="margin-top: 20px">
-          <p class="small">
-            Account status: <strong>{{ statusLabel }}</strong>
-            <span v-if="authUser.user"> for {{ authUser.user.email }}</span>.
-          </p>
-          <p v-if="applicationStore.application?.review_notes" class="small">Admin note: {{ applicationStore.application.review_notes }}</p>
-          <p v-if="applicationStore.status === 'approved'" class="small">Approved applications are retained for profile history and cannot be edited here.</p>
-          <p v-else-if="applicationStore.needsMoreInfo" class="small">Please update the requested fields and resubmit for review.</p>
-          <p v-else-if="applicationStore.mustReapply" class="small">Your previous application was rejected. Update your answers and reapply when ready.</p>
+        <div v-if="hasSession && !isApprovedMember && !awaitingVerification" class="notice" style="margin-top: 20px">
+          <p v-if="applicationStore.status === 'submitted'" class="small"><strong>Application received.</strong> Our admins are reviewing it — you'll get an email as soon as a decision is made. You can still update your answers below in the meantime.</p>
+          <p v-else-if="applicationStore.needsMoreInfo" class="small"><strong>A little more information needed.</strong> Please update the requested fields below and resubmit.</p>
+          <p v-else-if="applicationStore.mustReapply" class="small"><strong>Your previous application was not approved.</strong> Update your answers below and reapply when ready.</p>
+          <p v-else class="small">Signed in as {{ authUser.user?.email }}. Complete the application below to apply for membership.</p>
+          <p v-if="applicationStore.application?.review_notes" class="small">Note from the admins: {{ applicationStore.application.review_notes }}</p>
           <div class="row" style="margin-top: 10px">
             <button class="button water" type="button" :disabled="authUser.signingOut" @click="signOut">{{ authUser.signingOut ? 'Signing out...' : 'Sign out' }}</button>
           </div>
+        </div>
+
+        <div v-if="isApprovedMember" class="auth-gate">
+          <article class="card">
+            <span class="tag">Member</span>
+            <h3>Welcome, you're a WAAIS member.</h3>
+            <p>Your membership is active for {{ authUser.user?.email }}. Head to your dashboard to manage your profile and startup listings, or join the conversation on the forum.</p>
+            <div class="row" style="margin-top: 14px">
+              <RouterLink class="button primary" to="/app/dashboard">Open dashboard</RouterLink>
+              <a class="button water" href="https://forum.whartonai.studio">Visit the forum</a>
+              <button class="button water" type="button" :disabled="authUser.signingOut" @click="signOut">{{ authUser.signingOut ? 'Signing out...' : 'Sign out' }}</button>
+            </div>
+          </article>
         </div>
 
         <div v-if="showSessionError" class="notice error-notice" style="margin-top: 20px">
