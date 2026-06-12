@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
@@ -196,6 +196,17 @@ async function resendVerification() {
   await authUser.resendVerification(form.email.trim())
 }
 
+const forgotPasswordNeedsEmail = ref(false)
+
+async function forgotPassword() {
+  if (signInForm.email.trim() === '') {
+    forgotPasswordNeedsEmail.value = true
+    return
+  }
+  forgotPasswordNeedsEmail.value = false
+  await authUser.requestPasswordReset(signInForm.email.trim())
+}
+
 watch(() => applicationStore.application, populateForm)
 
 onMounted(() => {
@@ -250,7 +261,12 @@ onMounted(() => {
             </div>
             <div class="row" style="margin-top: 14px">
               <button class="button water" type="button" @click="startMembershipSignIn">Continue with Google</button>
+              <button class="button water" type="button" :disabled="authUser.passwordResetRequesting" @click="forgotPassword">{{ authUser.passwordResetRequesting ? 'Sending...' : 'Forgot password?' }}</button>
             </div>
+            <div v-if="authUser.passwordResetRequested" class="notice" style="margin-top: 14px">
+              <p class="small">If an account exists for that email, a password reset link is on its way. In local development, it is written to the Laravel log.</p>
+            </div>
+            <p v-if="forgotPasswordNeedsEmail" class="small" style="margin-top: 10px">Enter your email above first, then press "Forgot password?".</p>
           </article>
         </div>
 

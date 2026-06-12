@@ -17,6 +17,10 @@ export const useAuthUserStore = defineStore('authUser', {
     loginError: null,
     resendingVerification: false,
     verificationResent: false,
+    passwordResetRequesting: false,
+    passwordResetRequested: false,
+    passwordResetting: false,
+    passwordResetError: null,
     error: null,
   }),
   getters: {
@@ -120,6 +124,40 @@ export const useAuthUserStore = defineStore('authUser', {
       }
     },
 
+    async requestPasswordReset(email, { signal } = {}) {
+      this.passwordResetRequesting = true
+      this.passwordResetRequested = false
+
+      try {
+        await sendJson('/api/auth/forgot-password', {
+          method: 'POST',
+          body: { email },
+          signal,
+        })
+        this.passwordResetRequested = true
+      } finally {
+        this.passwordResetRequesting = false
+      }
+    },
+
+    async resetPassword({ email, token, password, password_confirmation }, { signal } = {}) {
+      this.passwordResetting = true
+      this.passwordResetError = null
+
+      try {
+        await sendJson('/api/auth/reset-password', {
+          method: 'POST',
+          body: { email, token, password, password_confirmation },
+          signal,
+        })
+      } catch (error) {
+        this.passwordResetError = error
+        throw error
+      } finally {
+        this.passwordResetting = false
+      }
+    },
+
     async resendVerification(email, { signal } = {}) {
       this.resendingVerification = true
       this.verificationResent = false
@@ -171,6 +209,10 @@ export const useAuthUserStore = defineStore('authUser', {
       this.loginError = null
       this.resendingVerification = false
       this.verificationResent = false
+      this.passwordResetRequesting = false
+      this.passwordResetRequested = false
+      this.passwordResetting = false
+      this.passwordResetError = null
       this.error = null
     },
   },

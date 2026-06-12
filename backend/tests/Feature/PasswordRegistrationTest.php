@@ -156,6 +156,76 @@ class PasswordRegistrationTest extends TestCase
     }
 
     #[Test]
+    public function forgot_password_sends_reset_link_pointing_at_the_spa(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create(['email' => 'member@example.com']);
+
+        $this->postJson('/api/auth/forgot-password', ['email' => 'member@example.com'])
+            ->assertOk()
+            ->assertJson(['ok' => true]);
+
+        Notification::assertSentTo($user, \Illuminate\Auth\Notifications\ResetPassword::class, function ($notification) use ($user): bool {
+            $url = ($notification::$createUrlCallback)($user, $notification->token);
+
+            return str_contains($url, '/reset-password?token=')
+                && str_contains($url, 'email=member%40example.com');
+        });
+
+        // Unknown emails get the same response, with no mail sent.
+        $this->postJson('/api/auth/forgot-password', ['email' => 'ghost@example.com'])
+            ->assertOk()
+            ->assertJson(['ok' => true]);
+    }
+
+    #[Test]
+    public function password_can_be_reset_with_a_valid_token(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'member@example.com',
+            'password' => bcrypt('old-password-123'),
+        ]);
+
+        $token = \Illuminate\Support\Facades\Password::createToken($user);
+
+        $this->postJson('/api/auth/reset-password', [
+            'email' => 'member@example.com',
+            'token' => $token,
+            'password' => 'brand-new-password',
+            'password_confirmation' => 'brand-new-password',
+        ])->assertOk()->assertJson(['ok' => true]);
+
+        $this->postJson('/api/auth/login', [
+            'email' => 'member@example.com',
+            'password' => 'brand-new-password',
+        ])->assertOk();
+
+        $this->assertAuthenticatedAs($user->fresh());
+    }
+
+    #[Test]
+    public function password_reset_rejects_invalid_tokens(): void
+    {
+        User::factory()->create([
+            'email' => 'member@example.com',
+            'password' => bcrypt('old-password-123'),
+        ]);
+
+        $this->postJson('/api/auth/reset-password', [
+            'email' => 'member@example.com',
+            'token' => 'bogus-token',
+            'password' => 'brand-new-password',
+            'password_confirmation' => 'brand-new-password',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['email']);
+
+        $this->postJson('/api/auth/login', [
+            'email' => 'member@example.com',
+            'password' => 'old-password-123',
+        ])->assertOk();
+    }
+
+    #[Test]
     public function resend_verification_is_silent_for_unknown_emails(): void
     {
         Notification::fake();

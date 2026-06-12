@@ -21,6 +21,7 @@ const routePatterns = [
   ['/partners', 'partners', 'PartnersPage.vue'],
   ['/partners/:id', 'partner-detail', 'PartnerDetailPage.vue'],
   ['/membership', 'membership', 'MembershipPage.vue'],
+  ['/reset-password', 'reset-password', 'ResetPasswordPage.vue'],
   ['/forum', 'forum-preview', 'ForumPreviewPage.vue'],
   ['/contact', 'contact', 'ContactPage.vue'],
   ['/legal', 'legal', 'LegalPage.vue'],
@@ -37,6 +38,7 @@ const concreteUrls = [
   '/partners',
   '/partners/cloud-platform',
   '/membership',
+  '/reset-password',
   '/forum',
   '/contact',
   '/legal',
@@ -89,8 +91,8 @@ for (const view of appViews) {
   }
 }
 
-if (concreteUrls.length !== 24) {
-  failures.push(`Expected 24 concrete route URLs, got ${concreteUrls.length}`)
+if (concreteUrls.length !== 25) {
+  failures.push(`Expected 25 concrete route URLs, got ${concreteUrls.length}`)
 }
 
 if (failures.length > 0) {

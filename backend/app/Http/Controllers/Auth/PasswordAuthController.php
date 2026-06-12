@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password as PasswordBroker;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -165,6 +166,44 @@ class PasswordAuthController extends Controller
         }
 
         // Always OK to avoid account enumeration.
+        return response()->json(['ok' => true]);
+    }
+
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        // Fire-and-forget; identical response whether or not the account
+        // exists, to avoid account enumeration. Google-only accounts may
+        // also reset: this simply adds a password alongside Google sign-in.
+        PasswordBroker::sendResetLink(['email' => mb_strtolower($validated['email'])]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', Password::min(8)],
+        ]);
+
+        $validated['email'] = mb_strtolower($validated['email']);
+
+        $status = PasswordBroker::reset($validated, function (User $user, string $password): void {
+            $user->password = Hash::make($password);
+            $user->save();
+        });
+
+        if ($status !== PasswordBroker::PASSWORD_RESET) {
+            throw ValidationException::withMessages([
+                'email' => __($status),
+            ]);
+        }
+
         return response()->json(['ok' => true]);
     }
 

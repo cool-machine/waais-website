@@ -46,6 +46,8 @@ Route::post('/auth/email-link', [EmailAuthController::class, 'sendLink']);
 Route::post('/auth/register', [PasswordAuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/auth/login', [PasswordAuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/auth/resend-verification', [PasswordAuthController::class, 'resendVerification'])->middleware('throttle:6,1');
+Route::post('/auth/forgot-password', [PasswordAuthController::class, 'forgotPassword'])->middleware('throttle:6,1');
+Route::post('/auth/reset-password', [PasswordAuthController::class, 'resetPassword'])->middleware('throttle:6,1');
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/user', function (Request $request): array {

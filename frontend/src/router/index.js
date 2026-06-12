@@ -10,6 +10,7 @@ import LegalPage from '../pages/LegalPage.vue'
 import MembershipPage from '../pages/MembershipPage.vue'
 import PartnerDetailPage from '../pages/PartnerDetailPage.vue'
 import PartnersPage from '../pages/PartnersPage.vue'
+import ResetPasswordPage from '../pages/ResetPasswordPage.vue'
 import StartupDetailPage from '../pages/StartupDetailPage.vue'
 import StartupsPage from '../pages/StartupsPage.vue'
 
@@ -23,6 +24,7 @@ const routes = [
   { path: '/partners', name: 'partners', component: PartnersPage },
   { path: '/partners/:id', name: 'partner-detail', component: PartnerDetailPage },
   { path: '/membership', name: 'membership', component: MembershipPage },
+  { path: '/reset-password', name: 'reset-password', component: ResetPasswordPage },
   { path: '/forum', name: 'forum-preview', component: ForumPreviewPage },
   { path: '/contact', name: 'contact', component: ContactPage },
   { path: '/legal', name: 'legal', component: LegalPage },
