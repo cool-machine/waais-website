@@ -6,8 +6,6 @@ use App\Enums\ApprovalStatus;
 use App\Enums\PermissionRole;
 use App\Models\MembershipApplication;
 use App\Models\User;
-use App\Notifications\MembershipApplicationReceivedByAdmin;
-use App\Notifications\MembershipApplicationSubmitted;
 use App\Notifications\VerifyRegistrationEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -30,14 +28,11 @@ class PasswordRegistrationTest extends TestCase
             'password_confirmation' => 'super-secret-pw',
             'first_name' => 'Grace',
             'last_name' => 'Hopper',
-            'is_alumnus' => true,
-            'affiliation_type' => 'alumni',
-            'privacy_acknowledgement' => true,
         ], $overrides);
     }
 
     #[Test]
-    public function visitor_can_register_with_combined_application_form(): void
+    public function visitor_can_register_an_account(): void
     {
         Notification::fake();
 
@@ -51,21 +46,22 @@ class PasswordRegistrationTest extends TestCase
         $this->assertNull($user->email_verified_at);
         $this->assertNotNull($user->password);
 
-        $application = MembershipApplication::query()->where('applicant_id', $user->id)->firstOrFail();
-        $this->assertSame(ApprovalStatus::Draft, $application->approval_status);
-        $this->assertNull($application->submitted_at);
-        $this->assertNotNull($application->privacy_acknowledged_at);
+        // No application yet: the form is filled in after verification.
+        $this->assertSame(0, MembershipApplication::query()->where('applicant_id', $user->id)->count());
 
         Notification::assertSentTo($user, VerifyRegistrationEmail::class);
-        Notification::assertNotSentTo($user, MembershipApplicationSubmitted::class);
     }
 
     #[Test]
-    public function registration_requires_privacy_acknowledgement_and_unique_email(): void
+    public function registration_validates_password_and_unique_email(): void
     {
-        $this->postJson('/api/auth/register', $this->registrationPayload(['privacy_acknowledgement' => false]))
+        $this->postJson('/api/auth/register', $this->registrationPayload(['password_confirmation' => 'mismatch']))
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['privacy_acknowledgement']);
+            ->assertJsonValidationErrors(['password']);
+
+        $this->postJson('/api/auth/register', $this->registrationPayload(['password' => 'short', 'password_confirmation' => 'short']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['password']);
 
         User::factory()->create(['email' => 'applicant@example.com']);
 
@@ -75,15 +71,8 @@ class PasswordRegistrationTest extends TestCase
     }
 
     #[Test]
-    public function email_verification_submits_application_and_notifies_admins(): void
+    public function email_verification_marks_user_verified_and_signs_them_in(): void
     {
-        Notification::fake();
-
-        $admin = User::factory()->create([
-            'approval_status' => ApprovalStatus::Approved,
-            'permission_role' => PermissionRole::Admin,
-        ]);
-
         $this->postJson('/api/auth/register', $this->registrationPayload())->assertCreated();
         $user = User::query()->where('email', 'applicant@example.com')->firstOrFail();
 
@@ -93,15 +82,11 @@ class PasswordRegistrationTest extends TestCase
 
         $user->refresh();
         $this->assertNotNull($user->email_verified_at);
-        $this->assertSame(ApprovalStatus::Submitted, $user->approval_status);
         $this->assertAuthenticatedAs($user);
 
-        $application = MembershipApplication::query()->where('applicant_id', $user->id)->firstOrFail();
-        $this->assertSame(ApprovalStatus::Submitted, $application->approval_status);
-        $this->assertNotNull($application->submitted_at);
-
-        Notification::assertSentTo($user, MembershipApplicationSubmitted::class);
-        Notification::assertSentTo($admin, MembershipApplicationReceivedByAdmin::class);
+        // The /api/user projection exposes the verification flag the SPA
+        // uses to unlock the application form.
+        $this->getJson('/api/user')->assertOk()->assertJson(['email_verified' => true]);
     }
 
     #[Test]

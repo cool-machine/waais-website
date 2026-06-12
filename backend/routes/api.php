@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
             'name' => $user->name,
             'email' => $user->email,
             'approval_status' => $user->approval_status?->value,
+            'email_verified' => $user->email_verified_at !== null,
             'affiliation_type' => $user->affiliation_type?->value,
             'permission_role' => $user->permission_role?->value,
             'can_access_member_areas' => $user->canAccessMemberAreas(),

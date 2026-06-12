@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
@@ -8,6 +8,14 @@ import { useMembershipApplicationStore } from '../stores/membershipApplication'
 
 const authUser = useAuthUserStore()
 const applicationStore = useMembershipApplicationStore()
+
+const registerForm = reactive({
+  first_name: '',
+  last_name: '',
+  email: '',
+  password: '',
+  password_confirmation: '',
+})
 
 const form = reactive({
   affiliation_type: 'alumni',
@@ -30,51 +38,47 @@ const form = reactive({
   gender: '',
   age: '',
   privacy_acknowledgement: false,
-  password: '',
-  password_confirmation: '',
-})
-const signInForm = reactive({
-  email: '',
-  password: '',
 })
 
 const hasSession = computed(() => authUser.isAuthenticated)
 const checkingSession = computed(() => authUser.loading || !authUser.initialized)
-const showApplicationForm = computed(() => authUser.initialized && hasSession.value)
 const isAnonymous = computed(() => authUser.initialized && !hasSession.value)
+const emailVerified = computed(() => authUser.user?.email_verified === true)
 const justRegistered = computed(() => authUser.registered)
-const canEditFields = computed(() => {
-  if (isAnonymous.value) return !authUser.registering && !justRegistered.value
-  return showApplicationForm.value && applicationStore.canEdit && !applicationStore.saving && !applicationStore.loading
-})
-const requiresPrivacyAcknowledgement = computed(() => isAnonymous.value || !applicationStore.hasApplication || applicationStore.mustReapply)
+const awaitingVerification = computed(() => justRegistered.value || (hasSession.value && !emailVerified.value))
+const showApplicationForm = computed(() => hasSession.value && emailVerified.value)
+const canEditFields = computed(() => showApplicationForm.value && applicationStore.canEdit && !applicationStore.saving && !applicationStore.loading)
+const requiresPrivacyAcknowledgement = computed(() => !applicationStore.hasApplication || applicationStore.mustReapply)
 const canSubmit = computed(() => {
-  if (!canEditFields.value) return false
-  if (requiresPrivacyAcknowledgement.value && !form.privacy_acknowledgement) return false
-  if (isAnonymous.value) return form.password.length >= 8 && form.password === form.password_confirmation
-  return true
+  return canEditFields.value
+    && (!requiresPrivacyAcknowledgement.value || form.privacy_acknowledgement)
+})
+const canRegister = computed(() => {
+  return !authUser.registering
+    && registerForm.first_name.trim() !== ''
+    && registerForm.last_name.trim() !== ''
+    && registerForm.email.trim() !== ''
+    && registerForm.password.length >= 8
+    && registerForm.password === registerForm.password_confirmation
 })
 const showSessionError = computed(() => Boolean(authUser.error))
 const statusLabel = computed(() => {
   const status = applicationStore.status
   if (!hasSession.value) return 'Not registered'
+  if (!emailVerified.value) return 'Awaiting email verification'
   if (applicationStore.loading) return 'Loading application'
   if (!status) return 'Not submitted'
   return status.replaceAll('_', ' ')
 })
 const saveLabel = computed(() => {
-  if (isAnonymous.value) return authUser.registering ? 'Submitting...' : 'Create account & apply'
   if (applicationStore.saving) return 'Saving...'
   if (applicationStore.mustReapply) return 'Reapply'
   if (applicationStore.hasApplication) return 'Update application'
   return 'Submit application'
 })
-const validationErrors = computed(() => ({
-  ...(applicationStore.saveError?.body?.errors ?? {}),
-  ...(authUser.registerError?.body?.errors ?? {}),
-}))
-const loginErrors = computed(() => authUser.loginError?.body?.errors ?? {})
-const startMembershipSignIn = () => authUser.startGoogleSignIn({ next: '/membership' })
+const validationErrors = computed(() => applicationStore.saveError?.body?.errors ?? {})
+const registerErrors = computed(() => authUser.registerError?.body?.errors ?? {})
+const verificationEmail = computed(() => registerForm.email.trim() || authUser.user?.email || '')
 
 function populateForm(application) {
   const source = application ?? {}
@@ -171,40 +175,26 @@ async function loadApplication() {
   }
 }
 
-async function submitApplication() {
-  if (isAnonymous.value) {
-    await authUser.register({
-      ...payload(),
-      password: form.password,
-      password_confirmation: form.password_confirmation,
-    })
-    return
-  }
+async function register() {
+  await authUser.register({
+    first_name: registerForm.first_name.trim(),
+    last_name: registerForm.last_name.trim(),
+    email: registerForm.email.trim(),
+    password: registerForm.password,
+    password_confirmation: registerForm.password_confirmation,
+  })
+  registerForm.password = ''
+  registerForm.password_confirmation = ''
+}
 
+async function submitApplication() {
   await applicationStore.save(payload())
   populateForm(applicationStore.application)
   await authUser.loadCurrentUser({ force: true }).catch(() => {})
 }
 
-async function signIn() {
-  await authUser.login({ email: signInForm.email, password: signInForm.password })
-  signInForm.password = ''
-  await loadApplication().catch(() => {})
-}
-
 async function resendVerification() {
-  await authUser.resendVerification(form.email.trim())
-}
-
-const forgotPasswordNeedsEmail = ref(false)
-
-async function forgotPassword() {
-  if (signInForm.email.trim() === '') {
-    forgotPasswordNeedsEmail.value = true
-    return
-  }
-  forgotPasswordNeedsEmail.value = false
-  await authUser.requestPasswordReset(signInForm.email.trim())
+  await authUser.resendVerification(verificationEmail.value)
 }
 
 watch(() => applicationStore.application, populateForm)
@@ -216,7 +206,7 @@ onMounted(() => {
 
 <template>
   <PublicLayout>
-    <PageHero compact eyebrow="Membership" title="Become a WAAIS member." lede="Existing members sign in. New applicants apply. Non-members can still propose topics, partnerships, and listings." />
+    <PageHero compact eyebrow="Membership" title="Become a WAAIS member." lede="Create your account, verify your email, then complete the membership application for admin review." />
     <section class="section paper">
       <div class="section-inner">
         <div v-if="hasSession" class="notice" style="margin-top: 20px">
@@ -246,42 +236,38 @@ onMounted(() => {
           </article>
         </div>
 
-        <div v-else-if="isAnonymous && !justRegistered" class="auth-gate">
-          <article class="card">
-            <span class="tag">Already registered?</span>
-            <h3>Sign in to your account.</h3>
-            <p>New applicants can skip this and fill in the application form below — your account is created when you submit.</p>
-            <form class="compact-auth-form" @submit.prevent="signIn">
-              <label>Email<input v-model="signInForm.email" required type="email" autocomplete="email" placeholder="you@example.com" :disabled="authUser.loggingIn" /></label>
-              <label>Password<input v-model="signInForm.password" required type="password" autocomplete="current-password" placeholder="Your password" :disabled="authUser.loggingIn" /></label>
-              <button class="button secondary paper-button" type="submit" :disabled="authUser.loggingIn">{{ authUser.loggingIn ? 'Signing in...' : 'Sign in' }}</button>
-            </form>
-            <div v-if="Object.keys(loginErrors).length" class="notice error-notice" style="margin-top: 14px">
-              <p v-for="(messages, field) in loginErrors" :key="field" class="small">{{ messages[0] }}</p>
-            </div>
-            <div class="row" style="margin-top: 14px">
-              <button class="button water" type="button" @click="startMembershipSignIn">Continue with Google</button>
-              <button class="button water" type="button" :disabled="authUser.passwordResetRequesting" @click="forgotPassword">{{ authUser.passwordResetRequesting ? 'Sending...' : 'Forgot password?' }}</button>
-            </div>
-            <div v-if="authUser.passwordResetRequested" class="notice" style="margin-top: 14px">
-              <p class="small">If an account exists for that email, a password reset link is on its way. In local development, it is written to the Laravel log.</p>
-            </div>
-            <p v-if="forgotPasswordNeedsEmail" class="small" style="margin-top: 10px">Enter your email above first, then press "Forgot password?".</p>
-          </article>
-        </div>
-
-        <div v-if="justRegistered" class="notice" style="margin-top: 20px">
-          <p class="small"><strong>Almost done — verify your email.</strong> We sent a verification link to {{ form.email }}. Click it to submit your application for admin review. In local development, the link is written to the Laravel log.</p>
+        <div v-else-if="awaitingVerification" class="notice" style="margin-top: 20px">
+          <p class="small"><strong>Verify your email to continue.</strong> We sent a verification link<span v-if="verificationEmail"> to {{ verificationEmail }}</span>. Click it to unlock the membership application form. In local development, the link is written to the Laravel log.</p>
           <div class="row" style="margin-top: 10px">
             <button class="button water" type="button" :disabled="authUser.resendingVerification" @click="resendVerification">{{ authUser.resendingVerification ? 'Sending...' : 'Resend verification email' }}</button>
           </div>
           <p v-if="authUser.verificationResent" class="small" style="margin-top: 8px">Verification email sent again.</p>
         </div>
 
-        <form v-if="!checkingSession && !justRegistered" class="application-form" @submit.prevent="submitApplication">
+        <div v-else-if="isAnonymous" class="auth-gate">
+          <article class="card">
+            <span class="tag">Step 1 of 2</span>
+            <h3>Create your account.</h3>
+            <p>After verifying your email you will complete the membership application, which our admins review.</p>
+            <form class="compact-auth-form" @submit.prevent="register">
+              <label>First name<input v-model="registerForm.first_name" required autocomplete="given-name" placeholder="First name" :disabled="authUser.registering" /></label>
+              <label>Last name<input v-model="registerForm.last_name" required autocomplete="family-name" placeholder="Last name" :disabled="authUser.registering" /></label>
+              <label>Email<input v-model="registerForm.email" required type="email" autocomplete="email" placeholder="you@example.com" :disabled="authUser.registering" /></label>
+              <label>Password<input v-model="registerForm.password" required type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" :disabled="authUser.registering" /></label>
+              <label>Confirm password<input v-model="registerForm.password_confirmation" required type="password" autocomplete="new-password" minlength="8" placeholder="Repeat password" :disabled="authUser.registering" /></label>
+              <button class="button primary" type="submit" :disabled="!canRegister">{{ authUser.registering ? 'Creating account...' : 'Create account' }}</button>
+            </form>
+            <div v-if="Object.keys(registerErrors).length" class="notice error-notice" style="margin-top: 14px">
+              <p v-for="(messages, field) in registerErrors" :key="field" class="small">{{ messages[0] }}</p>
+            </div>
+            <div class="row" style="margin-top: 14px">
+              <button class="button water" type="button" @click="authUser.startGoogleSignIn({ next: '/membership' })">Continue with Google</button>
+            </div>
+          </article>
+        </div>
+
+        <form v-else-if="showApplicationForm" class="application-form" @submit.prevent="submitApplication">
           <label>Email *<input v-model="form.email" required type="email" autocomplete="email" placeholder="you@example.com" :disabled="!canEditFields" /></label>
-          <label v-if="isAnonymous">Password *<input v-model="form.password" required type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" :disabled="!canEditFields" /></label>
-          <label v-if="isAnonymous">Confirm password *<input v-model="form.password_confirmation" required type="password" autocomplete="new-password" minlength="8" placeholder="Repeat password" :disabled="!canEditFields" /></label>
           <label>Phone associated with WhatsApp account (optional)<input v-model="form.phone_whatsapp" placeholder="Only if you want to join the WhatsApp community" :disabled="!canEditFields" /></label>
           <label>First name *<input v-model="form.first_name" required placeholder="First name" :disabled="!canEditFields" /></label>
           <label>Last name *<input v-model="form.last_name" required placeholder="Last name" :disabled="!canEditFields" /></label>
@@ -331,7 +317,6 @@ onMounted(() => {
 
           <div class="row full">
             <button class="button primary" type="submit" :disabled="!canSubmit">{{ saveLabel }}</button>
-            <button v-if="!hasSession" class="button water" type="button" @click="startMembershipSignIn">Sign in with Google</button>
           </div>
         </form>
 

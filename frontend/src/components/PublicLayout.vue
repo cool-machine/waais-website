@@ -42,7 +42,7 @@ const links = [
 
         <div class="actions">
           <RouterLink class="button secondary" to="/membership">Become a member</RouterLink>
-          <RouterLink class="button primary" to="/app/sign-in">Member sign in</RouterLink>
+          <RouterLink class="button primary" to="/sign-in">Member sign in</RouterLink>
         </div>
       </div>
     </header>
