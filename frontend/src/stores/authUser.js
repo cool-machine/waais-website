@@ -10,6 +10,13 @@ export const useAuthUserStore = defineStore('authUser', {
     emailLinkSending: false,
     emailLinkSent: false,
     emailLinkError: null,
+    registering: false,
+    registered: false,
+    registerError: null,
+    loggingIn: false,
+    loginError: null,
+    resendingVerification: false,
+    verificationResent: false,
     error: null,
   }),
   getters: {
@@ -73,6 +80,62 @@ export const useAuthUserStore = defineStore('authUser', {
       }
     },
 
+    async register(payload, { signal } = {}) {
+      this.registering = true
+      this.registered = false
+      this.registerError = null
+
+      try {
+        await sendJson('/api/auth/register', {
+          method: 'POST',
+          body: payload,
+          signal,
+        })
+        this.registered = true
+      } catch (error) {
+        this.registerError = error
+        throw error
+      } finally {
+        this.registering = false
+      }
+    },
+
+    async login({ email, password }, { signal } = {}) {
+      this.loggingIn = true
+      this.loginError = null
+
+      try {
+        await sendJson('/api/auth/login', {
+          method: 'POST',
+          body: { email, password },
+          auth: true,
+          signal,
+        })
+        await this.loadCurrentUser({ force: true, signal })
+      } catch (error) {
+        this.loginError = error
+        throw error
+      } finally {
+        this.loggingIn = false
+      }
+    },
+
+    async resendVerification(email, { signal } = {}) {
+      this.resendingVerification = true
+      this.verificationResent = false
+
+      try {
+        await sendJson('/api/auth/resend-verification', {
+          method: 'POST',
+          body: { email },
+          signal,
+        })
+        this.verificationResent = true
+      } finally {
+        this.resendingVerification = false
+      }
+    },
+
     async signOut({ signal } = {}) {
       this.signingOut = true
       this.error = null
@@ -101,6 +164,13 @@ export const useAuthUserStore = defineStore('authUser', {
       this.emailLinkSending = false
       this.emailLinkSent = false
       this.emailLinkError = null
+      this.registering = false
+      this.registered = false
+      this.registerError = null
+      this.loggingIn = false
+      this.loginError = null
+      this.resendingVerification = false
+      this.verificationResent = false
       this.error = null
     },
   },
