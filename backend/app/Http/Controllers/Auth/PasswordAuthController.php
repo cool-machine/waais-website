@@ -81,9 +81,21 @@ class PasswordAuthController extends Controller
             $request->session()->regenerate();
         }
 
+        // Resume an interrupted Discourse SSO handshake (user clicked
+        // "Log In" on the forum and was sent here to authenticate).
+        $redirect = null;
+        $user = Auth::guard('web')->user();
+        if ($request->hasSession() && $user->canAccessMemberAreas()) {
+            $intended = $request->session()->pull('discourse.sso.intended_url');
+            if (is_string($intended) && $intended !== '') {
+                $redirect = $intended;
+            }
+        }
+
         return response()->json([
             'ok' => true,
-            'email_verified' => Auth::guard('web')->user()->email_verified_at !== null,
+            'email_verified' => $user->email_verified_at !== null,
+            'redirect' => $redirect,
         ]);
     }
 

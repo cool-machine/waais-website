@@ -31,7 +31,7 @@ class DiscourseSsoTest extends TestCase
         $url = $this->signedSsoUrl();
 
         $response = $this->get($url)
-            ->assertRedirect('http://127.0.0.1:5174/waais-website/app/sign-in');
+            ->assertRedirect('http://127.0.0.1:5174/waais-website/sign-in');
 
         $this->assertStringContainsString('/discourse/sso?', $response->baseResponse->getSession()->get('discourse.sso.intended_url'));
         $this->assertStringContainsString('sig=', $response->baseResponse->getSession()->get('discourse.sso.intended_url'));

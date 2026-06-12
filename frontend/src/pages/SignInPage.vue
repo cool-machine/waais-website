@@ -18,8 +18,13 @@ const loginErrors = computed(() => authUser.loginError ? (authUser.loginError.bo
 const startGoogleSignIn = () => authUser.startGoogleSignIn({ next: '/membership' })
 
 async function signIn() {
-  await authUser.login({ email: form.email, password: form.password })
+  const response = await authUser.login({ email: form.email, password: form.password })
   form.password = ''
+  // Resume an interrupted forum (Discourse SSO) sign-in if one is pending.
+  if (response?.redirect) {
+    window.location.assign(response.redirect)
+    return
+  }
   router.push('/membership')
 }
 

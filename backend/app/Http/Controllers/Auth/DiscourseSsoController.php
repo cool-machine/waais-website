@@ -25,7 +25,7 @@ class DiscourseSsoController extends Controller
         if (! Auth::check()) {
             $request->session()->put('discourse.sso.intended_url', $request->fullUrl());
 
-            return redirect()->away($this->frontendUrl('/app/sign-in'));
+            return redirect()->away($this->frontendUrl('/sign-in'));
         }
 
         /** @var User $user */

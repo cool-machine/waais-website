@@ -110,13 +110,14 @@ export const useAuthUserStore = defineStore('authUser', {
       this.loginError = null
 
       try {
-        await sendJson('/api/auth/login', {
+        const response = await sendJson('/api/auth/login', {
           method: 'POST',
           body: { email, password },
           auth: true,
           signal,
         })
         await this.loadCurrentUser({ force: true, signal })
+        return response
       } catch (error) {
         this.loginError = error
         throw error

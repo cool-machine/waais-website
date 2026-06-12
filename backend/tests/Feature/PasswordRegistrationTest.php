@@ -211,6 +211,41 @@ class PasswordRegistrationTest extends TestCase
     }
 
     #[Test]
+    public function login_resumes_pending_discourse_sso_for_members(): void
+    {
+        $member = User::factory()->create([
+            'email' => 'member@example.com',
+            'password' => bcrypt('correct-horse-battery'),
+            'approval_status' => ApprovalStatus::Approved,
+            'permission_role' => PermissionRole::Member,
+        ]);
+
+        $ssoUrl = 'https://api.whartonai.studio/discourse/sso?sso=abc&sig=def';
+
+        $this->from('http://localhost')
+            ->withSession(['discourse.sso.intended_url' => $ssoUrl])
+            ->postJson('/api/auth/login', [
+                'email' => 'member@example.com',
+                'password' => 'correct-horse-battery',
+            ])->assertOk()->assertJson(['ok' => true, 'redirect' => $ssoUrl]);
+
+        // Non-members do not get bounced into the forum handshake.
+        $pending = User::factory()->create([
+            'email' => 'pending@example.com',
+            'password' => bcrypt('correct-horse-battery'),
+            'approval_status' => ApprovalStatus::Submitted,
+            'permission_role' => PermissionRole::PendingUser,
+        ]);
+
+        $this->from('http://localhost')
+            ->withSession(['discourse.sso.intended_url' => $ssoUrl])
+            ->postJson('/api/auth/login', [
+                'email' => 'pending@example.com',
+                'password' => 'correct-horse-battery',
+            ])->assertOk()->assertJson(['ok' => true, 'redirect' => null]);
+    }
+
+    #[Test]
     public function resend_verification_is_silent_for_unknown_emails(): void
     {
         Notification::fake();
