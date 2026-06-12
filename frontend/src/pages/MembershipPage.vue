@@ -197,6 +197,12 @@ async function resendVerification() {
   await authUser.resendVerification(verificationEmail.value)
 }
 
+async function signOut() {
+  await authUser.signOut()
+  applicationStore.clear()
+  populateForm(null)
+}
+
 watch(() => applicationStore.application, populateForm)
 
 onMounted(() => {
@@ -218,6 +224,9 @@ onMounted(() => {
           <p v-if="applicationStore.status === 'approved'" class="small">Approved applications are retained for profile history and cannot be edited here.</p>
           <p v-else-if="applicationStore.needsMoreInfo" class="small">Please update the requested fields and resubmit for review.</p>
           <p v-else-if="applicationStore.mustReapply" class="small">Your previous application was rejected. Update your answers and reapply when ready.</p>
+          <div class="row" style="margin-top: 10px">
+            <button class="button water" type="button" :disabled="authUser.signingOut" @click="signOut">{{ authUser.signingOut ? 'Signing out...' : 'Sign out' }}</button>
+          </div>
         </div>
 
         <div v-if="showSessionError" class="notice error-notice" style="margin-top: 20px">
@@ -240,6 +249,7 @@ onMounted(() => {
           <p class="small"><strong>Verify your email to continue.</strong> We sent a verification link<span v-if="verificationEmail"> to {{ verificationEmail }}</span>. Click it to unlock the membership application form. In local development, the link is written to the Laravel log.</p>
           <div class="row" style="margin-top: 10px">
             <button class="button water" type="button" :disabled="authUser.resendingVerification" @click="resendVerification">{{ authUser.resendingVerification ? 'Sending...' : 'Resend verification email' }}</button>
+            <button class="button water" type="button" :disabled="authUser.signingOut" @click="signOut">{{ authUser.signingOut ? 'Signing out...' : 'Use a different account' }}</button>
           </div>
           <p v-if="authUser.verificationResent" class="small" style="margin-top: 8px">Verification email sent again.</p>
         </div>
