@@ -34,6 +34,8 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'super_admin_email' => env('SUPER_ADMIN_EMAIL'),
+
     'contact' => [
         'recipient' => env('CONTACT_RECIPIENT', 'george@whartonai.studio'),
     ],

@@ -31,6 +31,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('events:send-reminders')
             ->dailyAt('09:00')
             ->withoutOverlapping();
+
+        // First-super-admin bootstrap; no-op unless SUPER_ADMIN_EMAIL is
+        // set and that account exists, is verified, and isn't yet promoted.
+        $schedule->command('waais:ensure-super-admin')
+            ->everyMinute()
+            ->withoutOverlapping();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         // Trust the platform load balancer in front of the Laravel container so
