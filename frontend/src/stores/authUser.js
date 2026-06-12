@@ -92,6 +92,7 @@ export const useAuthUserStore = defineStore('authUser', {
       try {
         await sendJson('/api/auth/register', {
           method: 'POST',
+          auth: true,
           body: payload,
           signal,
         })
@@ -131,6 +132,7 @@ export const useAuthUserStore = defineStore('authUser', {
       try {
         await sendJson('/api/auth/forgot-password', {
           method: 'POST',
+          auth: true,
           body: { email },
           signal,
         })
@@ -147,6 +149,7 @@ export const useAuthUserStore = defineStore('authUser', {
       try {
         await sendJson('/api/auth/reset-password', {
           method: 'POST',
+          auth: true,
           body: { email, token, password, password_confirmation },
           signal,
         })
@@ -165,6 +168,7 @@ export const useAuthUserStore = defineStore('authUser', {
       try {
         await sendJson('/api/auth/resend-verification', {
           method: 'POST',
+          auth: true,
           body: { email },
           signal,
         })

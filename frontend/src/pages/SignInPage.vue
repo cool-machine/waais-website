@@ -14,7 +14,7 @@ const form = reactive({
 })
 const forgotPasswordNeedsEmail = ref(false)
 
-const loginErrors = computed(() => authUser.loginError?.body?.errors ?? {})
+const loginErrors = computed(() => authUser.loginError ? (authUser.loginError.body?.errors ?? { general: [authUser.loginError.body?.message || 'Could not sign in. Please try again.'] }) : {})
 const startGoogleSignIn = () => authUser.startGoogleSignIn({ next: '/membership' })
 
 async function signIn() {

@@ -77,7 +77,7 @@ const saveLabel = computed(() => {
   return 'Submit application'
 })
 const validationErrors = computed(() => applicationStore.saveError?.body?.errors ?? {})
-const registerErrors = computed(() => authUser.registerError?.body?.errors ?? {})
+const registerErrors = computed(() => authUser.registerError ? (authUser.registerError.body?.errors ?? { general: [authUser.registerError.body?.message || 'Could not create the account. Please try again.'] }) : {})
 const verificationEmail = computed(() => registerForm.email.trim() || authUser.user?.email || '')
 
 function populateForm(application) {

@@ -127,7 +127,23 @@ export async function sendJson(path, options = {}) {
     'Content-Type': 'application/json',
   }
 
-  const xsrfToken = auth ? readCookie('XSRF-TOKEN') : null
+  // Sanctum SPA flow: the first mutating request of a fresh browser
+  // session has no XSRF-TOKEN cookie yet. Bootstrap it once via
+  // /sanctum/csrf-cookie, then attach the token header.
+  let xsrfToken = auth ? readCookie('XSRF-TOKEN') : null
+  if (auth && !xsrfToken) {
+    try {
+      await fetchFn(buildUrl('/sanctum/csrf-cookie'), {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        credentials: 'include',
+        signal,
+      })
+      xsrfToken = readCookie('XSRF-TOKEN')
+    } catch {
+      // Fall through; the request below will surface a useful error.
+    }
+  }
   if (xsrfToken) {
     headers['X-XSRF-TOKEN'] = xsrfToken
   }

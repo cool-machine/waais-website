@@ -24,7 +24,7 @@ const canSubmit = computed(() =>
   && form.password.length >= 8
   && form.password === form.password_confirmation,
 )
-const errors = computed(() => authUser.passwordResetError?.body?.errors ?? {})
+const errors = computed(() => authUser.passwordResetError ? (authUser.passwordResetError.body?.errors ?? { general: [authUser.passwordResetError.body?.message || 'Could not reset the password. Please try again.'] }) : {})
 
 async function submit() {
   await authUser.resetPassword({
