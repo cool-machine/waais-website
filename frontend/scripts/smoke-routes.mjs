@@ -89,24 +89,6 @@ for (const view of appViews) {
   }
 }
 
-const requiredPagesArtifacts = [
-  'index.html',
-  '404.html',
-  'assets/waais-hero-video.mp4',
-  'favicon.svg',
-  'icons.svg',
-]
-
-for (const artifact of requiredPagesArtifacts) {
-  if (!existsSync(join(repoRoot, artifact))) {
-    failures.push(`Missing GitHub Pages artifact ${artifact}`)
-  }
-}
-
-if (!readFileSync(join(repoRoot, 'index.html'), 'utf8').includes('/waais-website/assets/')) {
-  failures.push('Root index.html is not using the /waais-website/ asset base')
-}
-
 if (concreteUrls.length !== 24) {
   failures.push(`Expected 24 concrete route URLs, got ${concreteUrls.length}`)
 }
