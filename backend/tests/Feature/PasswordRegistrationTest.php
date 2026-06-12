@@ -246,6 +246,29 @@ class PasswordRegistrationTest extends TestCase
     }
 
     #[Test]
+    public function submitting_an_application_does_not_demote_admins(): void
+    {
+        $superAdmin = User::factory()->create([
+            'email' => 'boss@example.com',
+            'approval_status' => ApprovalStatus::Approved,
+            'permission_role' => PermissionRole::SuperAdmin,
+        ]);
+
+        $this->actingAs($superAdmin)->postJson('/api/membership-application', [
+            'email' => 'boss@example.com',
+            'first_name' => 'Big',
+            'last_name' => 'Boss',
+            'is_alumnus' => true,
+            'affiliation_type' => 'alumni',
+            'privacy_acknowledgement' => true,
+        ])->assertCreated();
+
+        $superAdmin->refresh();
+        $this->assertSame(PermissionRole::SuperAdmin, $superAdmin->permission_role);
+        $this->assertSame(ApprovalStatus::Approved, $superAdmin->approval_status);
+    }
+
+    #[Test]
     public function resend_verification_is_silent_for_unknown_emails(): void
     {
         Notification::fake();

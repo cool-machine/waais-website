@@ -103,7 +103,20 @@ class MembershipApplicationController extends Controller
 
     private function syncUserStatus(Request $request, MembershipApplication $application): void
     {
-        $request->user()->forceFill([
+        $user = $request->user();
+
+        // Admins and super admins keep their role and approved status when
+        // they submit or update their own application; only their
+        // affiliation is synced.
+        if ($user->permission_role?->includesAdminAccess()) {
+            $user->forceFill([
+                'affiliation_type' => $application->affiliation_type,
+            ])->save();
+
+            return;
+        }
+
+        $user->forceFill([
             'approval_status' => ApprovalStatus::Submitted,
             'permission_role' => PermissionRole::PendingUser,
             'affiliation_type' => $application->affiliation_type,

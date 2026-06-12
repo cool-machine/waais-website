@@ -33,7 +33,7 @@ class MembershipApplicationReceivedByAdmin extends Notification
             ->greeting('A new application is in the queue.')
             ->line('Applicant: '.$applicantName.($email ? ' ('.$email.')' : ''))
             ->line('Affiliation: '.($this->application->affiliation_type?->value ?? 'unspecified'))
-            ->action('Open admin queue', rtrim(config('app.url'), '/').'/admin/applications')
+            ->action('Open admin queue', rtrim(config('app.frontend_url'), '/').'/app/approvals')
             ->salutation('WAAIS admin notice');
     }
 }
