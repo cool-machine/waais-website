@@ -21,6 +21,8 @@ const routePatterns = [
   ['/partners', 'partners', 'PartnersPage.vue'],
   ['/partners/:id', 'partner-detail', 'PartnerDetailPage.vue'],
   ['/membership', 'membership', 'MembershipPage.vue'],
+  ['/reset-password', 'reset-password', 'ResetPasswordPage.vue'],
+  ['/sign-in', 'sign-in', 'SignInPage.vue'],
   ['/forum', 'forum-preview', 'ForumPreviewPage.vue'],
   ['/contact', 'contact', 'ContactPage.vue'],
   ['/legal', 'legal', 'LegalPage.vue'],
@@ -37,6 +39,8 @@ const concreteUrls = [
   '/partners',
   '/partners/cloud-platform',
   '/membership',
+  '/reset-password',
+  '/sign-in',
   '/forum',
   '/contact',
   '/legal',
@@ -89,26 +93,8 @@ for (const view of appViews) {
   }
 }
 
-const requiredPagesArtifacts = [
-  'index.html',
-  '404.html',
-  'assets/waais-hero-video.mp4',
-  'favicon.svg',
-  'icons.svg',
-]
-
-for (const artifact of requiredPagesArtifacts) {
-  if (!existsSync(join(repoRoot, artifact))) {
-    failures.push(`Missing GitHub Pages artifact ${artifact}`)
-  }
-}
-
-if (!readFileSync(join(repoRoot, 'index.html'), 'utf8').includes('/waais-website/assets/')) {
-  failures.push('Root index.html is not using the /waais-website/ asset base')
-}
-
-if (concreteUrls.length !== 24) {
-  failures.push(`Expected 24 concrete route URLs, got ${concreteUrls.length}`)
+if (concreteUrls.length !== 26) {
+  failures.push(`Expected 26 concrete route URLs, got ${concreteUrls.length}`)
 }
 
 if (failures.length > 0) {

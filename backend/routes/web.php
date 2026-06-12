@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\DiscourseSsoController;
 use App\Http\Controllers\Auth\EmailAuthController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\PasswordAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,6 +19,10 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
 Route::get('/auth/email/callback/{user}', [EmailAuthController::class, 'callback'])
     ->middleware('signed')
     ->name('auth.email.callback');
+
+Route::get('/auth/register/verify/{user}', [PasswordAuthController::class, 'verify'])
+    ->middleware('signed')
+    ->name('auth.register.verify');
 
 Route::get('/discourse/sso', DiscourseSsoController::class)
     ->name('discourse.sso');

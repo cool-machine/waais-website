@@ -54,30 +54,13 @@ php artisan serve --host=127.0.0.1 --port=8000
 npm run dev -- --host 127.0.0.1 --port 5174
 ```
 
-Open `http://127.0.0.1:5174/waais-website/membership`, sign in with Google if needed, and submit/update the form. The backend `.env` must have valid Google OAuth settings for sign-in.
+Open `http://127.0.0.1:5174/membership`, sign in with Google if needed, and submit/update the form. The backend `.env` must have valid Google OAuth settings for sign-in.
 
 Pages must not call `fetch` directly. They consume Pinia stores under `src/stores/`. The convention for naming and structuring stores — and when to add a new store vs. extend an existing one — is documented in `src/stores/README.md`.
 
-## Deploy to GitHub Pages
+## Deployment
 
-GitHub Pages serves the built Vue preview from the repository root (branch `main`, path `/`). To refresh the deployed preview after frontend changes, build and copy the artifacts to the repo root:
-
-```sh
-cd /Users/gg1900/coding/waais-website/frontend
-npm run build
-cd ..
-rm -rf assets
-mkdir -p assets
-cp frontend/dist/index.html index.html
-cp frontend/dist/index.html 404.html
-cp -R frontend/dist/assets/. assets/
-cp frontend/dist/favicon.svg favicon.svg
-cp frontend/dist/icons.svg icons.svg
-```
-
-Then commit the updated root-level files and push `main`. Direct deep links are served via `404.html` as an SPA fallback — GitHub may return HTTP 404 internally, but the browser renders the Vue app.
-
-Live preview: `https://cool-machine.github.io/waais-website/`
+The retired GitHub Pages preview (root-level build artifacts at `cool-machine.github.io/waais-website/`) has been removed. Production deploys to Azure Static Web Apps via `.github/workflows/deploy-frontend.yml` on push to `main`; pull requests run tests via `.github/workflows/ci.yml`.
 
 ## Production Hosting
 

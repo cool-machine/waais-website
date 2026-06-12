@@ -40,14 +40,14 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('email-link membership start', () => {
-  it('lets signed-out applicants request an email sign-in link', async () => {
+describe('staged registration flow', () => {
+  it('shows only the account-creation card to anonymous visitors and registers', async () => {
     const fetchMock = vi.fn((url) => {
       if (url.includes('/api/user')) {
         return Promise.resolve(jsonResponse({ message: 'Unauthenticated.' }, { status: 401 }))
       }
-      if (url.includes('/api/auth/email-link')) {
-        return Promise.resolve(jsonResponse({ ok: true }))
+      if (url.includes('/api/auth/register')) {
+        return Promise.resolve(jsonResponse({ ok: true, verification_required: true }, { status: 201 }))
       }
       return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
     })
@@ -55,17 +55,61 @@ describe('email-link membership start', () => {
 
     const wrapper = await mountMembershipPage()
 
-    await wrapper.find('input[type="email"]').setValue('applicant@example.com')
-    await wrapper.find('form.compact-auth-form').trigger('submit')
+    // No application form and no sign-in option on this page.
+    expect(wrapper.find('form.application-form').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Already registered')
+
+    const card = wrapper.find('form.compact-auth-form')
+    expect(card.exists()).toBe(true)
+
+    const textInputs = card.findAll('input:not([type="email"]):not([type="password"])')
+    await textInputs[0].setValue('Grace')
+    await textInputs[1].setValue('Hopper')
+    await card.find('input[type="email"]').setValue('newbie@example.com')
+    const passwordInputs = card.findAll('input[type="password"]')
+    await passwordInputs[0].setValue('super-secret-pw')
+    await passwordInputs[1].setValue('super-secret-pw')
+
+    await card.trigger('submit')
     await flushPromises()
 
-    const request = fetchMock.mock.calls.find(([url]) => url.includes('/api/auth/email-link'))
+    const request = fetchMock.mock.calls.find(([url]) => url.includes('/api/auth/register'))
     expect(request[1].method).toBe('POST')
     expect(JSON.parse(request[1].body)).toEqual({
-      email: 'applicant@example.com',
-      next: '/membership',
+      first_name: 'Grace',
+      last_name: 'Hopper',
+      email: 'newbie@example.com',
+      password: 'super-secret-pw',
+      password_confirmation: 'super-secret-pw',
     })
-    expect(wrapper.text()).toContain('Check your email for a WAAIS sign-in link.')
+    expect(wrapper.text()).toContain('Verify your email')
+    expect(wrapper.find('form.application-form').exists()).toBe(false)
+  })
+
+  it('keeps the application form hidden until the email is verified', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) {
+        return Promise.resolve(jsonResponse({
+          id: 7,
+          name: 'Ada Lovelace',
+          email: 'ada@example.com',
+          email_verified: false,
+          approval_status: 'draft',
+          permission_role: 'pending_user',
+        }))
+      }
+      if (url.includes('/api/membership-application')) {
+        return Promise.resolve(jsonResponse({ data: null }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountMembershipPage()
+
+    expect(wrapper.find('form.application-form').exists()).toBe(false)
+    expect(wrapper.text()).toContain('Verify your email')
+    expect(wrapper.text()).toContain('Resend verification email')
   })
 })
 
@@ -77,6 +121,7 @@ describe('membership application privacy acknowledgement', () => {
           id: 1,
           name: 'Ada Lovelace',
           email: 'ada@example.com',
+          email_verified: true,
           approval_status: 'submitted',
           permission_role: 'pending_user',
           affiliation_type: 'alumni',

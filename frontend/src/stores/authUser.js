@@ -10,6 +10,17 @@ export const useAuthUserStore = defineStore('authUser', {
     emailLinkSending: false,
     emailLinkSent: false,
     emailLinkError: null,
+    registering: false,
+    registered: false,
+    registerError: null,
+    loggingIn: false,
+    loginError: null,
+    resendingVerification: false,
+    verificationResent: false,
+    passwordResetRequesting: false,
+    passwordResetRequested: false,
+    passwordResetting: false,
+    passwordResetError: null,
     error: null,
   }),
   getters: {
@@ -73,6 +84,100 @@ export const useAuthUserStore = defineStore('authUser', {
       }
     },
 
+    async register(payload, { signal } = {}) {
+      this.registering = true
+      this.registered = false
+      this.registerError = null
+
+      try {
+        await sendJson('/api/auth/register', {
+          method: 'POST',
+          auth: true,
+          body: payload,
+          signal,
+        })
+        this.registered = true
+      } catch (error) {
+        this.registerError = error
+        throw error
+      } finally {
+        this.registering = false
+      }
+    },
+
+    async login({ email, password }, { signal } = {}) {
+      this.loggingIn = true
+      this.loginError = null
+
+      try {
+        await sendJson('/api/auth/login', {
+          method: 'POST',
+          body: { email, password },
+          auth: true,
+          signal,
+        })
+        await this.loadCurrentUser({ force: true, signal })
+      } catch (error) {
+        this.loginError = error
+        throw error
+      } finally {
+        this.loggingIn = false
+      }
+    },
+
+    async requestPasswordReset(email, { signal } = {}) {
+      this.passwordResetRequesting = true
+      this.passwordResetRequested = false
+
+      try {
+        await sendJson('/api/auth/forgot-password', {
+          method: 'POST',
+          auth: true,
+          body: { email },
+          signal,
+        })
+        this.passwordResetRequested = true
+      } finally {
+        this.passwordResetRequesting = false
+      }
+    },
+
+    async resetPassword({ email, token, password, password_confirmation }, { signal } = {}) {
+      this.passwordResetting = true
+      this.passwordResetError = null
+
+      try {
+        await sendJson('/api/auth/reset-password', {
+          method: 'POST',
+          auth: true,
+          body: { email, token, password, password_confirmation },
+          signal,
+        })
+      } catch (error) {
+        this.passwordResetError = error
+        throw error
+      } finally {
+        this.passwordResetting = false
+      }
+    },
+
+    async resendVerification(email, { signal } = {}) {
+      this.resendingVerification = true
+      this.verificationResent = false
+
+      try {
+        await sendJson('/api/auth/resend-verification', {
+          method: 'POST',
+          auth: true,
+          body: { email },
+          signal,
+        })
+        this.verificationResent = true
+      } finally {
+        this.resendingVerification = false
+      }
+    },
+
     async signOut({ signal } = {}) {
       this.signingOut = true
       this.error = null
@@ -101,6 +206,17 @@ export const useAuthUserStore = defineStore('authUser', {
       this.emailLinkSending = false
       this.emailLinkSent = false
       this.emailLinkError = null
+      this.registering = false
+      this.registered = false
+      this.registerError = null
+      this.loggingIn = false
+      this.loginError = null
+      this.resendingVerification = false
+      this.verificationResent = false
+      this.passwordResetRequesting = false
+      this.passwordResetRequested = false
+      this.passwordResetting = false
+      this.passwordResetError = null
       this.error = null
     },
   },

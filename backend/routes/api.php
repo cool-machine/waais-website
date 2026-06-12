@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\PublicPartnerController;
 use App\Http\Controllers\Api\PublicStartupListingController;
 use App\Http\Controllers\Api\StartupListingController;
 use App\Http\Controllers\Auth\EmailAuthController;
+use App\Http\Controllers\Auth\PasswordAuthController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,6 +41,14 @@ Route::prefix('public')->group(function (): void {
 
 Route::post('/auth/email-link', [EmailAuthController::class, 'sendLink']);
 
+// Traditional registration: combined account + membership application.
+// The application is queued for admin review after email verification.
+Route::post('/auth/register', [PasswordAuthController::class, 'register'])->middleware('throttle:10,1');
+Route::post('/auth/login', [PasswordAuthController::class, 'login'])->middleware('throttle:10,1');
+Route::post('/auth/resend-verification', [PasswordAuthController::class, 'resendVerification'])->middleware('throttle:6,1');
+Route::post('/auth/forgot-password', [PasswordAuthController::class, 'forgotPassword'])->middleware('throttle:6,1');
+Route::post('/auth/reset-password', [PasswordAuthController::class, 'resetPassword'])->middleware('throttle:6,1');
+
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/user', function (Request $request): array {
         $user = $request->user();
@@ -49,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
             'name' => $user->name,
             'email' => $user->email,
             'approval_status' => $user->approval_status?->value,
+            'email_verified' => $user->email_verified_at !== null,
             'affiliation_type' => $user->affiliation_type?->value,
             'permission_role' => $user->permission_role?->value,
             'can_access_member_areas' => $user->canAccessMemberAreas(),
