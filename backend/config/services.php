@@ -34,6 +34,10 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'contact' => [
+        'recipient' => env('CONTACT_RECIPIENT', 'george@whartonai.studio'),
+    ],
+
     'discourse' => [
         'url' => env('DISCOURSE_URL', 'https://forum.whartonai.studio'),
         'connect_secret' => env('DISCOURSE_CONNECT_SECRET'),

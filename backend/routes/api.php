@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\AdminStartupListingController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\Admin\AdminUserRoleController;
 use App\Http\Controllers\Api\AnnouncementController;
+use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\MembershipApplicationController;
 use App\Http\Controllers\Api\PublicEventController;
 use App\Http\Controllers\Api\PublicHomepageCardController;
@@ -38,6 +39,8 @@ Route::prefix('public')->group(function (): void {
     Route::get('/homepage-cards', [PublicHomepageCardController::class, 'index']);
     Route::get('/homepage-cards/{homepageCard}', [PublicHomepageCardController::class, 'show']);
 });
+
+Route::post('/contact', [ContactMessageController::class, 'store'])->middleware('throttle:5,1');
 
 Route::post('/auth/email-link', [EmailAuthController::class, 'sendLink']);
 

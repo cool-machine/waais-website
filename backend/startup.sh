@@ -19,6 +19,7 @@ fi
 
 # Laravel optimizations against the deployed code. Safe to re-run on every boot.
 cd /home/site/wwwroot
+php artisan migrate --force || true
 php artisan config:cache  || true
 php artisan route:cache   || true
 php artisan view:cache    || true
