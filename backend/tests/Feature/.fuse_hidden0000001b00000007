@@ -162,7 +162,10 @@ class AdminHomepageCardApiTest extends TestCase
 
     private function makeAdmin(): User
     {
-        return User::factory()->superAdmin()->create();
+        return User::factory()->create([
+            'approval_status' => ApprovalStatus::Approved,
+            'permission_role' => PermissionRole::Admin,
+        ]);
     }
 
     /**

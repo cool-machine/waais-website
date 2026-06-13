@@ -24,7 +24,7 @@ class AdminUserRoleApiTest extends TestCase
 
         $target = $this->makeMember();
 
-        $this->postJson('/api/admin/users/'.$target->id.'/promote-admin')
+        $this->postJson('/api/admin/users/'.$target->id.'/admin-areas', $this->areas())
             ->assertForbidden();
     }
 
@@ -35,7 +35,7 @@ class AdminUserRoleApiTest extends TestCase
 
         $target = $this->makeMember();
 
-        $this->postJson('/api/admin/users/'.$target->id.'/promote-admin')
+        $this->postJson('/api/admin/users/'.$target->id.'/admin-areas', $this->areas())
             ->assertForbidden();
     }
 
@@ -46,47 +46,69 @@ class AdminUserRoleApiTest extends TestCase
 
         $target = $this->makeMember();
 
-        $this->postJson('/api/admin/users/'.$target->id.'/promote-admin')
+        $this->postJson('/api/admin/users/'.$target->id.'/admin-areas', $this->areas())
             ->assertForbidden();
     }
 
     #[Test]
-    public function super_admin_can_promote_member_to_admin(): void
+    public function super_admin_can_grant_admin_areas_to_member(): void
     {
         $superAdmin = $this->makeSuperAdmin();
         Sanctum::actingAs($superAdmin);
 
         $target = $this->makeMember();
 
-        $this->postJson('/api/admin/users/'.$target->id.'/promote-admin')
+        $this->postJson('/api/admin/users/'.$target->id.'/admin-areas', $this->areas(['events' => true, 'partners' => true]))
             ->assertOk()
-            ->assertJsonPath('data.permission_role', PermissionRole::Admin->value);
+            ->assertJsonPath('data.permission_role', PermissionRole::Admin->value)
+            ->assertJsonPath('data.can_manage_events', true)
+            ->assertJsonPath('data.can_manage_partners', true)
+            ->assertJsonPath('data.can_manage_startups', false);
 
         $target->refresh();
 
         $this->assertSame(PermissionRole::Admin, $target->permission_role);
+        $this->assertTrue($target->canManageEvents());
+        $this->assertTrue($target->canManagePartners());
+        $this->assertFalse($target->canManageStartups());
 
         $this->assertDatabaseHas('audit_logs', [
             'actor_id' => $superAdmin->id,
-            'action' => 'role.promote_admin',
+            'action' => 'role.set_admin_areas',
             'auditable_type' => User::class,
             'auditable_id' => $target->id,
         ]);
     }
 
     #[Test]
-    public function promote_admin_rejects_non_member_target(): void
+    public function clearing_all_admin_areas_reverts_to_member(): void
     {
         Sanctum::actingAs($this->makeSuperAdmin());
 
         $admin = $this->makeAdmin();
 
-        $this->postJson('/api/admin/users/'.$admin->id.'/promote-admin')
+        $this->postJson('/api/admin/users/'.$admin->id.'/admin-areas', $this->areas())
+            ->assertOk()
+            ->assertJsonPath('data.permission_role', PermissionRole::Member->value);
+
+        $admin->refresh();
+        $this->assertSame(PermissionRole::Member, $admin->permission_role);
+        $this->assertFalse($admin->canManageEvents());
+    }
+
+    #[Test]
+    public function set_admin_areas_rejects_super_admin_target(): void
+    {
+        Sanctum::actingAs($this->makeSuperAdmin());
+
+        $other = $this->makeSuperAdmin();
+
+        $this->postJson('/api/admin/users/'.$other->id.'/admin-areas', $this->areas(['events' => true]))
             ->assertStatus(409);
     }
 
     #[Test]
-    public function promote_admin_requires_target_to_be_approved(): void
+    public function set_admin_areas_requires_target_to_be_approved(): void
     {
         Sanctum::actingAs($this->makeSuperAdmin());
 
@@ -95,39 +117,7 @@ class AdminUserRoleApiTest extends TestCase
             'permission_role' => PermissionRole::Member,
         ]);
 
-        $this->postJson('/api/admin/users/'.$unapproved->id.'/promote-admin')
-            ->assertStatus(409);
-    }
-
-    #[Test]
-    public function super_admin_can_demote_admin_to_member(): void
-    {
-        $superAdmin = $this->makeSuperAdmin();
-        Sanctum::actingAs($superAdmin);
-
-        $admin = $this->makeAdmin();
-
-        $this->postJson('/api/admin/users/'.$admin->id.'/demote-admin')
-            ->assertOk()
-            ->assertJsonPath('data.permission_role', PermissionRole::Member->value);
-
-        $admin->refresh();
-        $this->assertSame(PermissionRole::Member, $admin->permission_role);
-
-        $this->assertDatabaseHas('audit_logs', [
-            'actor_id' => $superAdmin->id,
-            'action' => 'role.demote_admin',
-        ]);
-    }
-
-    #[Test]
-    public function demote_admin_rejects_non_admin_target(): void
-    {
-        Sanctum::actingAs($this->makeSuperAdmin());
-
-        $member = $this->makeMember();
-
-        $this->postJson('/api/admin/users/'.$member->id.'/demote-admin')
+        $this->postJson('/api/admin/users/'.$unapproved->id.'/admin-areas', $this->areas(['events' => true]))
             ->assertStatus(409);
     }
 
@@ -235,10 +225,7 @@ class AdminUserRoleApiTest extends TestCase
 
     private function makeAdmin(): User
     {
-        return User::factory()->create([
-            'approval_status' => ApprovalStatus::Approved,
-            'permission_role' => PermissionRole::Admin,
-        ]);
+        return User::factory()->eventsAdmin()->create();
     }
 
     private function makeSuperAdmin(): User
@@ -247,5 +234,14 @@ class AdminUserRoleApiTest extends TestCase
             'approval_status' => ApprovalStatus::Approved,
             'permission_role' => PermissionRole::SuperAdmin,
         ]);
+    }
+
+    /**
+     * @param  array<string, bool>  $overrides
+     * @return array<string, bool>
+     */
+    private function areas(array $overrides = []): array
+    {
+        return array_replace(['events' => false, 'partners' => false, 'startups' => false], $overrides);
     }
 }

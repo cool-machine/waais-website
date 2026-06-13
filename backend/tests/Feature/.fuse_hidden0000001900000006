@@ -33,9 +33,6 @@ class AdminUserApiTest extends TestCase
         'approval_status',
         'affiliation_type',
         'permission_role',
-        'can_manage_events',
-        'can_manage_partners',
-        'can_manage_startups',
         'approved_at',
         'rejected_at',
         'suspended_at',
@@ -201,7 +198,10 @@ class AdminUserApiTest extends TestCase
 
     private function makeAdmin(): User
     {
-        return User::factory()->superAdmin()->create();
+        return User::factory()->create([
+            'approval_status' => ApprovalStatus::Approved,
+            'permission_role' => PermissionRole::Admin,
+        ]);
     }
 
     /**

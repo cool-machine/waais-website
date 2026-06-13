@@ -101,7 +101,7 @@ class StartupListingController extends Controller
         $this->afterResponse(function () use ($listing, $owner): void {
             $owner->notify(new StartupListingSubmitted($listing));
 
-            $admins = User::admins()->get();
+            $admins = User::startupAdmins()->get();
             if ($admins->isNotEmpty()) {
                 Notification::send($admins, new StartupListingReceivedByAdmin($listing));
             }

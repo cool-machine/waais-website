@@ -31,7 +31,7 @@ class MembershipNotificationsTest extends TestCase
             'approval_status' => ApprovalStatus::Submitted,
             'permission_role' => PermissionRole::PendingUser,
         ]);
-        $admin = $this->makeAdmin();
+        $admin = $this->makeSuperAdmin();
         $superAdmin = $this->makeSuperAdmin();
         $regularMember = $this->makeMember();
 
@@ -65,7 +65,7 @@ class MembershipNotificationsTest extends TestCase
             'reviewed_at' => now()->subDay(),
             'review_notes' => 'Insufficient evidence.',
         ]));
-        $admin = $this->makeAdmin();
+        $admin = $this->makeSuperAdmin();
 
         Sanctum::actingAs($applicant);
 
@@ -108,7 +108,7 @@ class MembershipNotificationsTest extends TestCase
     {
         Notification::fake();
 
-        $admin = $this->makeAdmin();
+        $admin = $this->makeSuperAdmin();
         $application = $this->makeApplication(ApprovalStatus::Submitted);
 
         Sanctum::actingAs($admin);
@@ -128,7 +128,7 @@ class MembershipNotificationsTest extends TestCase
     {
         Notification::fake();
 
-        $admin = $this->makeAdmin();
+        $admin = $this->makeSuperAdmin();
         $application = $this->makeApplication(ApprovalStatus::Submitted);
 
         Sanctum::actingAs($admin);
@@ -147,7 +147,7 @@ class MembershipNotificationsTest extends TestCase
     {
         Notification::fake();
 
-        $admin = $this->makeAdmin();
+        $admin = $this->makeSuperAdmin();
         $application = $this->makeApplication(ApprovalStatus::Submitted);
 
         Sanctum::actingAs($admin);
@@ -164,7 +164,7 @@ class MembershipNotificationsTest extends TestCase
     {
         Notification::fake();
 
-        $admin = $this->makeAdmin();
+        $admin = $this->makeSuperAdmin();
         $application = $this->makeApplication(ApprovalStatus::Submitted);
 
         Sanctum::actingAs($admin);
@@ -182,7 +182,7 @@ class MembershipNotificationsTest extends TestCase
     {
         Notification::fake();
 
-        $admin = $this->makeAdmin();
+        $admin = $this->makeSuperAdmin();
         $application = $this->makeApplication(ApprovalStatus::Submitted);
 
         Sanctum::actingAs($admin);

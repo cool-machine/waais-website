@@ -180,7 +180,10 @@ class AdminPartnerApiTest extends TestCase
 
     private function makeAdmin(): User
     {
-        return User::factory()->partnersAdmin()->create();
+        return User::factory()->create([
+            'approval_status' => ApprovalStatus::Approved,
+            'permission_role' => PermissionRole::Admin,
+        ]);
     }
 
     /**

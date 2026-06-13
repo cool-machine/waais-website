@@ -25,7 +25,7 @@ class AnnouncementEmailFanoutTest extends TestCase
     {
         Notification::fake();
 
-        $actor = $this->makeApprovedUser(PermissionRole::Admin);
+        $actor = $this->makeApprovedUser(PermissionRole::SuperAdmin);
         Sanctum::actingAs($actor);
 
         $member = $this->makeApprovedUser(PermissionRole::Member);
@@ -67,7 +67,7 @@ class AnnouncementEmailFanoutTest extends TestCase
     {
         Notification::fake();
 
-        $actor = $this->makeApprovedUser(PermissionRole::Admin);
+        $actor = $this->makeApprovedUser(PermissionRole::SuperAdmin);
         Sanctum::actingAs($actor);
 
         $member = $this->makeApprovedUser(PermissionRole::Member);
@@ -97,7 +97,7 @@ class AnnouncementEmailFanoutTest extends TestCase
     {
         Notification::fake();
 
-        $actor = $this->makeApprovedUser(PermissionRole::Admin);
+        $actor = $this->makeApprovedUser(PermissionRole::SuperAdmin);
         Sanctum::actingAs($actor);
         $member = $this->makeApprovedUser(PermissionRole::Member);
         $announcement = $this->makeAnnouncement([
@@ -177,7 +177,7 @@ class AnnouncementEmailFanoutTest extends TestCase
         Notification::fake();
         $this->travelTo('2026-05-02 11:00:00');
 
-        $actor = $this->makeApprovedUser(PermissionRole::Admin);
+        $actor = $this->makeApprovedUser(PermissionRole::SuperAdmin);
         Sanctum::actingAs($actor);
         $member = $this->makeApprovedUser(PermissionRole::Member);
         $announcement = $this->makeAnnouncement([

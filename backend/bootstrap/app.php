@@ -3,6 +3,7 @@
 use App\Console\Commands\SendAnnouncementEmails;
 use App\Console\Commands\SendEventReminders;
 use App\Http\Middleware\EnsureAdminAccess;
+use App\Http\Middleware\EnsureAreaAccess;
 use App\Http\Middleware\EnsureMemberAccess;
 use App\Http\Middleware\EnsureSuperAdminAccess;
 use Illuminate\Auth\AuthenticationException;
@@ -59,6 +60,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'member.access' => EnsureMemberAccess::class,
             'admin.access' => EnsureAdminAccess::class,
             'super_admin.access' => EnsureSuperAdminAccess::class,
+            'area' => EnsureAreaAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

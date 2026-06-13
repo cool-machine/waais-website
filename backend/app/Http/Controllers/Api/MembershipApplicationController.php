@@ -128,7 +128,7 @@ class MembershipApplicationController extends Controller
         $this->afterResponse(function () use ($application, $applicant): void {
             $applicant->notify(new MembershipApplicationSubmitted($application));
 
-            $admins = User::admins()->get();
+            $admins = User::superAdmins()->get();
             if ($admins->isNotEmpty()) {
                 Notification::send($admins, new MembershipApplicationReceivedByAdmin($application));
             }

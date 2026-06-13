@@ -172,7 +172,10 @@ class AdminStartupListingApiTest extends TestCase
 
     private function makeAdmin(): User
     {
-        return User::factory()->startupsAdmin()->create();
+        return User::factory()->create([
+            'approval_status' => ApprovalStatus::Approved,
+            'permission_role' => PermissionRole::Admin,
+        ]);
     }
 
     private function makeListing(ApprovalStatus $status): StartupListing

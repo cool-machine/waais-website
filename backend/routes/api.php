@@ -67,6 +67,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
             'can_access_member_areas' => $user->canAccessMemberAreas(),
             'can_publish_public_content' => $user->canPublishPublicContent(),
             'can_manage_admin_privileges' => $user->canManageAdminPrivileges(),
+            'can_manage_events' => $user->canManageEvents(),
+            'can_manage_partners' => $user->canManagePartners(),
+            'can_manage_startups' => $user->canManageStartups(),
         ];
     });
 
@@ -99,59 +102,68 @@ Route::middleware('auth:sanctum')->group(function (): void {
     });
 
     Route::middleware('admin.access')->prefix('admin')->group(function (): void {
-        Route::get('/applications', [AdminMembershipApplicationController::class, 'index']);
-        Route::get('/applications/{application}', [AdminMembershipApplicationController::class, 'show']);
-        Route::post('/applications/{application}/approve', [AdminMembershipApplicationController::class, 'approve']);
-        Route::post('/applications/{application}/reject', [AdminMembershipApplicationController::class, 'reject']);
-        Route::post('/applications/{application}/request-info', [AdminMembershipApplicationController::class, 'requestInfo']);
-
-        Route::get('/startup-listings', [AdminStartupListingController::class, 'index']);
-        Route::get('/startup-listings/{listing}', [AdminStartupListingController::class, 'show']);
-        Route::post('/startup-listings/{listing}/approve', [AdminStartupListingController::class, 'approve']);
-        Route::post('/startup-listings/{listing}/reject', [AdminStartupListingController::class, 'reject']);
-        Route::post('/startup-listings/{listing}/request-info', [AdminStartupListingController::class, 'requestInfo']);
-
-        Route::get('/events', [AdminEventController::class, 'index']);
-        Route::post('/events', [AdminEventController::class, 'store']);
-        Route::get('/events/{event}', [AdminEventController::class, 'show']);
-        Route::patch('/events/{event}', [AdminEventController::class, 'update']);
-        Route::post('/events/{event}/publish', [AdminEventController::class, 'publish']);
-        Route::post('/events/{event}/hide', [AdminEventController::class, 'hide']);
-        Route::post('/events/{event}/archive', [AdminEventController::class, 'archive']);
-        Route::post('/events/{event}/cancel', [AdminEventController::class, 'cancel']);
-
-        Route::get('/partners', [AdminPartnerController::class, 'index']);
-        Route::post('/partners', [AdminPartnerController::class, 'store']);
-        Route::get('/partners/{partner}', [AdminPartnerController::class, 'show']);
-        Route::patch('/partners/{partner}', [AdminPartnerController::class, 'update']);
-        Route::post('/partners/{partner}/publish', [AdminPartnerController::class, 'publish']);
-        Route::post('/partners/{partner}/hide', [AdminPartnerController::class, 'hide']);
-        Route::post('/partners/{partner}/archive', [AdminPartnerController::class, 'archive']);
-
-        Route::get('/homepage-cards', [AdminHomepageCardController::class, 'index']);
-        Route::post('/homepage-cards', [AdminHomepageCardController::class, 'store']);
-        Route::get('/homepage-cards/{homepageCard}', [AdminHomepageCardController::class, 'show']);
-        Route::patch('/homepage-cards/{homepageCard}', [AdminHomepageCardController::class, 'update']);
-        Route::post('/homepage-cards/{homepageCard}/publish', [AdminHomepageCardController::class, 'publish']);
-        Route::post('/homepage-cards/{homepageCard}/hide', [AdminHomepageCardController::class, 'hide']);
-        Route::post('/homepage-cards/{homepageCard}/archive', [AdminHomepageCardController::class, 'archive']);
-
-        Route::get('/announcements', [AdminAnnouncementController::class, 'index']);
-        Route::post('/announcements', [AdminAnnouncementController::class, 'store']);
-        Route::get('/announcements/{announcement}', [AdminAnnouncementController::class, 'show']);
-        Route::patch('/announcements/{announcement}', [AdminAnnouncementController::class, 'update']);
-        Route::post('/announcements/{announcement}/publish', [AdminAnnouncementController::class, 'publish']);
-        Route::post('/announcements/{announcement}/hide', [AdminAnnouncementController::class, 'hide']);
-        Route::post('/announcements/{announcement}/archive', [AdminAnnouncementController::class, 'archive']);
-
-        Route::get('/users', [AdminUserController::class, 'index']);
-        Route::get('/users/{user}', [AdminUserController::class, 'show']);
-
+        // Super-admin only: membership approvals, homepage cards,
+        // announcements, and the user directory + role management.
         Route::middleware('super_admin.access')->group(function (): void {
-            Route::post('/users/{user}/promote-admin', [AdminUserRoleController::class, 'promoteAdmin']);
-            Route::post('/users/{user}/demote-admin', [AdminUserRoleController::class, 'demoteAdmin']);
+            Route::get('/applications', [AdminMembershipApplicationController::class, 'index']);
+            Route::get('/applications/{application}', [AdminMembershipApplicationController::class, 'show']);
+            Route::post('/applications/{application}/approve', [AdminMembershipApplicationController::class, 'approve']);
+            Route::post('/applications/{application}/reject', [AdminMembershipApplicationController::class, 'reject']);
+            Route::post('/applications/{application}/request-info', [AdminMembershipApplicationController::class, 'requestInfo']);
+
+            Route::get('/homepage-cards', [AdminHomepageCardController::class, 'index']);
+            Route::post('/homepage-cards', [AdminHomepageCardController::class, 'store']);
+            Route::get('/homepage-cards/{homepageCard}', [AdminHomepageCardController::class, 'show']);
+            Route::patch('/homepage-cards/{homepageCard}', [AdminHomepageCardController::class, 'update']);
+            Route::post('/homepage-cards/{homepageCard}/publish', [AdminHomepageCardController::class, 'publish']);
+            Route::post('/homepage-cards/{homepageCard}/hide', [AdminHomepageCardController::class, 'hide']);
+            Route::post('/homepage-cards/{homepageCard}/archive', [AdminHomepageCardController::class, 'archive']);
+
+            Route::get('/announcements', [AdminAnnouncementController::class, 'index']);
+            Route::post('/announcements', [AdminAnnouncementController::class, 'store']);
+            Route::get('/announcements/{announcement}', [AdminAnnouncementController::class, 'show']);
+            Route::patch('/announcements/{announcement}', [AdminAnnouncementController::class, 'update']);
+            Route::post('/announcements/{announcement}/publish', [AdminAnnouncementController::class, 'publish']);
+            Route::post('/announcements/{announcement}/hide', [AdminAnnouncementController::class, 'hide']);
+            Route::post('/announcements/{announcement}/archive', [AdminAnnouncementController::class, 'archive']);
+
+            Route::get('/users', [AdminUserController::class, 'index']);
+            Route::get('/users/{user}', [AdminUserController::class, 'show']);
+            Route::post('/users/{user}/admin-areas', [AdminUserRoleController::class, 'setAdminAreas']);
             Route::post('/users/{user}/promote-super-admin', [AdminUserRoleController::class, 'promoteSuperAdmin']);
             Route::post('/users/{user}/demote-super-admin', [AdminUserRoleController::class, 'demoteSuperAdmin']);
+        });
+
+        // Startups area
+        Route::middleware('area:startups')->group(function (): void {
+            Route::get('/startup-listings', [AdminStartupListingController::class, 'index']);
+            Route::get('/startup-listings/{listing}', [AdminStartupListingController::class, 'show']);
+            Route::post('/startup-listings/{listing}/approve', [AdminStartupListingController::class, 'approve']);
+            Route::post('/startup-listings/{listing}/reject', [AdminStartupListingController::class, 'reject']);
+            Route::post('/startup-listings/{listing}/request-info', [AdminStartupListingController::class, 'requestInfo']);
+        });
+
+        // Events area
+        Route::middleware('area:events')->group(function (): void {
+            Route::get('/events', [AdminEventController::class, 'index']);
+            Route::post('/events', [AdminEventController::class, 'store']);
+            Route::get('/events/{event}', [AdminEventController::class, 'show']);
+            Route::patch('/events/{event}', [AdminEventController::class, 'update']);
+            Route::post('/events/{event}/publish', [AdminEventController::class, 'publish']);
+            Route::post('/events/{event}/hide', [AdminEventController::class, 'hide']);
+            Route::post('/events/{event}/archive', [AdminEventController::class, 'archive']);
+            Route::post('/events/{event}/cancel', [AdminEventController::class, 'cancel']);
+        });
+
+        // Partners area
+        Route::middleware('area:partners')->group(function (): void {
+            Route::get('/partners', [AdminPartnerController::class, 'index']);
+            Route::post('/partners', [AdminPartnerController::class, 'store']);
+            Route::get('/partners/{partner}', [AdminPartnerController::class, 'show']);
+            Route::patch('/partners/{partner}', [AdminPartnerController::class, 'update']);
+            Route::post('/partners/{partner}/publish', [AdminPartnerController::class, 'publish']);
+            Route::post('/partners/{partner}/hide', [AdminPartnerController::class, 'hide']);
+            Route::post('/partners/{partner}/archive', [AdminPartnerController::class, 'archive']);
         });
     });
 });

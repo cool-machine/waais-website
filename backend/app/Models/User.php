@@ -28,6 +28,9 @@ use Laravel\Sanctum\HasApiTokens;
     'approval_status',
     'affiliation_type',
     'permission_role',
+    'can_manage_events',
+    'can_manage_partners',
+    'can_manage_startups',
     'approved_at',
     'rejected_at',
     'suspended_at',
@@ -98,6 +101,24 @@ class User extends Authenticatable
         return $this->isSuperAdmin();
     }
 
+    public function canManageEvents(): bool
+    {
+        return $this->approval_status === ApprovalStatus::Approved
+            && ($this->isSuperAdmin() || (bool) $this->can_manage_events);
+    }
+
+    public function canManagePartners(): bool
+    {
+        return $this->approval_status === ApprovalStatus::Approved
+            && ($this->isSuperAdmin() || (bool) $this->can_manage_partners);
+    }
+
+    public function canManageStartups(): bool
+    {
+        return $this->approval_status === ApprovalStatus::Approved
+            && ($this->isSuperAdmin() || (bool) $this->can_manage_startups);
+    }
+
     /**
      * Approved users with admin-or-higher permissions. Used as the
      * recipient list for "new submission" admin notifications.
@@ -106,6 +127,29 @@ class User extends Authenticatable
     {
         $query->where('approval_status', ApprovalStatus::Approved)
             ->whereIn('permission_role', [PermissionRole::Admin, PermissionRole::SuperAdmin]);
+    }
+
+    /**
+     * Approved super admins only. Recipients for areas that stay
+     * super-admin-only (membership approvals, announcements).
+     */
+    public function scopeSuperAdmins(Builder $query): void
+    {
+        $query->where('approval_status', ApprovalStatus::Approved)
+            ->where('permission_role', PermissionRole::SuperAdmin);
+    }
+
+    /**
+     * Approved users who can review startup listings: super admins, plus
+     * admins scoped to the startups area.
+     */
+    public function scopeStartupAdmins(Builder $query): void
+    {
+        $query->where('approval_status', ApprovalStatus::Approved)
+            ->where(function (Builder $q): void {
+                $q->where('permission_role', PermissionRole::SuperAdmin)
+                    ->orWhere('can_manage_startups', true);
+            });
     }
 
     /**
@@ -121,6 +165,9 @@ class User extends Authenticatable
             'approval_status' => ApprovalStatus::class,
             'affiliation_type' => AffiliationType::class,
             'permission_role' => PermissionRole::class,
+            'can_manage_events' => 'boolean',
+            'can_manage_partners' => 'boolean',
+            'can_manage_startups' => 'boolean',
             'approved_at' => 'datetime',
             'rejected_at' => 'datetime',
             'suspended_at' => 'datetime',

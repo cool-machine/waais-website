@@ -201,7 +201,7 @@ class StartupListingNotificationsTest extends TestCase
 
     private function makeAdmin(): User
     {
-        return User::factory()->create([
+        return User::factory()->startupsAdmin()->create([
             'approval_status' => ApprovalStatus::Approved,
             'permission_role' => PermissionRole::Admin,
         ]);
