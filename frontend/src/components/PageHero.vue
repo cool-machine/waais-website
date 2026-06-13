@@ -1,6 +1,6 @@
 <script setup>
 defineProps({
-  eyebrow: { type: String, required: true },
+  eyebrow: { type: String, default: '' },
   title: { type: String, required: true },
   lede: { type: String, default: '' },
   compact: { type: Boolean, default: false },
@@ -26,7 +26,7 @@ defineProps({
     </video>
     <div class="section-inner hero-inner">
       <div class="hero-copy">
-        <p class="eyebrow">{{ eyebrow }}</p>
+        <p v-if="eyebrow" class="eyebrow">{{ eyebrow }}</p>
         <h1>{{ title }}</h1>
         <p v-if="lede" class="lede">{{ lede }}</p>
         <slot />
