@@ -3,7 +3,6 @@ import { computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
-import { forumIndustries, forumRegions } from '../data/forum'
 import { useAuthUserStore } from '../stores/authUser'
 
 const authUser = useAuthUserStore()
@@ -18,49 +17,19 @@ onMounted(() => {
   <PublicLayout>
     <PageHero
       title="The WAAIS forum is live."
-      lede="A space for AI builders inside the Wharton alumni community. Guests can browse public discussions; approved members sign in with their WAAIS account to post — no separate forum password."
+      lede="A space for AI builders inside the Wharton alumni community. Anyone can browse public discussions; approved members sign in with their WAAIS account to post — no separate forum password."
     />
     <section class="section paper">
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <h2>One account for site and forum.</h2>
-            <p>
-              Approved WAAIS members sign in to the forum with their existing site account
-              (password or Google) through single sign-on. Not a member yet? Apply now —
-              once approved, the forum unlocks automatically.
-            </p>
+            <h2>Recent discussions</h2>
+            <p>The forum is just getting started. Public discussions will show up here — be the first to start the conversation once you're an approved member.</p>
           </div>
           <div class="row">
             <a class="button primary" href="https://forum.whartonai.studio">Open the forum</a>
             <RouterLink v-if="isAuthenticated" class="button water" to="/app/dashboard">Go to dashboard</RouterLink>
             <RouterLink v-else class="button water" to="/membership">Apply for membership</RouterLink>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top: 32px">
-          <h2>Recent discussions</h2>
-          <p>The forum is just getting started. Public discussions will show up here — be the first to start the conversation once you're an approved member.</p>
-          <a class="button water" href="https://forum.whartonai.studio">Browse the forum</a>
-        </div>
-
-        <h3 style="margin-top: 32px">Industry categories</h3>
-        <div class="tag-list">
-          <span v-for="industry in forumIndustries" :key="industry" class="tag">{{ industry }}</span>
-        </div>
-
-        <h3 style="margin-top: 24px">Region categories</h3>
-        <div class="tag-list">
-          <span v-for="region in forumRegions" :key="region" class="tag">{{ region }}</span>
-        </div>
-
-        <div class="lock-box" style="margin-top: 32px">
-          <div>
-            <h2>Forum URL: forum.whartonai.studio</h2>
-            <p>
-              The forum lives at <a href="https://forum.whartonai.studio"><code>forum.whartonai.studio</code></a>.
-              Browsing is open to everyone; posting requires an approved WAAIS membership.
-            </p>
           </div>
         </div>
       </div>
