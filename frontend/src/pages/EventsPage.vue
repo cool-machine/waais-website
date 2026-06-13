@@ -16,7 +16,7 @@ const FILTERS = [
 
 const store = usePublicEventsStore()
 const { list, listLoading, listError } = storeToRefs(store)
-const activeTime = ref('upcoming')
+const activeTime = ref('all')
 
 onMounted(() => {
   loadEvents(activeTime.value)
