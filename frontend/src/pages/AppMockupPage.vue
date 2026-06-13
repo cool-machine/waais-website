@@ -139,13 +139,19 @@ const navGroups = [
 
 const currentView = computed(() => route.params.view || 'sign-in')
 const visibleNavGroups = computed(() =>
-  navGroups.filter((group) => {
-    // Auth links only make sense before sign-in.
-    if (group.label === 'Auth') return !authUser.isAuthenticated
-    // Admin dashboard (incl. "Admin overview") is admin-only.
-    if (group.label === 'Admin dashboard') return canAccessAdminDashboard.value
-    return true
-  }),
+  navGroups
+    .map((group) => {
+      // Within the Admin dashboard group, show only the areas this admin may use.
+      if (group.label !== 'Admin dashboard') return group
+      return { ...group, items: group.items.filter(([id]) => adminViewAccess.value[id]) }
+    })
+    .filter((group) => {
+      // Auth links only make sense before sign-in.
+      if (group.label === 'Auth') return !authUser.isAuthenticated
+      // Admin dashboard is admin-only, and hidden entirely if no areas are granted.
+      if (group.label === 'Admin dashboard') return canAccessAdminDashboard.value && group.items.length > 0
+      return true
+    }),
 )
 
 const displayName = computed(() => authUser.user?.name || authUser.user?.email || 'member')
@@ -195,6 +201,22 @@ const canSaveStartup = computed(() => (
   && !myStartupsStore.saving
 ))
 const canAccessAdminDashboard = computed(() => authUser.canPublishPublicContent)
+const canManageEvents = computed(() => authUser.canManageEvents)
+const canManagePartners = computed(() => authUser.canManagePartners)
+const canManageStartups = computed(() => authUser.canManageStartups)
+const isSuperAdmin = computed(() => authUser.canManageAdminPrivileges)
+// Which admin views each account may use. Super admins have every area;
+// approvals, users, announcements stay super-admin only.
+const adminViewAccess = computed(() => ({
+  admin: canAccessAdminDashboard.value,
+  approvals: isSuperAdmin.value,
+  'startup-review': canManageStartups.value,
+  users: isSuperAdmin.value,
+  'events-admin': canManageEvents.value,
+  'content-admin': canManagePartners.value,
+  announcements: isSuperAdmin.value,
+}))
+const currentViewAllowed = computed(() => adminViewAccess.value[currentView.value] ?? canAccessAdminDashboard.value)
 const selectedApplication = computed(() => adminApplicationsStore.currentApplication)
 const selectedApplicationRows = computed(() => {
   const application = selectedApplication.value
@@ -236,6 +258,12 @@ const adminPublicContentResources = [
   ['homepage_cards', 'Homepage cards'],
   ['partners', 'Partners'],
 ]
+// Homepage cards are super-admin only; partners are visible to partner admins.
+const visiblePublicContentResources = computed(() =>
+  adminPublicContentResources.filter(([resource]) =>
+    resource === 'partners' ? canManagePartners.value : isSuperAdmin.value,
+  ),
+)
 const adminPublicContentStatusFilters = ['all', 'draft', 'pending_review', 'published', 'hidden', 'archived']
 const adminAnnouncementStatusFilters = ['all', 'draft', 'published', 'hidden', 'archived']
 const adminAnnouncementAudienceFilters = ['all', 'all_members', 'admins']
@@ -753,14 +781,20 @@ async function setAdminUserApprovalFilter(status) {
   await loadAdminUsers({ approvalStatus: status })
 }
 
-async function promoteAdminUser() {
-  if (!confirm('Promote this user to Admin?')) return
-  await adminUsersStore.promoteAdmin()
+const adminAreaForm = reactive({ events: false, partners: false, startups: false })
+
+function populateAdminAreaForm(user) {
+  adminAreaForm.events = Boolean(user?.can_manage_events)
+  adminAreaForm.partners = Boolean(user?.can_manage_partners)
+  adminAreaForm.startups = Boolean(user?.can_manage_startups)
 }
 
-async function demoteAdminUser() {
-  if (!confirm('Demote this admin to Member?')) return
-  await adminUsersStore.demoteAdmin()
+async function saveAdminAreas() {
+  await adminUsersStore.setAdminAreas({
+    events: adminAreaForm.events,
+    partners: adminAreaForm.partners,
+    startups: adminAreaForm.startups,
+  })
 }
 
 async function promoteSuperAdminUser() {
@@ -822,35 +856,38 @@ async function loadMemberDashboard() {
     })
   }
   if (canAccessAdminDashboard.value && adminViews.includes(currentView.value)) {
-    if (currentView.value === 'admin' || currentView.value === 'approvals') {
+    const onOverview = currentView.value === 'admin'
+
+    if (isSuperAdmin.value && (onOverview || currentView.value === 'approvals')) {
       await loadAdminApplications().catch((error) => {
         if (error?.status !== 401 && error?.status !== 403) throw error
       })
     }
-    if (currentView.value === 'admin' || currentView.value === 'startup-review') {
+    if (canManageStartups.value && (onOverview || currentView.value === 'startup-review')) {
       await loadAdminStartupListings().catch((error) => {
         if (error?.status !== 401 && error?.status !== 403) throw error
       })
     }
-    if (currentView.value === 'admin' || currentView.value === 'events-admin') {
+    if (canManageEvents.value && (onOverview || currentView.value === 'events-admin')) {
       await loadAdminEvents().catch((error) => {
         if (error?.status !== 401 && error?.status !== 403) throw error
       })
     }
-    if (currentView.value === 'admin' || currentView.value === 'content-admin') {
-      // Let "Manage partners" (/app/content-admin?tab=partners) land on the
-      // Partners tab; otherwise default to homepage cards.
-      const publicContentArgs = route.query.tab === 'partners' ? { resource: 'partners' } : {}
+    if (canManagePartners.value && (onOverview || currentView.value === 'content-admin')) {
+      // Partner admins only manage partners; super admins see homepage cards too.
+      // Land on the Partners tab from "Manage partners" or for partner-only admins.
+      const partnersDefault = route.query.tab === 'partners' || !isSuperAdmin.value
+      const publicContentArgs = partnersDefault ? { resource: 'partners' } : {}
       await loadAdminPublicContent(publicContentArgs).catch((error) => {
         if (error?.status !== 401 && error?.status !== 403) throw error
       })
     }
-    if (currentView.value === 'admin' || currentView.value === 'announcements') {
+    if (isSuperAdmin.value && (onOverview || currentView.value === 'announcements')) {
       await loadAdminAnnouncements().catch((error) => {
         if (error?.status !== 401 && error?.status !== 403) throw error
       })
     }
-    if (currentView.value === 'admin' || currentView.value === 'users') {
+    if (isSuperAdmin.value && (onOverview || currentView.value === 'users')) {
       await loadAdminUsers().catch((error) => {
         if (error?.status !== 401 && error?.status !== 403) throw error
       })
@@ -861,6 +898,7 @@ async function loadMemberDashboard() {
 watch(() => myStartupsStore.currentListing, populateStartupForm)
 watch(() => adminApplicationsStore.currentApplication, populateAdminReviewForm)
 watch(() => adminStartupListingsStore.currentListing, populateAdminStartupReviewForm)
+watch(() => adminUsersStore.currentUser, populateAdminAreaForm)
 
 // Drop cached member/admin data whenever the session ends — including a
 // sign-out that happens outside this page's own button (e.g. the shared
@@ -1150,8 +1188,8 @@ watch(currentView, () => {
           <h1>Manage approvals, public content, members, and announcements.</h1>
           <p class="lede">Admins control approvals, events, startups, partners, homepage cards, announcements, and moderation shortcuts. Super admins can override and manage admin privileges.</p>
         </div>
-        <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this dashboard.</p>
-        <template v-if="canAccessAdminDashboard">
+        <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this dashboard.</p>
+        <template v-if="currentViewAllowed">
           <div class="grid four">
             <div v-for="[label, value] in adminMetrics" :key="label" class="metric"><span>{{ label }}</span><strong>{{ value }}</strong></div>
           </div>
@@ -1167,13 +1205,13 @@ watch(currentView, () => {
             <article class="card">
               <h2>Quick actions</h2>
               <div class="button-grid">
-                <RouterLink class="button water" to="/app/approvals">Review members</RouterLink>
-                <RouterLink class="button water" to="/app/startup-review">Review startups</RouterLink>
-                <RouterLink class="button water" to="/app/events-admin">Create event</RouterLink>
-                <RouterLink class="button water" to="/app/content-admin">Edit homepage cards</RouterLink>
-                <RouterLink class="button water" to="/app/content-admin?tab=partners">Manage partners</RouterLink>
-                <RouterLink class="button water" to="/app/announcements">Create announcement</RouterLink>
-                <button class="button secondary" type="button">Open Discourse admin</button>
+                <RouterLink v-if="isSuperAdmin" class="button water" to="/app/approvals">Review members</RouterLink>
+                <RouterLink v-if="canManageStartups" class="button water" to="/app/startup-review">Review startups</RouterLink>
+                <RouterLink v-if="canManageEvents" class="button water" to="/app/events-admin">Create event</RouterLink>
+                <RouterLink v-if="isSuperAdmin" class="button water" to="/app/content-admin">Edit homepage cards</RouterLink>
+                <RouterLink v-if="canManagePartners" class="button water" to="/app/content-admin?tab=partners">Manage partners</RouterLink>
+                <RouterLink v-if="isSuperAdmin" class="button water" to="/app/announcements">Create announcement</RouterLink>
+                <button v-if="isSuperAdmin" class="button secondary" type="button">Open Discourse admin</button>
               </div>
             </article>
           </div>
@@ -1202,12 +1240,12 @@ watch(currentView, () => {
         <div class="app-hero">
           <h1>Review new member applications.</h1>
           <p class="lede">Membership applications come from the authenticated admin API and use the same approve, request-more-info, and reject transitions as the backend.</p>
-          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this queue.</p>
+          <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this queue.</p>
         </div>
         <div v-if="adminApplicationsStore.error" class="notice error-notice">
           <p class="small">Could not load membership applications. Confirm this account has admin access and the backend is running.</p>
         </div>
-        <div v-if="canAccessAdminDashboard" class="filter-row">
+        <div v-if="currentViewAllowed" class="filter-row">
           <button
             v-for="status in ['submitted', 'needs_more_info', 'approved', 'rejected']"
             :key="status"
@@ -1219,7 +1257,7 @@ watch(currentView, () => {
             {{ titleize(status) }}
           </button>
         </div>
-        <div v-if="canAccessAdminDashboard" class="grid two">
+        <div v-if="currentViewAllowed" class="grid two">
           <article class="card">
             <div class="row">
               <h2>Applications</h2>
@@ -1287,12 +1325,12 @@ watch(currentView, () => {
         <div class="app-hero">
           <h1>Review submitted startup listings.</h1>
           <p class="lede">Startup listings come from the authenticated admin API and use the same approve, request-more-info, and reject transitions as member applications.</p>
-          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this queue.</p>
+          <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this queue.</p>
         </div>
         <div v-if="adminStartupListingsStore.error" class="notice error-notice">
           <p class="small">Could not load startup listings. Confirm this account has admin access and the backend is running.</p>
         </div>
-        <div v-if="canAccessAdminDashboard" class="filter-row">
+        <div v-if="currentViewAllowed" class="filter-row">
           <button
             v-for="status in ['submitted', 'needs_more_info', 'approved', 'rejected']"
             :key="status"
@@ -1304,7 +1342,7 @@ watch(currentView, () => {
             {{ titleize(status) }}
           </button>
         </div>
-        <div v-if="canAccessAdminDashboard" class="grid two">
+        <div v-if="currentViewAllowed" class="grid two">
           <article class="card">
             <div class="row">
               <h2>Listings</h2>
@@ -1373,12 +1411,12 @@ watch(currentView, () => {
         <div class="app-hero">
           <h1>Search the members and adjust roles.</h1>
           <p class="lede">Filter the directory by role, approval, or affiliation. Only super admins can promote or demote admins; regular admins can review profiles only.</p>
-          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
+          <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this view.</p>
         </div>
         <div v-if="adminUsersStore.error" class="notice error-notice">
           <p class="small">Could not load users. Confirm this account has admin access and the backend is running.</p>
         </div>
-        <div v-if="canAccessAdminDashboard" class="filter-row">
+        <div v-if="currentViewAllowed" class="filter-row">
           <span class="small">Role:</span>
           <button
             v-for="role in adminUserRoleFilters"
@@ -1391,7 +1429,7 @@ watch(currentView, () => {
             {{ titleize(role) }}
           </button>
         </div>
-        <div v-if="canAccessAdminDashboard" class="filter-row">
+        <div v-if="currentViewAllowed" class="filter-row">
           <span class="small">Approval:</span>
           <button
             v-for="status in adminUserApprovalFilters"
@@ -1404,12 +1442,12 @@ watch(currentView, () => {
             {{ titleize(status) }}
           </button>
         </div>
-        <form v-if="canAccessAdminDashboard" class="filter-row" @submit.prevent="searchAdminUsers">
+        <form v-if="currentViewAllowed" class="filter-row" @submit.prevent="searchAdminUsers">
           <input v-model="userFilterForm.q" type="search" placeholder="Search name or email" />
           <button class="button water" type="submit" :disabled="adminUsersStore.loading">Search</button>
           <button class="button secondary" type="button" @click="loadAdminUsers()">Refresh</button>
         </form>
-        <div v-if="canAccessAdminDashboard" class="grid two">
+        <div v-if="currentViewAllowed" class="grid two">
           <article class="card">
             <div class="row">
               <h2>Users</h2>
@@ -1462,11 +1500,21 @@ watch(currentView, () => {
 
             <div v-if="!canManageAdminPrivileges" class="notice small">Super admin access is required to change roles.</div>
             <div v-else-if="isCurrentAuthUser" class="notice small">You cannot change your own role from this screen.</div>
-            <div v-else class="button-grid">
-              <button v-if="selectedAdminUser.permission_role === 'member'" class="button water" type="button" :disabled="adminUsersStore.saving || selectedAdminUser.approval_status !== 'approved'" @click="promoteAdminUser">Promote to admin</button>
-              <button v-if="selectedAdminUser.permission_role === 'admin'" class="button secondary" type="button" :disabled="adminUsersStore.saving" @click="demoteAdminUser">Demote admin</button>
-              <button v-if="selectedAdminUser.permission_role === 'admin'" class="button water" type="button" :disabled="adminUsersStore.saving" @click="promoteSuperAdminUser">Promote to super admin</button>
-              <button v-if="selectedAdminUser.permission_role === 'super_admin'" class="button secondary" type="button" :disabled="adminUsersStore.saving" @click="demoteSuperAdminUser">Demote super admin</button>
+            <div v-else-if="selectedAdminUser.permission_role === 'super_admin'" class="button-grid">
+              <button class="button secondary" type="button" :disabled="adminUsersStore.saving" @click="demoteSuperAdminUser">Demote super admin</button>
+            </div>
+            <div v-else>
+              <p class="small">Admin areas — grant management of any combination. Clearing all reverts the user to a regular member.</p>
+              <div style="display: flex; gap: 18px; flex-wrap: wrap; margin: 8px 0 14px">
+                <label><input v-model="adminAreaForm.events" type="checkbox" :disabled="adminUsersStore.saving"> Events</label>
+                <label><input v-model="adminAreaForm.partners" type="checkbox" :disabled="adminUsersStore.saving"> Partners</label>
+                <label><input v-model="adminAreaForm.startups" type="checkbox" :disabled="adminUsersStore.saving"> Startups</label>
+              </div>
+              <div class="button-grid">
+                <button class="button primary" type="button" :disabled="adminUsersStore.saving || selectedAdminUser.approval_status !== 'approved'" @click="saveAdminAreas">{{ adminUsersStore.saving ? 'Saving…' : 'Save admin areas' }}</button>
+                <button v-if="selectedAdminUser.permission_role === 'admin'" class="button water" type="button" :disabled="adminUsersStore.saving" @click="promoteSuperAdminUser">Promote to super admin</button>
+              </div>
+              <p v-if="selectedAdminUser.approval_status !== 'approved'" class="small">Only approved members can be given admin areas.</p>
             </div>
             <p v-if="adminUsersStore.currentLoading" class="small">Loading full user detail.</p>
           </article>
@@ -1477,12 +1525,12 @@ watch(currentView, () => {
         <div class="app-hero">
           <h1>Create, edit, publish, hide, archive, and cancel events.</h1>
           <p class="lede">Admins author events as drafts, then publish them to public or members-only audiences. Cancellation hides events from public surfaces while keeping them visible here.</p>
-          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
+          <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this view.</p>
         </div>
         <div v-if="adminEventsStore.error" class="notice error-notice">
           <p class="small">Could not load events. Confirm this account has admin access and the backend is running.</p>
         </div>
-        <div v-if="canAccessAdminDashboard" class="filter-row">
+        <div v-if="currentViewAllowed" class="filter-row">
           <button
             v-for="status in adminEventStatusFilters"
             :key="status"
@@ -1494,7 +1542,7 @@ watch(currentView, () => {
             {{ titleize(status) }}
           </button>
         </div>
-        <div v-if="canAccessAdminDashboard" class="grid two">
+        <div v-if="currentViewAllowed" class="grid two">
           <article class="card">
             <div class="row">
               <h2>Events</h2>
@@ -1582,14 +1630,14 @@ watch(currentView, () => {
         <div class="app-hero">
           <h1>Edit homepage cards and partners without touching code.</h1>
           <p class="lede">Admins can create drafts, edit content, publish, hide, and archive the website content already backed by the Laravel CMS APIs.</p>
-          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
+          <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this view.</p>
         </div>
         <div v-if="adminPublicContentStore.error" class="notice error-notice">
           <p class="small">Could not load public content. Confirm this account has admin access and the backend is running.</p>
         </div>
-        <div v-if="canAccessAdminDashboard" class="filter-row">
+        <div v-if="currentViewAllowed" class="filter-row">
           <button
-            v-for="[resource, label] in adminPublicContentResources"
+            v-for="[resource, label] in visiblePublicContentResources"
             :key="resource"
             class="button secondary"
             :class="{ active: adminPublicContentStore.resource === resource }"
@@ -1599,7 +1647,7 @@ watch(currentView, () => {
             {{ label }}
           </button>
         </div>
-        <div v-if="canAccessAdminDashboard" class="filter-row">
+        <div v-if="currentViewAllowed" class="filter-row">
           <button
             v-for="status in adminPublicContentStatusFilters"
             :key="status"
@@ -1611,7 +1659,7 @@ watch(currentView, () => {
             {{ titleize(status) }}
           </button>
         </div>
-        <div v-if="canAccessAdminDashboard" class="grid two">
+        <div v-if="currentViewAllowed" class="grid two">
           <article class="card">
             <div class="row">
               <h2>{{ adminPublicContentStore.resourceConfig.label }}</h2>
@@ -1695,12 +1743,12 @@ watch(currentView, () => {
         <div class="app-hero">
           <h1>Create, edit, publish, hide, and archive member announcements.</h1>
           <p class="lede">Announcements are admin-authored content. Published items appear in the member dashboard for the selected audience.</p>
-          <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
+          <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this view.</p>
         </div>
         <div v-if="adminAnnouncementsStore.error" class="notice error-notice">
           <p class="small">Could not load announcements. Confirm this account has admin access and the backend is running.</p>
         </div>
-        <div v-if="canAccessAdminDashboard" class="filter-row">
+        <div v-if="currentViewAllowed" class="filter-row">
           <button
             v-for="status in adminAnnouncementStatusFilters"
             :key="status"
@@ -1712,7 +1760,7 @@ watch(currentView, () => {
             {{ titleize(status) }}
           </button>
         </div>
-        <div v-if="canAccessAdminDashboard" class="filter-row">
+        <div v-if="currentViewAllowed" class="filter-row">
           <button
             v-for="audience in adminAnnouncementAudienceFilters"
             :key="audience"
@@ -1724,7 +1772,7 @@ watch(currentView, () => {
             {{ titleize(audience) }}
           </button>
         </div>
-        <div v-if="canAccessAdminDashboard" class="grid two">
+        <div v-if="currentViewAllowed" class="grid two">
           <article class="card">
             <div class="row">
               <h2>Announcements</h2>

@@ -30,10 +30,23 @@ const PENDING_USER = {
   can_access_member_areas: false,
 }
 
+// Full-access admin (super admin) used by the admin-view rendering tests.
 const ADMIN = {
+  ...MEMBER,
+  permission_role: 'super_admin',
+  can_publish_public_content: true,
+  can_manage_admin_privileges: true,
+  can_manage_events: true,
+  can_manage_partners: true,
+  can_manage_startups: true,
+}
+
+// Admin scoped to a single area, used for per-area gating tests.
+const EVENTS_ADMIN = {
   ...MEMBER,
   permission_role: 'admin',
   can_publish_public_content: true,
+  can_manage_events: true,
 }
 
 const APPLICATION = {
@@ -454,6 +467,29 @@ describe('member dashboard live state', () => {
     expect(navGroups.some((group) => group.text().includes('Admin overview'))).toBe(true)
   })
 
+  it('shows an area admin only their area in the Admin dashboard nav', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(EVENTS_ADMIN))
+      if (url.includes('/api/membership-application')) return Promise.resolve(jsonResponse({ data: APPLICATION }))
+      if (url.includes('/api/announcements')) {
+        return Promise.resolve(jsonResponse({ data: [], current_page: 1, last_page: 1, per_page: 3, total: 0 }))
+      }
+      if (url.includes('/api/startup-listings')) return Promise.resolve(jsonResponse({ data: [] }))
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/dashboard')
+
+    const adminGroup = wrapper.findAll('.app-nav-group').find((group) => group.text().includes('Admin dashboard'))
+    expect(adminGroup).toBeTruthy()
+    expect(adminGroup.text()).toContain('Event management')
+    expect(adminGroup.text()).not.toContain('Approvals')
+    expect(adminGroup.text()).not.toContain('Startup review')
+    expect(adminGroup.text()).not.toContain('User management')
+    expect(adminGroup.text()).not.toContain('Public content')
+  })
+
   it('gates the admin overview content when a non-admin opens /app/admin directly', async () => {
     const fetchMock = vi.fn((url) => {
       if (url.includes('/api/user')) return Promise.resolve(jsonResponse(MEMBER))
@@ -547,7 +583,9 @@ describe('member dashboard live state', () => {
 
     await wrapper.find('.table-button').trigger('click')
     await flushPromises()
-    expect(wrapper.text()).toContain('Super admin access is required to change roles.')
+    // A super admin sees the per-area admin toggles for a member.
+    expect(wrapper.text()).toContain('Admin areas')
+    expect(wrapper.text()).toContain('Save admin areas')
   })
 
   it('renders the admin public content homepage-card editor from the admin API', async () => {
@@ -717,8 +755,7 @@ describe('member dashboard live state', () => {
     expect(wrapper.text()).toContain('No announcements in this status.')
   })
 
-  it('lets a super admin promote a member to admin from the user directory', async () => {
-    const SUPER = { ...ADMIN, permission_role: 'super_admin', can_manage_admin_privileges: true }
+  it('lets a super admin grant admin areas to a member from the user directory', async () => {
     const TARGET = {
       id: 22,
       name: 'Grace Hopper',
@@ -726,11 +763,14 @@ describe('member dashboard live state', () => {
       approval_status: 'approved',
       affiliation_type: 'alumni',
       permission_role: 'member',
+      can_manage_events: false,
+      can_manage_partners: false,
+      can_manage_startups: false,
     }
-    const promoted = { ...TARGET, permission_role: 'admin' }
+    const updated = { ...TARGET, permission_role: 'admin', can_manage_events: true }
     const fetchMock = vi.fn((url) => {
-      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(SUPER))
-      if (url.includes('/api/admin/users/22/promote-admin')) return Promise.resolve(jsonResponse({ data: promoted }))
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.includes('/api/admin/users/22/admin-areas')) return Promise.resolve(jsonResponse({ data: updated }))
       if (url.match(/\/api\/admin\/users\/22$/)) return Promise.resolve(jsonResponse({ data: TARGET }))
       if (url.includes('/api/admin/users')) {
         return Promise.resolve(jsonResponse({
@@ -744,21 +784,24 @@ describe('member dashboard live state', () => {
       return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
     })
     vi.stubGlobal('fetch', fetchMock)
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
 
     const wrapper = await mountAt('/app/users')
     await wrapper.find('.table-button').trigger('click')
     await flushPromises()
 
-    const promoteButton = wrapper.findAll('button').find((node) => node.text() === 'Promote to admin')
-    expect(promoteButton).toBeTruthy()
-    await promoteButton.trigger('click')
+    const checkboxes = wrapper.findAll('input[type="checkbox"]')
+    expect(checkboxes.length).toBe(3)
+    await checkboxes[0].setValue(true) // Events
+
+    const saveButton = wrapper.findAll('button').find((node) => node.text() === 'Save admin areas')
+    expect(saveButton).toBeTruthy()
+    await saveButton.trigger('click')
     await flushPromises()
 
-    const promoteRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/users/22/promote-admin'))
-    expect(promoteRequest[1].method).toBe('POST')
-    expect(promoteRequest[1].credentials).toBe('include')
-    expect(wrapper.text()).toContain('Demote admin')
+    const request = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/users/22/admin-areas'))
+    expect(request[1].method).toBe('POST')
+    expect(request[1].credentials).toBe('include')
+    expect(JSON.parse(request[1].body)).toMatchObject({ events: true, partners: false, startups: false })
   })
 
   it('publishes the selected event and removes it from the draft queue', async () => {

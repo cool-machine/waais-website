@@ -108,27 +108,29 @@ describe('loadList', () => {
 })
 
 describe('transitions', () => {
-  it('promotes a selected member to admin and merges the partial response', async () => {
-    const promotedPayload = {
+  it('sets admin areas for a member and merges the partial response', async () => {
+    const updatedPayload = {
       id: 7,
       name: 'Grace Hopper',
       email: 'grace@example.com',
       approval_status: 'approved',
       affiliation_type: 'alumni',
       permission_role: 'admin',
+      can_manage_events: true,
     }
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: promotedPayload }))
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: updatedPayload }))
     vi.stubGlobal('fetch', fetchMock)
 
     const store = useAdminUsersStore()
     store.list = [{ ...MEMBER, created_at: '2026-01-01T00:00:00Z' }]
     store.selectUser(store.list[0])
 
-    await store.promoteAdmin()
+    await store.setAdminAreas({ events: true })
 
     const [url, init] = fetchMock.mock.calls[0]
-    expect(url).toContain('/api/admin/users/7/promote-admin')
+    expect(url).toContain('/api/admin/users/7/admin-areas')
     expect(init.method).toBe('POST')
+    expect(JSON.parse(init.body)).toMatchObject({ events: true, partners: false, startups: false })
     expect(store.currentUser.permission_role).toBe('admin')
     // Merge keeps the wider listing fields that the partial response doesn't return.
     expect(store.currentUser.created_at).toBe('2026-01-01T00:00:00Z')
@@ -145,7 +147,7 @@ describe('transitions', () => {
     store.listMeta.total = 1
     store.selectUser(MEMBER)
 
-    await store.promoteAdmin()
+    await store.setAdminAreas({ events: true })
 
     expect(store.list).toEqual([])
     expect(store.listMeta.total).toBe(0)
@@ -167,7 +169,7 @@ describe('transitions', () => {
     expect(store.saveError.body.message).toContain('last super admin')
   })
 
-  it('routes promote-super-admin and demote-admin to the matching endpoints', async () => {
+  it('routes promote-super-admin and demote-super-admin to the matching endpoints', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: ADMIN }))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -178,8 +180,8 @@ describe('transitions', () => {
     await store.promoteSuperAdmin()
     expect(fetchMock.mock.calls[0][0]).toContain('/api/admin/users/12/promote-super-admin')
 
-    await store.demoteAdmin()
-    expect(fetchMock.mock.calls[1][0]).toContain('/api/admin/users/12/demote-admin')
+    await store.demoteSuperAdmin()
+    expect(fetchMock.mock.calls[1][0]).toContain('/api/admin/users/12/demote-super-admin')
   })
 })
 

@@ -30,6 +30,9 @@ export const useAuthUserStore = defineStore('authUser', {
     canAccessMemberAreas: (state) => state.user?.can_access_member_areas === true,
     canPublishPublicContent: (state) => state.user?.can_publish_public_content === true,
     canManageAdminPrivileges: (state) => state.user?.can_manage_admin_privileges === true,
+    canManageEvents: (state) => state.user?.can_manage_events === true,
+    canManagePartners: (state) => state.user?.can_manage_partners === true,
+    canManageStartups: (state) => state.user?.can_manage_startups === true,
   },
   actions: {
     async loadCurrentUser({ force = false, signal } = {}) {

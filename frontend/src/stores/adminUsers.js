@@ -155,8 +155,6 @@ export const useAdminUsersStore = defineStore('adminUsers', {
       }
 
       const paths = {
-        promoteAdmin: `/api/admin/users/${this.currentUser.id}/promote-admin`,
-        demoteAdmin: `/api/admin/users/${this.currentUser.id}/demote-admin`,
         promoteSuperAdmin: `/api/admin/users/${this.currentUser.id}/promote-super-admin`,
         demoteSuperAdmin: `/api/admin/users/${this.currentUser.id}/demote-super-admin`,
       }
@@ -214,8 +212,37 @@ export const useAdminUsersStore = defineStore('adminUsers', {
       }
     },
 
-    promoteAdmin(options) { return this.transition('promoteAdmin', options) },
-    demoteAdmin(options) { return this.transition('demoteAdmin', options) },
+    async setAdminAreas(areas, { signal } = {}) {
+      if (!this.currentUser?.id) {
+        return null
+      }
+
+      this.saving = true
+      this.saveError = null
+
+      try {
+        const response = await sendJson(`/api/admin/users/${this.currentUser.id}/admin-areas`, {
+          auth: true,
+          signal,
+          body: {
+            events: Boolean(areas?.events),
+            partners: Boolean(areas?.partners),
+            startups: Boolean(areas?.startups),
+          },
+        })
+        const updates = response?.data ?? null
+        if (updates && updates.id) {
+          this.applyUpdates(updates)
+        }
+        return updates
+      } catch (error) {
+        this.saveError = error
+        throw error
+      } finally {
+        this.saving = false
+      }
+    },
+
     promoteSuperAdmin(options) { return this.transition('promoteSuperAdmin', options) },
     demoteSuperAdmin(options) { return this.transition('demoteSuperAdmin', options) },
 
