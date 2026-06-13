@@ -117,6 +117,14 @@ function eventMeta(event) {
             </template>
           </InfoCard>
         </CardGrid>
+
+        <section class="section-head" style="margin-top: 30px">
+          <div>
+            <p class="eyebrow">Propose a topic</p>
+            <h2>Suggest a founder salon, workshop, or focused AI adoption roundtable.</h2>
+          </div>
+          <RouterLink class="button primary" to="/contact">Propose a topic</RouterLink>
+        </section>
       </div>
     </section>
   </PublicLayout>

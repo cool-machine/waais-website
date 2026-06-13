@@ -353,27 +353,6 @@ onMounted(() => {
             <button class="button primary" type="submit" :disabled="!canSubmit">{{ saveLabel }}</button>
           </div>
         </form>
-
-        <div class="grid" style="margin-top: 24px">
-          <article class="card">
-            <span class="tag">Non-members</span>
-            <h3>Propose a topic</h3>
-            <p>Suggest a founder salon, workshop, or focused AI adoption roundtable.</p>
-            <RouterLink class="button water" to="/contact">Propose topic</RouterLink>
-          </article>
-          <article class="card">
-            <span class="tag">Partners</span>
-            <h3>Partner with us</h3>
-            <p>Sponsor events, provide credits, or collaborate on member education.</p>
-            <RouterLink class="button water" to="/contact">Partner with us</RouterLink>
-          </article>
-          <article class="card">
-            <span class="tag">Founders</span>
-            <h3>List a startup</h3>
-            <p>Startup listings are reviewed and published by admins after member access is confirmed.</p>
-            <RouterLink class="button water" to="/contact">Request listing</RouterLink>
-          </article>
-        </div>
       </div>
     </section>
   </PublicLayout>

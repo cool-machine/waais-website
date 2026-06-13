@@ -60,6 +60,14 @@ function retry() {
             </template>
           </InfoCard>
         </CardGrid>
+
+        <section class="section-head" style="margin-top: 30px">
+          <div>
+            <p class="eyebrow">Partner with us</p>
+            <h2>Sponsor events, provide credits, or collaborate on member education.</h2>
+          </div>
+          <RouterLink class="button primary" to="/contact">Partner with us</RouterLink>
+        </section>
       </div>
     </section>
   </PublicLayout>
