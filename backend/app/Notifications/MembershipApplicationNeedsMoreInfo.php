@@ -38,7 +38,7 @@ class MembershipApplicationNeedsMoreInfo extends Notification
 
         return $message
             ->line('You can update your application at any time.')
-            ->action('Update your application', rtrim(config('app.url'), '/').'/membership')
+            ->action('Update your application', rtrim(config('app.frontend_url'), '/').'/membership')
             ->salutation('— The WAAIS team');
     }
 }

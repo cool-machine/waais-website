@@ -32,7 +32,7 @@ class StartupListingSubmitted extends Notification
             ->greeting('Hi '.$name.',')
             ->line('Your startup listing for "'.$this->listing->name.'" has been submitted to the WAAIS directory.')
             ->line('A reviewer will look at it shortly. We will email you when it is approved or if more information is needed.')
-            ->action('Visit WAAIS', config('app.url'))
+            ->action('Visit WAAIS', config('app.frontend_url'))
             ->salutation('— The WAAIS team');
     }
 }

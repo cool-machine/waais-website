@@ -38,7 +38,7 @@ class StartupListingNeedsMoreInfo extends Notification
 
         return $message
             ->line('You can update the listing from your member dashboard.')
-            ->action('Update your listing', rtrim(config('app.url'), '/').'/app')
+            ->action('Update your listing', rtrim(config('app.frontend_url'), '/').'/app')
             ->salutation('— The WAAIS team');
     }
 }

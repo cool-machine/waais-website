@@ -32,7 +32,7 @@ class MembershipApplicationSubmitted extends Notification
             ->greeting('Hi '.$name.',')
             ->line('Your WAAIS membership application has been received.')
             ->line('A member of the team will review it shortly. We will email you when there is a decision or if we need additional information.')
-            ->action('Visit WAAIS', config('app.url'))
+            ->action('Visit WAAIS', config('app.frontend_url'))
             ->salutation('— The WAAIS team');
     }
 }

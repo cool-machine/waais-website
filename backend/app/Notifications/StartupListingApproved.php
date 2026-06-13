@@ -37,7 +37,7 @@ class StartupListingApproved extends Notification
         }
 
         return $message
-            ->action('View the directory', rtrim(config('app.url'), '/').'/startups')
+            ->action('View the directory', rtrim(config('app.frontend_url'), '/').'/startups')
             ->salutation('— The WAAIS team');
     }
 }

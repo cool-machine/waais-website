@@ -44,7 +44,7 @@ class EventReminder extends Notification
         if (filled($this->event->registration_url)) {
             $message->action('View registration', $this->event->registration_url);
         } else {
-            $message->action('View events', rtrim(config('app.url'), '/').'/events/'.$this->event->id);
+            $message->action('View events', rtrim(config('app.frontend_url'), '/').'/events/'.$this->event->id);
         }
 
         return $message->salutation('- The WAAIS team');

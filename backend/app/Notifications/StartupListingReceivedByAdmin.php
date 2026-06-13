@@ -34,7 +34,7 @@ class StartupListingReceivedByAdmin extends Notification
             ->line('Listing: '.$this->listing->name)
             ->line('Industry: '.($this->listing->industry ?? 'unspecified'))
             ->line('Submitted by: '.$ownerLine)
-            ->action('Open admin queue', rtrim(config('app.url'), '/').'/admin/startup-listings')
+            ->action('Open admin queue', rtrim(config('app.frontend_url'), '/').'/app/startup-review')
             ->salutation('WAAIS admin notice');
     }
 }

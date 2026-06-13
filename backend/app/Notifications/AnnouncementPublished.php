@@ -41,7 +41,7 @@ class AnnouncementPublished extends Notification
                 $this->announcement->action_url,
             );
         } else {
-            $message->action('Open dashboard', rtrim(config('app.url'), '/').'/app');
+            $message->action('Open dashboard', rtrim(config('app.frontend_url'), '/').'/app');
         }
 
         return $message->salutation('- The WAAIS team');

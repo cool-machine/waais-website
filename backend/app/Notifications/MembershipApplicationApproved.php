@@ -38,7 +38,7 @@ class MembershipApplicationApproved extends Notification
         }
 
         return $message
-            ->action('Sign in to your dashboard', rtrim(config('app.url'), '/').'/app')
+            ->action('Sign in to your dashboard', rtrim(config('app.frontend_url'), '/').'/app')
             ->salutation('— The WAAIS team');
     }
 }
