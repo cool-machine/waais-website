@@ -138,13 +138,15 @@ const navGroups = [
 ]
 
 const currentView = computed(() => route.params.view || 'sign-in')
-const visibleNavGroups = computed(() => {
-  if (!authUser.isAuthenticated) {
-    return navGroups
-  }
-
-  return navGroups.filter((group) => group.label !== 'Auth')
-})
+const visibleNavGroups = computed(() =>
+  navGroups.filter((group) => {
+    // Auth links only make sense before sign-in.
+    if (group.label === 'Auth') return !authUser.isAuthenticated
+    // Admin dashboard (incl. "Admin overview") is admin-only.
+    if (group.label === 'Admin dashboard') return canAccessAdminDashboard.value
+    return true
+  }),
+)
 
 const displayName = computed(() => authUser.user?.name || authUser.user?.email || 'member')
 const accountStatusLabel = computed(() => {
@@ -1142,48 +1144,51 @@ watch(currentView, () => {
           <h1>Manage approvals, public content, members, and announcements.</h1>
           <p class="lede">Admins control approvals, events, startups, partners, homepage cards, announcements, and moderation shortcuts. Super admins can override and manage admin privileges.</p>
         </div>
-        <div class="grid four">
-          <div v-for="[label, value] in adminMetrics" :key="label" class="metric"><span>{{ label }}</span><strong>{{ value }}</strong></div>
-        </div>
-        <div class="grid two">
-          <article class="card">
-            <h2>Operational queue</h2>
-            <div class="table">
-              <div class="table-row"><span>Review member applications</span><strong>{{ adminQueueCount }}</strong></div>
-              <div class="table-row"><span>Review startup listings</span><strong>{{ adminStartupQueueCount }}</strong></div>
-              <div class="table-row"><span>Public content in view</span><strong>{{ adminPublicContentCount }}</strong></div>
-            </div>
-          </article>
-          <article class="card">
-            <h2>Quick actions</h2>
-            <div class="button-grid">
-              <RouterLink class="button water" to="/app/approvals">Review members</RouterLink>
-              <RouterLink class="button water" to="/app/startup-review">Review startups</RouterLink>
-              <RouterLink class="button water" to="/app/events-admin">Create event</RouterLink>
-              <RouterLink class="button water" to="/app/content-admin">Edit public content</RouterLink>
-              <RouterLink class="button water" to="/app/announcements">Create announcement</RouterLink>
-              <button class="button secondary" type="button">Open Discourse admin</button>
-            </div>
-          </article>
-        </div>
-        <article class="card">
-          <h2>Model contract</h2>
-          <p class="small">Laravel should store approval status, affiliation type, and permission role separately.</p>
-          <div class="model-columns">
-            <div>
-              <h3>Approval status</h3>
-              <div class="tag-row"><span v-for="status in approvalStatuses" :key="status" class="tag">{{ status }}</span></div>
-            </div>
-            <div>
-              <h3>Affiliation type</h3>
-              <div class="tag-row"><span v-for="type in affiliationTypes" :key="type" class="tag">{{ type }}</span></div>
-            </div>
-            <div>
-              <h3>Permission role</h3>
-              <div class="tag-row"><span v-for="role in permissionRoles" :key="role" class="tag">{{ role }}</span></div>
-            </div>
+        <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this dashboard.</p>
+        <template v-if="canAccessAdminDashboard">
+          <div class="grid four">
+            <div v-for="[label, value] in adminMetrics" :key="label" class="metric"><span>{{ label }}</span><strong>{{ value }}</strong></div>
           </div>
-        </article>
+          <div class="grid two">
+            <article class="card">
+              <h2>Operational queue</h2>
+              <div class="table">
+                <div class="table-row"><span>Review member applications</span><strong>{{ adminQueueCount }}</strong></div>
+                <div class="table-row"><span>Review startup listings</span><strong>{{ adminStartupQueueCount }}</strong></div>
+                <div class="table-row"><span>Public content in view</span><strong>{{ adminPublicContentCount }}</strong></div>
+              </div>
+            </article>
+            <article class="card">
+              <h2>Quick actions</h2>
+              <div class="button-grid">
+                <RouterLink class="button water" to="/app/approvals">Review members</RouterLink>
+                <RouterLink class="button water" to="/app/startup-review">Review startups</RouterLink>
+                <RouterLink class="button water" to="/app/events-admin">Create event</RouterLink>
+                <RouterLink class="button water" to="/app/content-admin">Edit public content</RouterLink>
+                <RouterLink class="button water" to="/app/announcements">Create announcement</RouterLink>
+                <button class="button secondary" type="button">Open Discourse admin</button>
+              </div>
+            </article>
+          </div>
+          <article class="card">
+            <h2>Model contract</h2>
+            <p class="small">Laravel should store approval status, affiliation type, and permission role separately.</p>
+            <div class="model-columns">
+              <div>
+                <h3>Approval status</h3>
+                <div class="tag-row"><span v-for="status in approvalStatuses" :key="status" class="tag">{{ status }}</span></div>
+              </div>
+              <div>
+                <h3>Affiliation type</h3>
+                <div class="tag-row"><span v-for="type in affiliationTypes" :key="type" class="tag">{{ type }}</span></div>
+              </div>
+              <div>
+                <h3>Permission role</h3>
+                <div class="tag-row"><span v-for="role in permissionRoles" :key="role" class="tag">{{ role }}</span></div>
+              </div>
+            </div>
+          </article>
+        </template>
       </section>
 
       <section v-else-if="currentView === 'approvals'" class="app-stack">

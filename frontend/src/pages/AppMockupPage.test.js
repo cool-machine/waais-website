@@ -415,6 +415,59 @@ describe('member dashboard live state', () => {
     expect(wrapper.findAll('.app-nav-group').some((group) => group.text().includes('Auth'))).toBe(false)
   })
 
+  it('hides the Admin dashboard nav group from non-admin members', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(MEMBER))
+      if (url.includes('/api/membership-application')) return Promise.resolve(jsonResponse({ data: APPLICATION }))
+      if (url.includes('/api/announcements')) {
+        return Promise.resolve(jsonResponse({ data: [], current_page: 1, last_page: 1, per_page: 3, total: 0 }))
+      }
+      if (url.includes('/api/startup-listings')) return Promise.resolve(jsonResponse({ data: [] }))
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/dashboard')
+
+    const navGroups = wrapper.findAll('.app-nav-group')
+    expect(navGroups.some((group) => group.text().includes('Member dashboard'))).toBe(true)
+    expect(navGroups.some((group) => group.text().includes('Admin dashboard'))).toBe(false)
+    expect(navGroups.some((group) => group.text().includes('Admin overview'))).toBe(false)
+  })
+
+  it('shows the Admin dashboard nav group to admins', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(ADMIN))
+      if (url.includes('/api/membership-application')) return Promise.resolve(jsonResponse({ data: APPLICATION }))
+      if (url.includes('/api/announcements')) {
+        return Promise.resolve(jsonResponse({ data: [], current_page: 1, last_page: 1, per_page: 3, total: 0 }))
+      }
+      if (url.includes('/api/startup-listings')) return Promise.resolve(jsonResponse({ data: [] }))
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/dashboard')
+
+    const navGroups = wrapper.findAll('.app-nav-group')
+    expect(navGroups.some((group) => group.text().includes('Admin dashboard'))).toBe(true)
+    expect(navGroups.some((group) => group.text().includes('Admin overview'))).toBe(true)
+  })
+
+  it('gates the admin overview content when a non-admin opens /app/admin directly', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/user')) return Promise.resolve(jsonResponse(MEMBER))
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountAt('/app/admin')
+
+    expect(wrapper.text()).toContain('Approved admin access is required for this dashboard.')
+    expect(wrapper.text()).not.toContain('Review members')
+    expect(wrapper.text()).not.toContain('Operational queue')
+  })
+
   it('renders the admin event management queue from the admin API', async () => {
     const ADMIN_EVENT = {
       id: 33,
