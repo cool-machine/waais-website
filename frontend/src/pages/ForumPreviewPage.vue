@@ -17,7 +17,6 @@ onMounted(() => {
 <template>
   <PublicLayout>
     <PageHero
-      eyebrow="Forum"
       title="The WAAIS forum is live."
       lede="A space for AI builders inside the Wharton alumni community. Guests can browse public discussions; approved members sign in with their WAAIS account to post — no separate forum password."
     />
@@ -25,7 +24,6 @@ onMounted(() => {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <p class="eyebrow">How it works</p>
             <h2>One account for site and forum.</h2>
             <p>
               Approved WAAIS members sign in to the forum with their existing site account
@@ -40,19 +38,18 @@ onMounted(() => {
           </div>
         </div>
 
-        <h3 style="margin-top: 32px">Industry categories (rolling out)</h3>
+        <h3 style="margin-top: 32px">Industry categories</h3>
         <div class="tag-list">
           <span v-for="industry in forumIndustries" :key="industry" class="tag">{{ industry }}</span>
         </div>
 
-        <h3 style="margin-top: 24px">Region categories (rolling out)</h3>
+        <h3 style="margin-top: 24px">Region categories</h3>
         <div class="tag-list">
           <span v-for="region in forumRegions" :key="region" class="tag">{{ region }}</span>
         </div>
 
         <div class="lock-box" style="margin-top: 32px">
           <div>
-            <span class="tag">Bookmark it</span>
             <h2>Forum URL: forum.whartonai.studio</h2>
             <p>
               The forum lives at <a href="https://forum.whartonai.studio"><code>forum.whartonai.studio</code></a>.

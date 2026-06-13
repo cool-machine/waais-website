@@ -29,12 +29,11 @@ function retry() {
 
 <template>
   <PublicLayout>
-    <PageHero compact eyebrow="Startups" title="Discover Wharton alumni AI companies." lede="Public users see published listings. Approved members later unlock the member-only directory with full founder profiles and search." />
+    <PageHero compact title="Discover Wharton alumni AI companies." lede="AI companies founded and built by Wharton alumni." />
     <section class="section paper">
       <div class="section-inner">
         <div class="lock-box">
           <div>
-            <span class="tag">Public preview</span>
             <h2>Full member directory and contact details require approved member access.</h2>
             <p>Approved members can submit startup listings. Admins review and approve listings before publication.</p>
           </div>
@@ -46,14 +45,12 @@ function retry() {
         </div>
 
         <div v-else-if="hasError" class="card">
-          <p class="eyebrow">We couldn't load the directory.</p>
-          <p class="small">The API at <code>/api/public/startup-listings</code> didn't respond. Please try again in a moment.</p>
+          <p class="meta">We couldn't load the directory. Please try again.</p>
           <button class="button water" type="button" @click="retry">Retry</button>
         </div>
 
         <div v-else-if="isEmpty" class="card">
-          <p class="eyebrow">No published listings yet.</p>
-          <p class="small">Approved members can submit a startup; admins review and publish it. Once a listing is approved it shows up here automatically.</p>
+          <p class="meta">No listings yet.</p>
         </div>
 
         <CardGrid v-else>
@@ -61,7 +58,6 @@ function retry() {
             v-for="startup in list"
             :key="startup.id"
             :title="startup.name"
-            :eyebrow="startup.industry"
             :meta="startup.stage"
             :image="startup.logo_url || ''"
             :image-alt="`${startup.name} logo`"
@@ -76,7 +72,6 @@ function retry() {
 
         <section class="section-head" style="margin-top: 30px">
           <div>
-            <p class="eyebrow">Member submissions</p>
             <h2>Startup listings enter admin review before publication.</h2>
           </div>
           <RouterLink class="button primary" to="/contact">Request listing</RouterLink>

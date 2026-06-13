@@ -64,12 +64,11 @@ function eventMeta(event) {
 
 <template>
   <PublicLayout>
-    <PageHero compact eyebrow="Events" title="Events for builders and decision makers." lede="Each event will support public, members-only, or mixed visibility, external registration links, capacity limits, waitlists, and recap pages." />
+    <PageHero compact title="Events for builders and decision makers." lede="Salons, workshops, roundtables, and demo nights for the WAAIS community." />
     <section class="section paper">
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Calendar</p>
             <h2>Upcoming and past sessions.</h2>
           </div>
           <div class="filters" aria-label="Event filters">
@@ -91,14 +90,12 @@ function eventMeta(event) {
         </div>
 
         <div v-else-if="hasError" class="card">
-          <p class="eyebrow">We couldn't load events.</p>
-          <p class="small">The API at <code>/api/public/events</code> didn't respond. Please try again in a moment.</p>
+          <p class="meta">We couldn't load events. Please try again.</p>
           <button class="button water" type="button" @click="retry">Retry</button>
         </div>
 
         <div v-else-if="isEmpty" class="card">
-          <p class="eyebrow">No published events yet.</p>
-          <p class="small">Published public and mixed-visibility events will show up here automatically.</p>
+          <p class="meta">No events yet.</p>
         </div>
 
         <CardGrid v-else>
@@ -106,7 +103,6 @@ function eventMeta(event) {
             v-for="event in list"
             :key="event.id"
             :title="event.title"
-            :eyebrow="event.visibility"
             :meta="eventMeta(event)"
             :image="event.image_url || ''"
           >
@@ -120,7 +116,6 @@ function eventMeta(event) {
 
         <section class="section-head" style="margin-top: 30px">
           <div>
-            <p class="eyebrow">Propose a topic</p>
             <h2>Suggest a founder salon, workshop, or focused AI adoption roundtable.</h2>
           </div>
           <RouterLink class="button primary" to="/contact">Propose a topic</RouterLink>

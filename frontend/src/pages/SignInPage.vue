@@ -62,7 +62,6 @@ async function sendResetLink() {
   <PublicLayout>
     <PageHero
       compact
-      eyebrow="Members"
       :title="isAuthenticated ? 'You\'re signed in.' : (mode === 'forgot' ? 'Reset your password.' : 'Sign in.')"
       :lede="isAuthenticated ? 'Head to your member dashboard, or sign out to use a different account.' : (mode === 'forgot' ? 'Enter your account email and we will send you a link to choose a new password.' : 'Access your member dashboard, application status, and startup listings.')"
     />

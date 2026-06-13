@@ -87,7 +87,6 @@ function formatEventDate(value) {
 <template>
   <PublicLayout>
     <PageHero
-      eyebrow="Wharton alumni building with AI"
       title="Where Wharton alumni working in AI meet, build, and share."
       lede="WAAIS brings together founders, operators, investors, researchers, and executives using artificial intelligence in the real world."
       :video-src="heroVideoSrc"
@@ -100,7 +99,6 @@ function formatEventDate(value) {
       </div>
       <template #aside>
         <div class="hero-card">
-          <p class="eyebrow">Community snapshot</p>
           <div class="grid two">
             <div class="metric"><span>Members target</span><strong>500+</strong></div>
             <div class="metric"><span>AI startups</span><strong>60+</strong></div>
@@ -115,7 +113,6 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <p class="eyebrow">What we do</p>
             <h2>Turn alumni AI work into durable community infrastructure.</h2>
           </div>
           <RouterLink v-if="isAuthenticated" class="button water" to="/app/dashboard">Go to dashboard</RouterLink>
@@ -126,7 +123,6 @@ function formatEventDate(value) {
             v-for="card in whatWeDoCards"
             :key="card.id"
             :title="card.title"
-            :eyebrow="card.eyebrow"
           >
             {{ card.body }}
             <template #actions v-if="card.link_url && card.link_label">
@@ -142,7 +138,6 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="grid two">
           <div>
-            <p class="eyebrow">Member platform</p>
             <h2>One account for dashboard, events, and forum.</h2>
             <p class="lede">Members sign in with Google, admins approve access, and Discourse SSO opens the private forum without a second account.</p>
           </div>
@@ -166,7 +161,6 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Upcoming</p>
             <h2>Selected events.</h2>
           </div>
           <RouterLink class="button water" to="/events">View all events</RouterLink>
@@ -177,13 +171,11 @@ function formatEventDate(value) {
         </div>
 
         <div v-else-if="eventsError" class="card">
-          <p class="eyebrow">Events unavailable.</p>
-          <p class="small">The public events API didn't respond. The full calendar will return when the API is available.</p>
+          <p class="meta">Events are temporarily unavailable. Please check back shortly.</p>
         </div>
 
         <div v-else-if="selectedEvents.length === 0" class="card">
-          <p class="eyebrow">No upcoming public events yet.</p>
-          <p class="small">Published public and mixed-visibility events will appear here automatically.</p>
+          <p class="meta">No upcoming events yet.</p>
         </div>
 
         <CardGrid v-else>
@@ -191,7 +183,6 @@ function formatEventDate(value) {
             v-for="event in selectedEvents"
             :key="event.id"
             :title="event.title"
-            :eyebrow="event.status === 'recap' ? 'Recap' : 'Upcoming'"
             :meta="[formatEventDate(event.starts_at), event.location].filter(Boolean).join(' · ')"
             :image="event.image_url || ''"
           >
@@ -208,7 +199,6 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Featured startups</p>
             <h2>Approved member submissions, public teasers.</h2>
           </div>
           <RouterLink class="button water" to="/startups">Open directory</RouterLink>
@@ -218,7 +208,6 @@ function formatEventDate(value) {
             v-for="startup in featuredStartups"
             :key="startup.id"
             :title="startup.name"
-            :eyebrow="startup.industry"
             :meta="startup.stage"
             :image="startup.logo_url || ''"
             :image-alt="`${startup.name} logo`"

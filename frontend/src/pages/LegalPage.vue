@@ -5,7 +5,7 @@ import PublicLayout from '../components/PublicLayout.vue'
 
 <template>
   <PublicLayout>
-    <PageHero compact eyebrow="Legal" title="Privacy, cookies, and data requests." lede="How WAAIS handles membership data, platform cookies, and access or deletion requests." />
+    <PageHero compact title="Privacy, cookies, and data requests." lede="How WAAIS handles membership data, platform cookies, and access or deletion requests." />
     <section class="section paper">
       <div class="section-inner">
         <div class="grid">

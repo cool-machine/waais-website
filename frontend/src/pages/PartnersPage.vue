@@ -35,8 +35,7 @@ function retry() {
         </div>
 
         <div v-else-if="hasError" class="card">
-          <p class="eyebrow">We couldn't load partners.</p>
-          <p class="small">The API at <code>/api/public/partners</code> didn't respond. Please try again in a moment.</p>
+          <p class="meta">We couldn't load partners. Please try again.</p>
           <button class="button water" type="button" @click="retry">Retry</button>
         </div>
 
@@ -49,7 +48,6 @@ function retry() {
             v-for="partner in list"
             :key="partner.id"
             :title="partner.name"
-            :eyebrow="partner.partner_type || 'Partner'"
             :image="partner.logo_url || ''"
             :image-alt="`${partner.name} logo`"
           >
