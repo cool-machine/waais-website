@@ -838,7 +838,10 @@ async function loadMemberDashboard() {
       })
     }
     if (currentView.value === 'admin' || currentView.value === 'content-admin') {
-      await loadAdminPublicContent().catch((error) => {
+      // Let "Manage partners" (/app/content-admin?tab=partners) land on the
+      // Partners tab; otherwise default to homepage cards.
+      const publicContentArgs = route.query.tab === 'partners' ? { resource: 'partners' } : {}
+      await loadAdminPublicContent(publicContentArgs).catch((error) => {
         if (error?.status !== 401 && error?.status !== 403) throw error
       })
     }
@@ -918,7 +921,6 @@ watch(currentView, () => {
     <main class="app-canvas">
       <section v-if="currentView === 'sign-in'" class="auth-wrap">
         <div class="auth-panel">
-          <p class="eyebrow">Member access</p>
           <h1>Sign in to WAAIS.</h1>
           <p class="lede">Google verifies the account first; WAAIS then checks whether the person is approved, pending, admin, or super admin.</p>
           <div class="grid three">
@@ -953,7 +955,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'pending'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">Registration received</p>
           <h1>Your account is awaiting approval.</h1>
           <p class="lede">Pending users are not shown in the directory or forums, including private forums.</p>
         </div>
@@ -979,7 +980,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'dashboard'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">Member dashboard</p>
           <h1>Welcome back, {{ displayName }}.</h1>
           <p class="lede">Your WAAIS account, application status, and member access state in one place.</p>
           <p v-if="authUser.initialized && !authUser.canAccessMemberAreas" class="small">This account has not been approved for member areas yet.</p>
@@ -1027,7 +1027,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'profile'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">Member profile</p>
           <h1>{{ displayName }}.</h1>
           <p class="lede">Profile and application fields pulled from the current authenticated session and membership application record.</p>
         </div>
@@ -1051,7 +1050,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'my-startups'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">My startups</p>
           <h1>Submit and track your startup listings.</h1>
           <p class="lede">Approved members can submit startup listings for admin review before they appear publicly.</p>
           <p v-if="authUser.initialized && !authUser.canAccessMemberAreas" class="small">Approved member access is required before you can submit startup listings.</p>
@@ -1122,7 +1120,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'my-events'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">My events</p>
           <h1>Registered events and recommended sessions.</h1>
           <p class="lede">This view previews registrations, waitlists, reminders, tickets, and past event artifacts.</p>
         </div>
@@ -1136,7 +1133,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'forum-feed'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">Forum feed</p>
           <h1>Recent discussion from Discourse.</h1>
           <p class="lede">Full posting and moderation will remain in Discourse at forum.whartonai.studio.</p>
         </div>
@@ -1151,7 +1147,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'admin'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">Admin dashboard</p>
           <h1>Manage approvals, public content, members, and announcements.</h1>
           <p class="lede">Admins control approvals, events, startups, partners, homepage cards, announcements, and moderation shortcuts. Super admins can override and manage admin privileges.</p>
         </div>
@@ -1175,7 +1170,8 @@ watch(currentView, () => {
                 <RouterLink class="button water" to="/app/approvals">Review members</RouterLink>
                 <RouterLink class="button water" to="/app/startup-review">Review startups</RouterLink>
                 <RouterLink class="button water" to="/app/events-admin">Create event</RouterLink>
-                <RouterLink class="button water" to="/app/content-admin">Edit public content</RouterLink>
+                <RouterLink class="button water" to="/app/content-admin">Edit homepage cards</RouterLink>
+                <RouterLink class="button water" to="/app/content-admin?tab=partners">Manage partners</RouterLink>
                 <RouterLink class="button water" to="/app/announcements">Create announcement</RouterLink>
                 <button class="button secondary" type="button">Open Discourse admin</button>
               </div>
@@ -1204,7 +1200,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'approvals'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">Approvals queue</p>
           <h1>Review new member applications.</h1>
           <p class="lede">Membership applications come from the authenticated admin API and use the same approve, request-more-info, and reject transitions as the backend.</p>
           <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this queue.</p>
@@ -1290,7 +1285,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'startup-review'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">Startup review</p>
           <h1>Review submitted startup listings.</h1>
           <p class="lede">Startup listings come from the authenticated admin API and use the same approve, request-more-info, and reject transitions as member applications.</p>
           <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this queue.</p>
@@ -1377,7 +1371,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'users'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">User management</p>
           <h1>Search the members and adjust roles.</h1>
           <p class="lede">Filter the directory by role, approval, or affiliation. Only super admins can promote or demote admins; regular admins can review profiles only.</p>
           <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
@@ -1482,7 +1475,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'events-admin'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">Event management</p>
           <h1>Create, edit, publish, hide, archive, and cancel events.</h1>
           <p class="lede">Admins author events as drafts, then publish them to public or members-only audiences. Cancellation hides events from public surfaces while keeping them visible here.</p>
           <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
@@ -1588,7 +1580,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'content-admin'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">Public content</p>
           <h1>Edit homepage cards and partners without touching code.</h1>
           <p class="lede">Admins can create drafts, edit content, publish, hide, and archive the website content already backed by the Laravel CMS APIs.</p>
           <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
@@ -1702,7 +1693,6 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'announcements'" class="app-stack">
         <div class="app-hero">
-          <p class="eyebrow">Announcements</p>
           <h1>Create, edit, publish, hide, and archive member announcements.</h1>
           <p class="lede">Announcements are admin-authored content. Published items appear in the member dashboard for the selected audience.</p>
           <p v-if="authUser.initialized && !canAccessAdminDashboard" class="small">Approved admin access is required for this view.</p>
