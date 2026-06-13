@@ -38,6 +38,12 @@ onMounted(() => {
           </div>
         </div>
 
+        <div class="card" style="margin-top: 32px">
+          <h2>Recent discussions</h2>
+          <p>The forum is just getting started. Public discussions will show up here — be the first to start the conversation once you're an approved member.</p>
+          <a class="button water" href="https://forum.whartonai.studio">Browse the forum</a>
+        </div>
+
         <h3 style="margin-top: 32px">Industry categories</h3>
         <div class="tag-list">
           <span v-for="industry in forumIndustries" :key="industry" class="tag">{{ industry }}</span>
