@@ -24,5 +24,18 @@
     "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1518/meta_images/original/igor_img.jpg?1595604945",
     "registration_url": "https://www.whartonclubuk.net/wcuk_ai_studio_chapter_3",
     "visibility": "public"
+  },
+  {
+    "external_ref": "from_lab_to_collab",
+    "title": "From Lab to Collab: Entrepreneurship in DeepTech and AI",
+    "summary": "A panel on the most promising directions in AI and DeepTech and the hardest challenges founders face — co-hosted by the Wharton AI Studio and the Wharton Club of Paris.",
+    "description": "A conversation on entrepreneurship in DeepTech and AI: the most interesting directions in the field and the toughest challenges entrepreneurs encounter, and how to overcome them. Speakers included Gil Arditi (Product Lead, Facebook AI; previously Google, Lyft and Amazon), Bruno Occhipinti (founder of CrestaLab, formerly Philips APAC), Pierre-Emmanuel Goubeaux-Chaperon (Intrapreneur, IBM France), and host George Gvishiani. Co-organized by the Wharton AI Studio and the Wharton Club of Paris.",
+    "starts_at": "2021-02-18T15:00:00+00:00",
+    "ends_at": "2021-02-18T16:00:00+00:00",
+    "location": "Online",
+    "format": "Online via Zoom",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1556/meta_images/original/Bruno_Occhipinti.jpg?1611586656",
+    "registration_url": "https://www.whartonclubuk.net/from_lab_to_collab",
+    "visibility": "public"
   }
 ]
