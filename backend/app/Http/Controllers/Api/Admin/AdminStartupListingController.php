@@ -158,7 +158,7 @@ class AdminStartupListingController extends Controller
         if ($notificationClass !== null) {
             $owner = $listing->owner()->first();
             if ($owner) {
-                $owner->notify(new $notificationClass($listing->fresh()));
+                $this->afterResponse(fn () => $owner->notify(new $notificationClass($listing->fresh())));
             }
         }
 

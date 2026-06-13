@@ -47,7 +47,7 @@ class EmailAuthController extends Controller
             ],
         );
 
-        $user->notify(new EmailSignInLink($link));
+        $this->afterResponse(fn () => $user->notify(new EmailSignInLink($link)));
 
         return response()->json(['ok' => true]);
     }

@@ -139,7 +139,9 @@ class PasswordAuthController extends Controller
         // Fire-and-forget; identical response whether or not the account
         // exists, to avoid account enumeration. Google-only accounts may
         // also reset: this simply adds a password alongside Google sign-in.
-        PasswordBroker::sendResetLink(['email' => mb_strtolower($validated['email'])]);
+        // Sent after the response so the SMTP round-trip never blocks it.
+        $email = mb_strtolower($validated['email']);
+        $this->afterResponse(fn () => PasswordBroker::sendResetLink(['email' => $email]));
 
         return response()->json(['ok' => true]);
     }
@@ -176,6 +178,6 @@ class PasswordAuthController extends Controller
             ['user' => $user->id],
         );
 
-        $user->notify(new VerifyRegistrationEmail($link));
+        $this->afterResponse(fn () => $user->notify(new VerifyRegistrationEmail($link)));
     }
 }

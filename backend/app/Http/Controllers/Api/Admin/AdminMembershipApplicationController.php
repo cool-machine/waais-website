@@ -188,7 +188,7 @@ class AdminMembershipApplicationController extends Controller
         if ($notificationClass !== null) {
             $applicant = $application->applicant()->first();
             if ($applicant) {
-                $applicant->notify(new $notificationClass($application->fresh()));
+                $this->afterResponse(fn () => $applicant->notify(new $notificationClass($application->fresh())));
             }
         }
 

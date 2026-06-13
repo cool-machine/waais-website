@@ -125,12 +125,14 @@ class MembershipApplicationController extends Controller
 
     private function notifyOnSubmission(MembershipApplication $application, User $applicant): void
     {
-        $applicant->notify(new MembershipApplicationSubmitted($application));
+        $this->afterResponse(function () use ($application, $applicant): void {
+            $applicant->notify(new MembershipApplicationSubmitted($application));
 
-        $admins = User::admins()->get();
-        if ($admins->isNotEmpty()) {
-            Notification::send($admins, new MembershipApplicationReceivedByAdmin($application));
-        }
+            $admins = User::admins()->get();
+            if ($admins->isNotEmpty()) {
+                Notification::send($admins, new MembershipApplicationReceivedByAdmin($application));
+            }
+        });
     }
 
     /**

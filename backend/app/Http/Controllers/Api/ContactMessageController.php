@@ -30,13 +30,13 @@ class ContactMessageController extends Controller
             Log::warning('Could not store contact message', ['error' => $e->getMessage()]);
         }
 
-        Notification::route('mail', (string) config('services.contact.recipient'))
+        $this->afterResponse(fn () => Notification::route('mail', (string) config('services.contact.recipient'))
             ->notify(new ContactMessageReceived(
                 name: $validated['name'],
                 email: $validated['email'],
                 topic: $validated['topic'],
                 message: $validated['message'],
-            ));
+            )));
 
         return response()->json(['ok' => true], 201);
     }

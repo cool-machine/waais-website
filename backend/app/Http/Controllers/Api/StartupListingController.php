@@ -98,12 +98,14 @@ class StartupListingController extends Controller
 
     private function notifyOnSubmission(StartupListing $listing, User $owner): void
     {
-        $owner->notify(new StartupListingSubmitted($listing));
+        $this->afterResponse(function () use ($listing, $owner): void {
+            $owner->notify(new StartupListingSubmitted($listing));
 
-        $admins = User::admins()->get();
-        if ($admins->isNotEmpty()) {
-            Notification::send($admins, new StartupListingReceivedByAdmin($listing));
-        }
+            $admins = User::admins()->get();
+            if ($admins->isNotEmpty()) {
+                Notification::send($admins, new StartupListingReceivedByAdmin($listing));
+            }
+        });
     }
 
     /**
