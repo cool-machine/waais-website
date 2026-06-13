@@ -25,4 +25,8 @@ php artisan route:cache   || true
 php artisan view:cache    || true
 php artisan storage:link  || true
 
+# Seed legacy/imported public events. Create-only, so it adds any new events
+# from the committed JSON and never overwrites edits made in the admin UI.
+php artisan waais:import-events database/data/legacy_events.json || true
+
 echo "[waais-startup] ready"

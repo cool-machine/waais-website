@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'created_by',
+    'external_ref',
     'content_status',
     'visibility',
     'published_at',
