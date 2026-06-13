@@ -27,7 +27,7 @@ function retry() {
 
 <template>
   <PublicLayout>
-    <PageHero compact eyebrow="Partners" title="Partners that help alumni build." lede="Partner cards will become editable public content managed by admins and super admins." />
+    <PageHero compact title="Partners that help alumni build." />
     <section class="section paper">
       <div class="section-inner">
         <div v-if="listLoading && list.length === 0" class="card">
