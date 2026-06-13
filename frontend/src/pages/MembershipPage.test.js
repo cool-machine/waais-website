@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import MembershipPage from './MembershipPage.vue'
+import { useAuthUserStore } from '../stores/authUser'
 
 function jsonResponse(body, { status = 200 } = {}) {
   return new Response(JSON.stringify(body), {
@@ -164,5 +165,48 @@ describe('membership application privacy acknowledgement', () => {
       last_name: 'Lovelace',
       privacy_acknowledgement: true,
     })
+  })
+})
+
+describe('header sign-out clears member state', () => {
+  it('hides the approved-member card after a sign-out that only clears the auth store', async () => {
+    const fetchMock = vi.fn((url) => {
+      if (url.includes('/api/logout')) return Promise.resolve(jsonResponse({ ok: true }))
+      if (url.includes('/api/user')) {
+        return Promise.resolve(jsonResponse({
+          id: 5,
+          name: 'Ada Lovelace',
+          email: 'ada@example.com',
+          email_verified: true,
+          approval_status: 'approved',
+          permission_role: 'member',
+          affiliation_type: 'alumni',
+          can_access_member_areas: true,
+        }))
+      }
+      if (url.includes('/api/membership-application')) {
+        return Promise.resolve(jsonResponse({
+          data: { approval_status: 'approved', email: 'ada@example.com', first_name: 'Ada', last_name: 'Lovelace' },
+        }))
+      }
+      return Promise.resolve(jsonResponse({ message: 'Not found' }, { status: 404 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = await mountMembershipPage()
+
+    // Approved-member card is showing.
+    expect(wrapper.text()).toContain("Welcome, you're a WAAIS member.")
+    expect(wrapper.text()).toContain('Open dashboard')
+
+    // The shared header's Sign out only calls authUser.signOut(); it does not
+    // touch this page's application store. The page must still reset.
+    await useAuthUserStore().signOut()
+    await flushPromises()
+
+    expect(wrapper.text()).not.toContain("Welcome, you're a WAAIS member.")
+    expect(wrapper.text()).not.toContain('Open dashboard')
+    // Falls back to the anonymous account-creation card.
+    expect(wrapper.find('form.compact-auth-form').exists()).toBe(true)
   })
 })

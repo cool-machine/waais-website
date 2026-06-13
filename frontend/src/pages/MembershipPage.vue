@@ -46,7 +46,10 @@ const isAnonymous = computed(() => authUser.initialized && !hasSession.value)
 const emailVerified = computed(() => authUser.user?.email_verified === true)
 const justRegistered = computed(() => authUser.registered)
 const awaitingVerification = computed(() => justRegistered.value || (hasSession.value && !emailVerified.value))
-const isApprovedMember = computed(() => applicationStore.status === 'approved')
+// Must depend on the live session too: signing out from the shared header
+// clears authUser but not this store, and without hasSession the approved
+// "Open dashboard / Visit the forum" card would linger after sign-out.
+const isApprovedMember = computed(() => hasSession.value && applicationStore.status === 'approved')
 const showApplicationForm = computed(() => hasSession.value && emailVerified.value && !isApprovedMember.value)
 const canEditFields = computed(() => showApplicationForm.value && applicationStore.canEdit && !applicationStore.saving && !applicationStore.loading)
 const requiresPrivacyAcknowledgement = computed(() => !applicationStore.hasApplication || applicationStore.mustReapply)
@@ -205,6 +208,16 @@ async function signOut() {
 }
 
 watch(() => applicationStore.application, populateForm)
+
+// Reset cached application state whenever the session ends — including a
+// sign-out triggered from the shared header, which doesn't run this page's
+// own signOut handler.
+watch(() => authUser.isAuthenticated, (isAuthed) => {
+  if (!isAuthed) {
+    applicationStore.clear()
+    populateForm(null)
+  }
+})
 
 onMounted(() => {
   loadApplication().catch(() => {})
