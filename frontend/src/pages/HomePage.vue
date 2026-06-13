@@ -6,9 +6,13 @@ import CardGrid from '../components/CardGrid.vue'
 import InfoCard from '../components/InfoCard.vue'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
+import { useAuthUserStore } from '../stores/authUser'
 import { usePublicEventsStore } from '../stores/publicEvents'
 import { usePublicHomepageCardsStore } from '../stores/publicHomepageCards'
 import { usePublicStartupsStore } from '../stores/publicStartups'
+
+const authUser = useAuthUserStore()
+const isAuthenticated = computed(() => authUser.isAuthenticated)
 
 const heroVideoSrc = `${import.meta.env.BASE_URL}assets/waais-hero-video.mp4`
 
@@ -60,6 +64,7 @@ const { list: events, listLoading: eventsLoading, listError: eventsError } = sto
 const selectedEvents = computed(() => events.value.slice(0, 3))
 
 onMounted(() => {
+  authUser.loadCurrentUser().catch(() => {})
   homepageCardsStore.loadList({ perPage: 48 }).catch(() => {})
   startupsStore.loadList({ perPage: 48 }).catch(() => {})
   eventsStore.loadList({ time: 'upcoming', perPage: 3 }).catch(() => {})
@@ -89,7 +94,8 @@ function formatEventDate(value) {
       poster="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=2200&q=80"
     >
       <div class="hero-actions">
-        <RouterLink class="button primary" to="/membership">Become a member</RouterLink>
+        <RouterLink v-if="isAuthenticated" class="button primary" to="/app/dashboard">Go to dashboard</RouterLink>
+        <RouterLink v-else class="button primary" to="/membership">Become a member</RouterLink>
         <RouterLink class="button secondary" to="/events">Explore events</RouterLink>
       </div>
       <template #aside>

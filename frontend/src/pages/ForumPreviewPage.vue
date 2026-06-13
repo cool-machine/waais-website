@@ -1,8 +1,17 @@
 <script setup>
+import { computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
 import { forumIndustries, forumRegions } from '../data/forum'
+import { useAuthUserStore } from '../stores/authUser'
+
+const authUser = useAuthUserStore()
+const isAuthenticated = computed(() => authUser.isAuthenticated)
+
+onMounted(() => {
+  authUser.loadCurrentUser().catch(() => {})
+})
 </script>
 
 <template>
@@ -26,7 +35,8 @@ import { forumIndustries, forumRegions } from '../data/forum'
           </div>
           <div class="row">
             <a class="button primary" href="https://forum.whartonai.studio">Open the forum</a>
-            <RouterLink class="button water" to="/membership">Apply for membership</RouterLink>
+            <RouterLink v-if="isAuthenticated" class="button water" to="/app/dashboard">Go to dashboard</RouterLink>
+            <RouterLink v-else class="button water" to="/membership">Apply for membership</RouterLink>
           </div>
         </div>
 

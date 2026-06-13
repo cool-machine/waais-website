@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
@@ -16,8 +16,20 @@ const form = reactive({
 // 'sign-in' shows the credentials form; 'forgot' shows the reset-request view.
 const mode = ref('sign-in')
 
+// Resolve the current session so an already-signed-in member sees the
+// "already signed in" state instead of the login form.
+onMounted(() => {
+  authUser.loadCurrentUser().catch(() => {})
+})
+
+const isAuthenticated = computed(() => authUser.isAuthenticated)
+const displayName = computed(() => authUser.user?.name || authUser.user?.email || 'member')
 const loginErrors = computed(() => authUser.loginError ? (authUser.loginError.body?.errors ?? { general: [authUser.loginError.body?.message || 'Could not sign in. Please try again.'] }) : {})
 const startGoogleSignIn = () => authUser.startGoogleSignIn({ next: '/membership' })
+
+async function signOut() {
+  await authUser.signOut().catch(() => {})
+}
 
 function showForgotPassword() {
   authUser.loginError = null
@@ -51,13 +63,23 @@ async function sendResetLink() {
     <PageHero
       compact
       eyebrow="Members"
-      :title="mode === 'forgot' ? 'Reset your password.' : 'Sign in.'"
-      :lede="mode === 'forgot' ? 'Enter your account email and we will send you a link to choose a new password.' : 'Access your member dashboard, application status, and startup listings.'"
+      :title="isAuthenticated ? 'You\'re signed in.' : (mode === 'forgot' ? 'Reset your password.' : 'Sign in.')"
+      :lede="isAuthenticated ? 'Head to your member dashboard, or sign out to use a different account.' : (mode === 'forgot' ? 'Enter your account email and we will send you a link to choose a new password.' : 'Access your member dashboard, application status, and startup listings.')"
     />
     <section class="section paper">
       <div class="section-inner">
         <div class="auth-gate">
-          <article v-if="mode === 'sign-in'" class="card">
+          <article v-if="isAuthenticated" class="card">
+            <span class="tag">Member sign in</span>
+            <h3>You're already signed in.</h3>
+            <p class="small">Signed in as {{ displayName }}.</p>
+            <div class="row" style="margin-top: 14px">
+              <RouterLink class="button primary" to="/app/dashboard">Go to dashboard</RouterLink>
+              <button class="button water" type="button" :disabled="authUser.signingOut" @click="signOut">{{ authUser.signingOut ? 'Signing out…' : 'Sign out' }}</button>
+            </div>
+          </article>
+
+          <article v-else-if="mode === 'sign-in'" class="card">
             <span class="tag">Member sign in</span>
             <h3>Welcome back.</h3>
             <form class="compact-auth-form" @submit.prevent="signIn">

@@ -1,5 +1,8 @@
 <script setup>
+import { onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
+import { useAuthUserStore } from '../stores/authUser'
 
 // Inline nav links. "Become a member" is intentionally NOT in this list
 // because it's already the right-side CTA — duplicating it caused the nav
@@ -14,6 +17,21 @@ const links = [
   { label: 'Forum', to: '/forum' },
   { label: 'Contact', to: '/contact' },
 ]
+
+// The header CTAs depend on session state. Without this, "Become a member"
+// and "Member sign in" rendered even for signed-in members. loadCurrentUser
+// is a no-op once the session has been resolved, so this is cheap to call
+// from every public page.
+const authUser = useAuthUserStore()
+const { isAuthenticated, signingOut } = storeToRefs(authUser)
+
+onMounted(() => {
+  authUser.loadCurrentUser().catch(() => {})
+})
+
+async function signOut() {
+  await authUser.signOut().catch(() => {})
+}
 </script>
 
 <template>
@@ -41,8 +59,16 @@ const links = [
         </nav>
 
         <div class="actions">
-          <RouterLink class="button secondary" to="/membership">Become a member</RouterLink>
-          <RouterLink class="button primary" to="/sign-in">Member sign in</RouterLink>
+          <template v-if="isAuthenticated">
+            <RouterLink class="button secondary" to="/app/dashboard">Member dashboard</RouterLink>
+            <button class="button primary" type="button" :disabled="signingOut" @click="signOut">
+              {{ signingOut ? 'Signing out…' : 'Sign out' }}
+            </button>
+          </template>
+          <template v-else>
+            <RouterLink class="button secondary" to="/membership">Become a member</RouterLink>
+            <RouterLink class="button primary" to="/sign-in">Member sign in</RouterLink>
+          </template>
         </div>
       </div>
     </header>
