@@ -777,8 +777,7 @@ async function requestAppEmailLink() {
   await authUser.requestEmailSignIn(emailSignInForm.email, { next: '/app/dashboard' })
 }
 
-async function signOut() {
-  await authUser.signOut()
+function clearMemberData() {
   applicationStore.clear()
   memberAnnouncementsStore.clear()
   myStartupsStore.clear()
@@ -788,6 +787,11 @@ async function signOut() {
   adminAnnouncementsStore.clear()
   adminPublicContentStore.clear()
   adminUsersStore.clear()
+}
+
+async function signOut() {
+  await authUser.signOut()
+  clearMemberData()
 }
 
 const adminMetrics = computed(() => [
@@ -854,6 +858,13 @@ async function loadMemberDashboard() {
 watch(() => myStartupsStore.currentListing, populateStartupForm)
 watch(() => adminApplicationsStore.currentApplication, populateAdminReviewForm)
 watch(() => adminStartupListingsStore.currentListing, populateAdminStartupReviewForm)
+
+// Drop cached member/admin data whenever the session ends — including a
+// sign-out that happens outside this page's own button (e.g. the shared
+// header on a public page), so no previous-user data lingers on return.
+watch(() => authUser.isAuthenticated, (isAuthed) => {
+  if (!isAuthed) clearMemberData()
+})
 watch(() => adminEventsStore.currentEvent, populateEventForm)
 watch(() => adminPublicContentStore.currentItem, populatePublicContentForm)
 watch(() => adminAnnouncementsStore.currentAnnouncement, populateAnnouncementForm)

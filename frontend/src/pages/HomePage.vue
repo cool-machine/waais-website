@@ -118,7 +118,8 @@ function formatEventDate(value) {
             <p class="eyebrow">What we do</p>
             <h2>Turn alumni AI work into durable community infrastructure.</h2>
           </div>
-          <RouterLink class="button water" to="/membership">Apply for access</RouterLink>
+          <RouterLink v-if="isAuthenticated" class="button water" to="/app/dashboard">Go to dashboard</RouterLink>
+          <RouterLink v-else class="button water" to="/membership">Apply for access</RouterLink>
         </div>
         <CardGrid>
           <InfoCard
