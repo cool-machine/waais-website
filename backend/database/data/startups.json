@@ -1,0 +1,93 @@
+[
+  {
+    "name": "Rockfish Data",
+    "tagline": "Reliable AI starts with the data behind your evals.",
+    "description": "Rockfish Data generates the high-coverage synthetic data that AI evaluations need — realistic time-series datasets and aligned eval suites that surface how AI agents and models fail before customers do. The same platform powers both agent evaluation and ML stress-testing, generated from a schema or a sample of your own data, without exposing production data. Founded and led by Dr. MuckAI Girish, a Wharton Executive MBA alum, as CEO.",
+    "website_url": "https://www.rockfish.ai/",
+    "logo_url": "https://cdn.prod.website-files.com/66740c93b6dab12db715f4f2/66746804caad4c309f4a6627_brand%20logo-bluenwhite.webp",
+    "industry": "AI / Data Infrastructure",
+    "location": null,
+    "founders": ["Dr. MuckAI Girish"],
+    "submitter_role": "Founder & CEO",
+    "linkedin_url": "https://www.linkedin.com/company/rockfish-data/",
+    "visibility": "public"
+  },
+  {
+    "name": "LotusAI",
+    "tagline": "Grow with the power of generative & responsible AI.",
+    "description": "LotusAI is a London-based AI advisory firm that helps leaders — from private equity and financial-services enterprises (including Goldman Sachs Asset Management and its portfolio companies) to digital-consulting firms and PE-backed ventures — adopt responsible, sustainable generative AI. Its work spans AI advisory, responsible-AI operationalization, AI due diligence, and talent transformation. Founded and led by Didem Ün Ateş (W'97), a Wharton undergraduate alumna and longtime AI executive, as CEO.",
+    "website_url": "https://www.lotusai.co.uk/",
+    "logo_url": null,
+    "industry": "AI Advisory",
+    "location": "London, UK",
+    "founders": ["Didem Ün Ateş"],
+    "submitter_role": "Founder & CEO",
+    "linkedin_url": "https://www.linkedin.com/company/lotusailtd/",
+    "visibility": "public"
+  },
+  {
+    "name": "Civic",
+    "tagline": "The operating system for modern government communications.",
+    "description": "Civic builds the first AI-native platform for government communications, workflows, and analytics. Its Revere CRM helps offices from Capitol Hill to local city councils manage high-volume inboxes, track casework, and respond faster — with AI built for the compliance and scale of public service. Co-founded by Wharton alumni Jon Kokot (WG'25, CEO) and Julian Trajanson (W'12, CTO).",
+    "website_url": "https://get-civic.com/",
+    "logo_url": "https://framerusercontent.com/images/V4I9JPA6SJycUdK0vbaUbOLIuY.png",
+    "industry": "GovTech / AI",
+    "location": null,
+    "founders": ["Jon Kokot", "Julian Trajanson"],
+    "submitter_role": "Co-founders (CEO & CTO)",
+    "linkedin_url": "https://www.linkedin.com/company/get-civic/",
+    "visibility": "public"
+  },
+  {
+    "name": "AndesML",
+    "tagline": "The retail media platform — from LatAm to the world.",
+    "description": "AndesML is a retail-media platform that helps retailers and marketplaces turn their traffic into a new, high-margin revenue stream. Its AI-driven, white-label product spans sponsored products, sponsored brands, and display ads — onsite, offsite, and in-store — with first-party-data monetization, built on the team's experience running two of Latin America's largest e-commerce businesses. Founded by Tomás Gazmuri, a Wharton MBA alum.",
+    "website_url": "https://www.andesml.com/",
+    "logo_url": "https://cdn.prod.website-files.com/6828b90dac8c8f2756913f46/6828e2f370093a50cc149a4d_andes-logo.webp",
+    "industry": "Retail Media / AdTech",
+    "location": "Latin America",
+    "founders": ["Tomás Gazmuri"],
+    "submitter_role": "Founder",
+    "linkedin_url": "https://www.linkedin.com/company/andesml/",
+    "visibility": "public"
+  },
+  {
+    "name": "Chapter",
+    "tagline": "Enterprise AI that goes from information to action.",
+    "description": "Chapter deploys multi-agent AI for customer-facing teams in sales, service, and field operations — running inside a company's own private, airgapped infrastructure rather than on public models. Its agentic workflow engine, built-in sales roleplay coaching, and mobile-first learning are proven at enterprise scale, with 40,000+ users and 90%+ adoption across BFSI, insurance, and field-service deployments. Founded by Rohit Kumar (WG'95), a Wharton MBA alum and former Microsoft and Oracle executive, as Managing Director & Founder.",
+    "website_url": "https://chapterenterprise.com/",
+    "logo_url": "https://res.cloudinary.com/dn25ivhd3/image/upload/f_auto,q_auto/Chapter_Logo_Main_t7u3ak",
+    "industry": "Enterprise AI / Agentic Workflows",
+    "location": "Palo Alto, CA",
+    "founders": ["Rohit Kumar"],
+    "submitter_role": "Managing Director & Founder",
+    "linkedin_url": "https://in.linkedin.com/company/chapterenterprise",
+    "visibility": "public"
+  },
+  {
+    "name": "ficc.ai",
+    "tagline": "Revolutionizing municipal bond pricing with AI.",
+    "description": "ficc.ai is transforming evaluated pricing for municipal bonds, using AI developed in-house by a team of market experts and scientists to deliver real-time, trade-size-aware bid/ask prices for individual bonds, bid/offer lists, and entire portfolios — via web app, API, or custom integration — supporting pre-trade analysis, execution, and best-execution compliance reporting. Our Wharton connection is CTO Gil Shulman (Wharton MBA), previously of Microsoft AI and Amazon and founder of mobile-advertising pioneer Amobee; the firm is led by CEO Stephen Winterstein.",
+    "website_url": "https://ficc.ai/",
+    "logo_url": null,
+    "industry": "FinTech / AI (Fixed Income)",
+    "location": null,
+    "founders": ["Stephen Winterstein (CEO)", "Gil Shulman (CTO, Wharton MBA)"],
+    "submitter_role": "CTO",
+    "linkedin_url": "https://www.linkedin.com/company/ficc-ai/",
+    "visibility": "public"
+  },
+  {
+    "name": "Qritive",
+    "tagline": "Driving next-generation diagnostics through AI.",
+    "description": "Qritive builds AI-powered digital pathology solutions that help pathologists identify, grade, and classify cancer with speed and consistency. Its hardware-agnostic AI modules — spanning prostate and colon cancer, lymph node metastasis, and biomarker analysis — plug into existing workflows and into Pantheon™, Qritive's AI-powered pathology workbench and remote patient-management platform. Led by CEO Bruno Occhipinti, a Wharton MBA alum (WG'08).",
+    "website_url": "https://www.qritive.com/",
+    "logo_url": "https://static.wixstatic.com/media/1a7df4_9c0cc6404a6b4da38931c3a437288bc5~mv2.png/v1/fill/w_69,h_61,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/QritiveLogoHiRes_Colour.png",
+    "industry": "HealthTech / Medical AI (Digital Pathology)",
+    "location": null,
+    "founders": ["Bruno Occhipinti (CEO, Wharton MBA)"],
+    "submitter_role": "CEO",
+    "linkedin_url": "https://www.linkedin.com/company/qritive",
+    "visibility": "public"
+  }
+]

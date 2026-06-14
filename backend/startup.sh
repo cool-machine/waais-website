@@ -36,4 +36,9 @@ php artisan storage:link  || true
 # overwrite, or --dry-run to preview without writing.
 # php artisan waais:import-events database/data/legacy_events.json || true
 
+# ONE-TIME startup-listings import. Create-only (keyed on website_url) so it is
+# safe on every boot, but it will be disabled in the next commit once the seed
+# has loaded, matching the events approach (then managed in the dashboard).
+php artisan waais:import-startups database/data/startups.json || true
+
 echo "[waais-startup] ready"
