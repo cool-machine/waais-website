@@ -45,7 +45,7 @@
     "summary": "The official Wharton alumni club for Germany and Austria.",
     "description": "The Wharton Club of Germany and Austria (Wharton Club of Germany and Austria e.V.) is the official Wharton alumni club serving Penn and Wharton alumni across Germany and Austria, hosting events such as the Wharton Global Oktoberfest and AI conferences. It is part of the global Wharton Clubs network.",
     "website_url": "https://www.whartongermany.com/",
-    "logo_url": null,
+    "logo_url": "/logos/wharton-club-germany-austria-logo.png",
     "sort_order": 5,
     "visibility": "public"
   },
@@ -55,7 +55,7 @@
     "summary": "Global nonprofit advancing edge AI innovation, education, and collaboration (formerly the tinyML Foundation).",
     "description": "The Edge AI Foundation (formerly the tinyML Foundation) is a global nonprofit advancing innovation, education, advocacy, and collaboration in edge AI — bringing AI to the real world, from tinyML to the edge, across industry and academia. Its board includes Wharton alumna Didem Ün Ateş, connecting it to the Wharton Alumni AI Studio.",
     "website_url": "https://www.edgeaifoundation.org/",
-    "logo_url": null,
+    "logo_url": "/logos/edgeai-logo.png",
     "sort_order": 6,
     "visibility": "public"
   }
