@@ -19,28 +19,31 @@ const heroVideoSrc = `${import.meta.env.BASE_URL}assets/waais-hero-video.mp4`
 const DEFAULT_WHAT_WE_DO_CARDS = [
   {
     id: 'fallback-events',
-    eyebrow: 'Programs',
-    title: 'Events with memory',
-    body: 'Host salons, roundtables, workshops, startup demo nights, and recap pages for what members learn.',
+    title: 'Events',
+    body: 'AI Studio salons, workshops, roundtables, and demo nights for Wharton alumni working in AI — with recaps so you can catch what you missed.',
+    link_url: '/events',
+    link_label: 'See events',
   },
   {
     id: 'fallback-startups',
-    eyebrow: 'Directory',
-    title: 'Startup discovery',
-    body: 'Connect alumni founders with operators, investors, mentors, customers, and partners.',
+    title: 'Startup directory',
+    body: 'AI startups founded and led by Wharton alumni — connecting founders with operators, investors, mentors, and customers.',
+    link_url: '/startups',
+    link_label: 'Browse startups',
   },
   {
-    id: 'fallback-forum',
-    eyebrow: 'Discourse',
-    title: 'Persistent forum memory',
-    body: 'Move high-value conversation from WhatsApp into searchable industry-first Discourse categories.',
+    id: 'fallback-partners',
+    title: 'Partners',
+    body: 'The schools, alumni clubs, and organizations that support the Wharton Alumni AI Studio community.',
+    link_url: '/partners',
+    link_label: 'Meet our partners',
   },
 ]
 
 const DEFAULT_ACCESS_FLOW_CARDS = [
-  { id: 'fallback-sign-in', title: 'Google sign in', body: 'New accounts start as pending.' },
-  { id: 'fallback-approval', title: 'Admin approval', body: 'Approved alumni, students, or invited guests receive the correct access role.' },
-  { id: 'fallback-forum', title: 'Forum access', body: 'Discourse opens through the same account at forum.whartonai.studio.' },
+  { id: 'fallback-sign-in', title: 'Sign in with Google', body: 'New accounts start as pending review — no separate password to manage.' },
+  { id: 'fallback-approval', title: 'Admin approval', body: 'Approved alumni, students, and invited guests get the right access level.' },
+  { id: 'fallback-access', title: 'Member access', body: 'The same login opens your dashboard, events, and the startup directory.' },
 ]
 
 const homepageCardsStore = usePublicHomepageCardsStore()
@@ -100,10 +103,10 @@ function formatEventDate(value) {
       <template #aside>
         <div class="hero-card">
           <div class="grid two">
-            <div class="metric"><span>Members target</span><strong>500+</strong></div>
-            <div class="metric"><span>AI startups</span><strong>60+</strong></div>
+            <div class="metric"><span>Members</span><strong>740+</strong></div>
+            <div class="metric"><span>AI startups</span><strong>30+</strong></div>
             <div class="metric"><span>Events yearly</span><strong>24</strong></div>
-            <div class="metric"><span>Forum categories</span><strong>8</strong></div>
+            <div class="metric"><span>Partners</span><strong>6</strong></div>
           </div>
         </div>
       </template>
@@ -113,7 +116,7 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <h2>Turn alumni AI work into durable community infrastructure.</h2>
+            <h2>What you'll find at the AI Studio.</h2>
           </div>
           <RouterLink v-if="isAuthenticated" class="button water" to="/app/dashboard">Go to dashboard</RouterLink>
           <RouterLink v-else class="button water" to="/membership">Apply for access</RouterLink>
@@ -138,8 +141,8 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="grid two">
           <div>
-            <h2>One account for dashboard, events, and forum.</h2>
-            <p class="lede">Members sign in with Google, admins approve access, and Discourse SSO opens the private forum without a second account.</p>
+            <h2>One account for everything WAAIS.</h2>
+            <p class="lede">Sign in once with Google. After an admin approves you, the same account opens the member dashboard, events, and the startup directory.</p>
           </div>
           <div class="card">
             <h3>Access flow</h3>
@@ -199,7 +202,7 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <h2>Approved member submissions, public teasers.</h2>
+            <h2>Featured alumni startups.</h2>
           </div>
           <RouterLink class="button water" to="/startups">Open directory</RouterLink>
         </div>
