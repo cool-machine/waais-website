@@ -50,6 +50,7 @@ function retry() {
             :title="partner.name"
             :image="partner.logo_url || ''"
             :image-alt="`${partner.name} logo`"
+            logo-fallback
           >
             {{ partner.summary }}
             <template #actions>

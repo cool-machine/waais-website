@@ -61,6 +61,7 @@ function retry() {
             :meta="startup.stage"
             :image="startup.logo_url || ''"
             :image-alt="`${startup.name} logo`"
+            logo-fallback
           >
             {{ startup.tagline }}
             <template #actions>
