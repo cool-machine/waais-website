@@ -34,10 +34,7 @@ php artisan storage:link  || true
 #   php artisan waais:import-events database/data/legacy_events.json
 # Create-only by default (skips existing external_refs); add --update to
 # overwrite, or --dry-run to preview without writing.
-# ONE-TIME run to add the two new Kartik Hosanagar / Investing-in-AI events.
-# Create-only, so it only adds new external_refs and skips the existing 21.
-# Disabled again in the next commit.
-php artisan waais:import-events database/data/legacy_events.json || true
+# php artisan waais:import-events database/data/legacy_events.json || true
 
 # Startup listings were a ONE-TIME seed and are now managed manually in the
 # admin dashboard, so the deploy-time auto-import is intentionally disabled —
