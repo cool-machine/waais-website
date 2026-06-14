@@ -51,7 +51,6 @@ const publishedAt = computed(() => {
               <div class="row">
                 <a v-if="partner.website_url" class="button primary" :href="partner.website_url" target="_blank" rel="noopener noreferrer">Visit partner</a>
                 <RouterLink class="button water" to="/partners">Back to partners</RouterLink>
-                <RouterLink class="button water" to="/contact">Discuss partnership</RouterLink>
               </div>
             </div>
           </article>
