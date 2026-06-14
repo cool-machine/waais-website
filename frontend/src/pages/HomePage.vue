@@ -41,20 +41,16 @@ const DEFAULT_WHAT_WE_DO_CARDS = [
   },
 ]
 
-const DEFAULT_ACCESS_FLOW_CARDS = [
-  { id: 'fallback-sign-in', title: 'Sign in with Google', body: 'New accounts start as pending review — no separate password to manage.' },
-  { id: 'fallback-approval', title: 'Admin approval', body: 'Approved alumni, students, and invited guests get the right access level.' },
-  { id: 'fallback-access', title: 'Member access', body: 'The same login opens your dashboard, events, and the startup directory.' },
+const MEMBER_VALUE = [
+  { id: 'value-connect', title: 'Connect', body: 'Business professionals, domain experts, researchers, investors, and founders across the deep-tech ecosystem.' },
+  { id: 'value-build', title: 'Build', body: 'Turn Wharton business expertise into new AI projects and startups — supported by grants and Wharton Alumni Angels.' },
+  { id: 'value-exchange', title: 'Exchange', body: 'AI-focused events and think tanks across fintech, supply chain, marketing, and product design.' },
 ]
 
 const homepageCardsStore = usePublicHomepageCardsStore()
 const whatWeDoCards = computed(() => {
   const cards = homepageCardsStore.bySection('what_we_do')
   return cards.length > 0 ? cards : DEFAULT_WHAT_WE_DO_CARDS
-})
-const accessFlowCards = computed(() => {
-  const cards = homepageCardsStore.bySection('access_flow')
-  return cards.length > 0 ? cards : DEFAULT_ACCESS_FLOW_CARDS
 })
 
 // Featured startups on the homepage share the public listings store
@@ -169,17 +165,17 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="grid two">
           <div>
-            <h2>One account for everything WAAIS.</h2>
-            <p class="lede">Sign in once with Google. After an admin approves you, the same account opens the member dashboard, events, and the startup directory.</p>
+            <h2>Turning Wharton expertise into impact in AI.</h2>
+            <p class="lede">Founded in 2020 with the Wharton Club of the UK, WAAIS connects business professionals, domain experts, and researchers around real-world AI — helping alumni turn that expertise into new projects, startups, and an expert network across the deep-tech ecosystem.</p>
           </div>
           <div class="card">
-            <h3>Access flow</h3>
+            <h3>What members get</h3>
             <div class="timeline">
-              <div v-for="(card, index) in accessFlowCards" :key="card.id" class="timeline-item">
+              <div v-for="(item, index) in MEMBER_VALUE" :key="item.id" class="timeline-item">
                 <div class="timeline-node">{{ index + 1 }}</div>
                 <div>
-                  <h3>{{ card.title }}</h3>
-                  <p class="small">{{ card.body }}</p>
+                  <h3>{{ item.title }}</h3>
+                  <p class="small">{{ item.body }}</p>
                 </div>
               </div>
             </div>
