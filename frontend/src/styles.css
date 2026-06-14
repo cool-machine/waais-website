@@ -1010,6 +1010,25 @@ textarea:disabled {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+/* Homepage feature rows: 4 across on desktop/tablet, 2 on large phones,
+   1 on small phones. (Higher specificity than the generic .grid breakpoints,
+   so it keeps 4 columns on tablets.) */
+.grid.show-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 767px) {
+  .grid.show-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .grid.show-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
 .status-pill {
   display: inline-flex;
   width: fit-content;

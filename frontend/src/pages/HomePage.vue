@@ -57,11 +57,22 @@ const whatWeDoCards = computed(() => {
 // with /startups, so navigating between them won't refetch.
 const startupsStore = usePublicStartupsStore()
 const { list: startups } = storeToRefs(startupsStore)
-const featuredStartups = computed(() => startups.value.slice(0, 3))
+// Hand-picked startups featured on the homepage (by website, order matters).
+const FEATURED_STARTUP_SITES = [
+  'https://www.rockfish.ai/',
+  'https://www.hai-clean.com/',
+  'https://www.qritive.com/',
+  'https://get-civic.com/',
+]
+const featuredStartups = computed(() => {
+  const bySite = new Map(startups.value.map((s) => [s.website_url, s]))
+  const picked = FEATURED_STARTUP_SITES.map((url) => bySite.get(url)).filter(Boolean)
+  return (picked.length ? picked : startups.value).slice(0, 4)
+})
 
 const eventsStore = usePublicEventsStore()
 const { list: events, listLoading: eventsLoading, listError: eventsError } = storeToRefs(eventsStore)
-const selectedEvents = computed(() => events.value.slice(0, 3))
+const selectedEvents = computed(() => events.value.slice(0, 4))
 
 const newsStore = usePublicNewsStore()
 const { list: news } = storeToRefs(newsStore)
@@ -71,7 +82,7 @@ onMounted(() => {
   authUser.loadCurrentUser().catch(() => {})
   homepageCardsStore.loadList({ perPage: 48 }).catch(() => {})
   startupsStore.loadList({ perPage: 48 }).catch(() => {})
-  eventsStore.loadList({ time: 'past', perPage: 3 }).catch(() => {})
+  eventsStore.loadList({ time: 'past', perPage: 4 }).catch(() => {})
   newsStore.loadList().catch(() => {})
 })
 
@@ -205,7 +216,7 @@ function formatEventDate(value) {
           <p class="meta">No events yet.</p>
         </div>
 
-        <CardGrid v-else>
+        <div v-else class="grid show-4">
           <InfoCard
             v-for="event in selectedEvents"
             :key="event.id"
@@ -218,7 +229,7 @@ function formatEventDate(value) {
               <RouterLink class="button water" :to="`/events/${event.id}`">Details</RouterLink>
             </template>
           </InfoCard>
-        </CardGrid>
+        </div>
       </div>
     </section>
 
@@ -230,7 +241,7 @@ function formatEventDate(value) {
           </div>
           <RouterLink class="button water" to="/startups">Open directory</RouterLink>
         </div>
-        <CardGrid>
+        <div class="grid show-4">
           <InfoCard
             v-for="startup in featuredStartups"
             :key="startup.id"
@@ -244,7 +255,7 @@ function formatEventDate(value) {
               <RouterLink class="button water" :to="`/startups/${startup.id}`">Preview</RouterLink>
             </template>
           </InfoCard>
-        </CardGrid>
+        </div>
       </div>
     </section>
   </PublicLayout>
