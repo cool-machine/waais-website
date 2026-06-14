@@ -193,5 +193,31 @@
     "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1732/meta_images/original/waistudio.jpeg?1715295675",
     "registration_url": "https://www.whartonclubuk.net/harnessing_ai_innovations_for_financial_services",
     "visibility": "public"
+  },
+  {
+    "external_ref": "designing_website_with_coding_agents",
+    "title": "Designing a Website with Coding Agents",
+    "summary": "A hands-on AI Studio session on building websites from scratch with AI coding agents — Windsurf, Bolt.new, Claude, GPT — led by George Gvishiani.",
+    "description": "An informal, hands-on AI Studio session on how AI coding agents — such as Windsurf, Bolt.new, Claude and GPT — can help you build websites from scratch. It explored how the tools work, what they can and can't do, and walked through a basic example together, showing how quickly AI is changing web development. Led by George Gvishiani, President of the Wharton Club of the UK and founder of the Wharton Alumni AI Studio. Open to all alumni, whether or not they code.",
+    "starts_at": "2025-06-17T17:00:00+01:00",
+    "ends_at": "2025-06-17T19:00:00+01:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/3085/meta_images/original/ai-studio-logo.png?1748795758",
+    "registration_url": "https://www.whartonclubuk.net/designing_website_with_coding_agents",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "future_of_ai_in_government",
+    "title": "Future of AI in Government — with the Co-Founders of Civic",
+    "summary": "An AI Studio session with Jon Kokot and Julian Trajanson, the Wharton-graduate co-founders of Civic, on bringing AI to Capitol Hill and the future of AI in government.",
+    "description": "An AI Studio event with Jon Kokot (CEO; Wharton MBA and Navy veteran) and Julian Trajanson (CTO; Wharton BS and ML engineer), co-founders of Civic — the first AI-native automation tool for government communications, workflows and data. They discussed bringing AI to Capitol Hill: triaging constituent email, drafting in a representative's voice, smart outreach, and agentic casework — and where AI in government goes next.",
+    "starts_at": "2025-11-12T18:00:00+00:00",
+    "ends_at": "2025-11-12T19:00:00+00:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/3382/meta_images/original/Screenshot_2025-09-01_at_8.40.13PM.png?1757682324",
+    "registration_url": "https://www.whartonclubuk.net/future_of_ai_in_government",
+    "visibility": "public"
   }
 ]
