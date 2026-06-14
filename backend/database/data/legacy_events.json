@@ -271,5 +271,31 @@
     "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/3085/meta_images/original/ai-studio-logo.png?1748795758",
     "registration_url": "https://www.whartonclubuk.net/designing_ai_workflows_for_every_profession",
     "visibility": "public"
+  },
+  {
+    "external_ref": "lunch_with_kartik_hosanagar",
+    "title": "Lunch with Professor Kartik Hosanagar",
+    "summary": "An intimate AI Studio lunch with Wharton's Professor Kartik Hosanagar — John C. Hower Professor of Technology & Digital Business — on AI, innovation, marketing, and the future of business.",
+    "description": "A small-group lunch discussion with Professor Kartik Hosanagar, the John C. Hower Professor of Technology and Digital Business and Professor of Marketing at The Wharton School, and one of the world's leading experts on AI, digital business, and the societal impact of technology. An informal conversation at the intersection of AI, innovation, marketing, and the future of business — with plenty of room for questions. Kartik has earned eleven teaching awards at Wharton, co-founded Yodle, and is Founder and Chairman of AI company Jumpcut Media.",
+    "starts_at": "2026-06-10T12:30:00+01:00",
+    "ends_at": "2026-06-10T14:30:00+01:00",
+    "location": "Central London, UK",
+    "format": "In person",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/4570/attachments/original/1780483625/kartik-120x139.jpg?1780483625",
+    "registration_url": "https://www.whartonclubuk.net/lunch_with_kartik_hosanagar",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "investing_in_the_age_of_ai",
+    "title": "Investing in the Age of AI",
+    "summary": "A panel and networking evening — with the Penn Club of the UK, the Wharton Club of the UK, and the Wharton Entrepreneurs Club — on how AI is reshaping investing and raising capital.",
+    "description": "A University of Pennsylvania & Wharton Entrepreneurs Club evening, hosted with the Penn Club of the UK and the Wharton Club of the UK and in collaboration with Kellogg, bringing Penn and Wharton alumni panelists together to debate how AI is impacting investing and capital allocation. Panelists: Didem Ün Ateş (Founder & CEO of LotusAI; Wharton AI Studio; Edge AI Foundation), Cory Abdalla (Founder & CEO of LivingIP; Wharton '20), and Mark Rogerson MBE (co-author of The AI Fix for Private Equity). Discussion and networking over refreshments.",
+    "starts_at": "2026-06-11T18:30:00+01:00",
+    "ends_at": "2026-06-11T21:30:00+01:00",
+    "location": "Prince Alfred, 112 Queensway, London W2 3RR",
+    "format": "In person",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/4372/attachments/original/1779378774/AI_pic.png?1779378774",
+    "registration_url": "https://www.whartonclubuk.net/investing_in_the_age_of_ai_thursday_june_4th_2026",
+    "visibility": "public"
   }
 ]
