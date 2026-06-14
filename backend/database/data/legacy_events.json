@@ -141,5 +141,31 @@
     "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1689/meta_images/original/AI_in_Finance.png?1708966023",
     "registration_url": "https://www.whartonclubuk.net/ai_in_finance",
     "visibility": "public"
+  },
+  {
+    "external_ref": "wharton_ai_studio_monthly_learning_meetings",
+    "title": "AI Studio Coffee Chat: Generative AI — Unlocking New Frontiers",
+    "summary": "A monthly AI Studio learning meeting / coffee chat exploring the transformative potential of generative AI across text, images and code.",
+    "description": "Part of the AI Studio's monthly learning meetings (coffee chats): an exploration of the transformative potential of generative AI — technology that lets machines generate human-like content across text, images, code and more — and what it unlocks for the community. Hosted by Prasad Thammineni and George Gvishiani.",
+    "starts_at": "2024-04-13T17:00:00+01:00",
+    "ends_at": "2024-04-13T18:00:00+01:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1698/meta_images/original/WhatsApp_Image_2024-03-26_at_11.05.24_PM.jpeg?1712106888",
+    "registration_url": "https://www.whartonclubuk.net/wharton_ai_studio_monthly_learning_meetings",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "unlocking_business_potential_genai_sales_support",
+    "title": "Unlocking Business Potential: Generative AI for Sales & Support Assistants",
+    "summary": "A session on using generative AI for sales and customer-support functions — opportunities, accuracy and hallucination risks, and best practices — with Rohit Kumar and Peter Relan.",
+    "description": "An AI Studio session on leveraging generative AI for sales and support: automating personalised emails and sales scripts, real-time customer assistance via conversational AI, and how to ensure accuracy and mitigate hallucination risks, with use cases and implementation best practices. Speakers were Rohit Kumar (Founder & CEO of Chapter Apps / ChapterGPT; President of the Wharton Club of Delhi; previously Microsoft, Oracle and BCG) and Peter Relan (Founder of YouWeb Incubator and Chairman of Got-it.AI; an early backer of companies including Discord), hosted with George Gvishiani.",
+    "starts_at": "2024-05-08T18:00:00+01:00",
+    "ends_at": "2024-05-08T19:30:00+01:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1697/meta_images/original/rohit_logo.png?1712314815",
+    "registration_url": "https://www.whartonclubuk.net/unlocking_business_potential_leveraging_generative_ai_for_sales_and_support_assistants",
+    "visibility": "public"
   }
 ]
