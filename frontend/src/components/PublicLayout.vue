@@ -49,7 +49,7 @@ async function signOut() {
           />
           <span class="brand-text">
             <strong>Wharton Alumni AI Studio</strong>
-            <small>Affinity Group of the Wharton Club of the United Kingdom</small>
+            <small>Affinity Group · Wharton Club of the UK</small>
           </span>
         </RouterLink>
 
@@ -82,7 +82,7 @@ async function signOut() {
       <div>
         <strong>Wharton Alumni AI Studio</strong>
         <p class="footer-affiliation">
-          An AI affinity group for the global Wharton alumni community.
+          Affinity Group of the Wharton Club of the United Kingdom.
         </p>
       </div>
       <RouterLink to="/legal">Privacy, cookies, and GDPR</RouterLink>
