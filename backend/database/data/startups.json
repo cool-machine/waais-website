@@ -89,5 +89,31 @@
     "submitter_role": "CEO",
     "linkedin_url": "https://www.linkedin.com/company/qritive",
     "visibility": "public"
+  },
+  {
+    "name": "HAI Clean",
+    "tagline": "Infection intelligence for shared hospital equipment.",
+    "description": "HAI Clean is a UK health-tech company developing a platform that helps hospitals see, verify, and manage contamination risk on shared portable medical equipment — through controlled disinfection workflows, audit-ready records, and secure operational analytics (HAI = healthcare-associated infections). Registered in Scotland, it is focused on development, validation, and partnerships across healthcare, academia, and industry. Its Wharton connection runs through alumnus and major investor Mark Tousey, and WAAIS founder George Gvishiani serves as a board advisor.",
+    "website_url": "https://www.hai-clean.com/",
+    "logo_url": "https://images.squarespace-cdn.com/content/v1/617bd698307104208b1afe48/acce2ccc-7f19-4ac5-98aa-d90c9a75a884/HAI_Clean_Logo_BGRemoved_NEW.png?format=1500w",
+    "industry": "HealthTech / Infection Prevention",
+    "location": "Dumbarton, Scotland, UK",
+    "founders": null,
+    "submitter_role": "Board advisor (WAAIS)",
+    "linkedin_url": "https://www.linkedin.com/company/hai-clean",
+    "visibility": "public"
+  },
+  {
+    "name": "Fairbanc",
+    "tagline": "AI-powered embedded credit for underserved small businesses in Asia.",
+    "description": "Fairbanc is an Asia-based fintech (with primary operations in Indonesia) that lets unbanked and underserved micro, small, and medium-sized business owners buy inventory on a Buy Now, Pay Later basis, using a proprietary AI-powered credit-scoring platform to distribute microcredit quickly. Partnering with fast-moving consumer goods companies and their distributor and retailer networks, it has onboarded 350,000+ merchants and extended microcredit to 75,000+ MSMEs, with a focus on financial inclusion for women-operated and climate-vulnerable businesses. Founded by Mir Haque, a Wharton MBA alum (WG'08); backed by ADB Ventures.",
+    "website_url": "https://fairbanc.app/",
+    "logo_url": "https://ventures.adb.org/wp-content/uploads/2023/09/Fairbanc.png",
+    "industry": "FinTech (Embedded Credit / BNPL)",
+    "location": "Jakarta, Indonesia",
+    "founders": ["Mir Haque"],
+    "submitter_role": "Founder",
+    "linkedin_url": "https://www.linkedin.com/company/fairbanc",
+    "visibility": "public"
   }
 ]
