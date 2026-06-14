@@ -167,5 +167,31 @@
     "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1697/meta_images/original/rohit_logo.png?1712314815",
     "registration_url": "https://www.whartonclubuk.net/unlocking_business_potential_leveraging_generative_ai_for_sales_and_support_assistants",
     "visibility": "public"
+  },
+  {
+    "external_ref": "meet_the_mind_behind_the_data_stefano_puntoni",
+    "title": "Meet the Mind Behind the Data: Book Launch with Wharton Professor Stefano Puntoni",
+    "summary": "An alumni-exclusive launch of 'Decision-Driven Analytics' with Wharton Professor Stefano Puntoni, on combining human insight with AI in data analytics.",
+    "description": "An alumni-exclusive Wharton Press book launch with Professor Stefano Puntoni — Sebastian S. Kresge Professor of Marketing and co-director of AI at Wharton — for 'Decision-Driven Analytics: Leveraging Human Intelligence to Unlock the Power of Data' (co-authored with Bart De Langhe). The discussion explored how human insight and AI work together in analytics and how to bridge managerial decision-making with data science. Co-organised by the Wharton Alumni AI Studio and the Wharton Club of Philadelphia, held at Huntsman Hall with a Zoom option.",
+    "starts_at": "2024-05-14T23:00:00+01:00",
+    "ends_at": "2024-05-15T00:00:00+01:00",
+    "location": "Huntsman Hall, Philadelphia + Zoom",
+    "format": "Hybrid (in person + Zoom)",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1765/meta_images/original/waistudio.jpeg?1715356551",
+    "registration_url": "https://www.whartonclubuk.net/meet_the_mind_behind_the_data_alumni_exclusive_book_launch_with_wharton_professor_stefano_puntoni",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "harnessing_ai_innovations_for_financial_services",
+    "title": "Harnessing AI & GenAI Innovations for Financial Services",
+    "summary": "An AI Studio session on how AI and generative AI are reshaping financial services, featuring Gil Shulman, CTO of ficc.ai.",
+    "description": "An AI Studio session on harnessing AI and generative-AI innovations across financial services — emerging use cases, opportunities, and practical paths to adoption. Featuring Gil Shulman, Chief Technology Officer at ficc.ai, in conversation with the AI Studio community.",
+    "starts_at": "2024-05-30T18:00:00+01:00",
+    "ends_at": "2024-05-30T19:30:00+01:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1732/meta_images/original/waistudio.jpeg?1715295675",
+    "registration_url": "https://www.whartonclubuk.net/harnessing_ai_innovations_for_financial_services",
+    "visibility": "public"
   }
 ]
