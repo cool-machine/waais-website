@@ -37,5 +37,31 @@
     "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1556/meta_images/original/Bruno_Occhipinti.jpg?1611586656",
     "registration_url": "https://www.whartonclubuk.net/from_lab_to_collab",
     "visibility": "public"
+  },
+  {
+    "external_ref": "20210519_ai_researchcollab",
+    "title": "AI Studio Research & Collab: AI in Cyber Security",
+    "summary": "A Research & Collab session for investors and entrepreneurs on AI in cyber security — the three most common attacks and breaches on AI models — with Adrien Philippe and George Gvishiani.",
+    "description": "The launch of the AI Studio's Research & Collab series, pairing accessible briefings for investors and entrepreneurs with deeper technical sessions for ML researchers and engineers. This first session covered AI in cyber security — 'Attacks and breaches on your AI models: the three most common threats' — and how recent machine learning and deep learning research translates into real business applications. Presented by Adrien Philippe (HEC Paris / ENS Paris-Saclay; ML researcher and MedTech founder) and host George Gvishiani.",
+    "starts_at": "2021-05-19T19:00:00+01:00",
+    "ends_at": "2021-05-19T21:00:00+01:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1587/meta_images/original/Adrien_Philippe.jpg?1619644554",
+    "registration_url": "https://www.whartonclubuk.net/20210519_ai_researchcollab",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "20210520_ai_fintech_cryptocurrencies",
+    "title": "AI in Fintech: The Future of Cryptocurrencies",
+    "summary": "An AI Studio session on the future of cryptocurrencies and blockchain — volatility, credit assessment and real-world uses — with Matthew Dixon and Nadia Gil.",
+    "description": "An AI Studio discussion on the future of cryptocurrencies and blockchain: controlling volatility, using crypto and blockchain to improve credit assessment, and the trade-offs around fees, security and decentralisation. Speakers were Matthew Dixon (FRM) — Assistant Professor of Applied Math researching fintech and quantitative finance, and co-author with Igor Halperin of the first textbook on machine learning in finance — and Nadia Gil, Global Solutions Advisor at Google and a blockchain and crypto specialist with 20+ years in strategy and M&A.",
+    "starts_at": "2021-05-20T19:00:00+01:00",
+    "ends_at": "2021-05-20T20:30:00+01:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1589/meta_images/original/mathew_photo.jpg?1620858834",
+    "registration_url": "https://www.whartonclubuk.net/20210520_ai_fintech_cryptocurrencies",
+    "visibility": "public"
   }
 ]
