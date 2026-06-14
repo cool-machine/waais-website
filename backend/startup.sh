@@ -45,4 +45,9 @@ php artisan storage:link  || true
 # overwrite, or --dry-run to preview without writing.
 # php artisan waais:import-startups database/data/startups.json || true
 
+# ONE-TIME partners import. Create-only (keyed on website_url) so it is safe on
+# every boot, but it will be disabled in the next commit once the seed has
+# loaded, matching the events/startups approach (then managed in the dashboard).
+php artisan waais:import-partners database/data/partners.json || true
+
 echo "[waais-startup] ready"

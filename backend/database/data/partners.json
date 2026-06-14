@@ -1,0 +1,62 @@
+[
+  {
+    "name": "University of Pennsylvania",
+    "partner_type": "University",
+    "summary": "America's first university and the home of the Wharton School.",
+    "description": "The University of Pennsylvania is an Ivy League research university founded by Benjamin Franklin in 1740 in Philadelphia. As the parent institution of the Wharton School and Penn Engineering, Penn is the academic home of the Wharton Alumni AI Studio community.",
+    "website_url": "https://www.upenn.edu/",
+    "logo_url": "https://www.upenn.edu/themes/custom/penn_starter/assets/img/UPenn-logo.svg",
+    "sort_order": 1,
+    "visibility": "public"
+  },
+  {
+    "name": "The Wharton School",
+    "partner_type": "Business School",
+    "summary": "The business school of the University of Pennsylvania — the world's first collegiate business school.",
+    "description": "The Wharton School of the University of Pennsylvania, founded in 1881, is the world's first collegiate business school. Its faculty, research centers (including Wharton Human-AI Research and the AI & Analytics initiative), and global alumni network are the foundation of the Wharton Alumni AI Studio.",
+    "website_url": "https://www.wharton.upenn.edu/",
+    "logo_url": "https://www.wharton.upenn.edu/wp-content/plugins/martech-chupacabra/includes/images/Wharton-Logo-RGB.png",
+    "sort_order": 2,
+    "visibility": "public"
+  },
+  {
+    "name": "Wharton Club of the United Kingdom",
+    "partner_type": "Wharton Alumni Club",
+    "summary": "The official Wharton alumni club for the United Kingdom.",
+    "description": "The Wharton Club of the United Kingdom is the official Wharton alumni club serving Penn and Wharton alumni across the UK, with networking, speaker events, and the AI Studio programming. It is part of the global Wharton Clubs network.",
+    "website_url": "https://www.whartonclubuk.net/",
+    "logo_url": "https://assets.nationbuilder.com/whartonclubuk/sites/2/meta_images/original/wharton-club-logo-color.png?1601321349",
+    "sort_order": 3,
+    "visibility": "public"
+  },
+  {
+    "name": "Wharton Club of France",
+    "partner_type": "Wharton Alumni Club",
+    "summary": "The official Wharton alumni club for France.",
+    "description": "The Wharton Club de France is the official Wharton alumni club serving Penn and Wharton alumni across France, with events, career programming, and a Paris-based community. It is part of the global Wharton Clubs network and a co-host of AI Studio sessions.",
+    "website_url": "https://www.whartonfrance.com/",
+    "logo_url": "https://assets.nationbuilder.com/whartonparis/pages/12/meta_images/original/logo.png?1466437185",
+    "sort_order": 4,
+    "visibility": "public"
+  },
+  {
+    "name": "Wharton Club of Germany and Austria",
+    "partner_type": "Wharton Alumni Club",
+    "summary": "The official Wharton alumni club for Germany and Austria.",
+    "description": "The Wharton Club of Germany and Austria (Wharton Club of Germany and Austria e.V.) is the official Wharton alumni club serving Penn and Wharton alumni across Germany and Austria, hosting events such as the Wharton Global Oktoberfest and AI conferences. It is part of the global Wharton Clubs network.",
+    "website_url": "https://www.whartongermany.com/",
+    "logo_url": "https://assets.nationbuilder.com/whartongermany/pages/88/meta_images/original/UP_WC_Germany-Austria_D_w_4x_%283%29.png?1776432813",
+    "sort_order": 5,
+    "visibility": "public"
+  },
+  {
+    "name": "Edge AI Foundation",
+    "partner_type": "Foundation / Nonprofit",
+    "summary": "Global nonprofit advancing edge AI innovation, education, and collaboration (formerly the tinyML Foundation).",
+    "description": "The Edge AI Foundation (formerly the tinyML Foundation) is a global nonprofit advancing innovation, education, advocacy, and collaboration in edge AI — bringing AI to the real world, from tinyML to the edge, across industry and academia. Its board includes Wharton alumna Didem Ün Ateş, connecting it to the Wharton Alumni AI Studio.",
+    "website_url": "https://www.edgeaifoundation.org/",
+    "logo_url": "https://www.edgeaifoundation.org/edge-ai-website.jpg",
+    "sort_order": 6,
+    "visibility": "public"
+  }
+]
