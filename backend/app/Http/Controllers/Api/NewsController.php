@@ -20,11 +20,14 @@ use Illuminate\Support\Str;
  */
 class NewsController extends Controller
 {
-    private const CACHE_KEY = 'public_news_v1';
+    private const CACHE_KEY = 'public_news_v2';
 
     private const CACHE_TTL_HOURS = 3;
 
     private const MAX_ITEMS = 15;
+
+    /** Always show at least this many items, backfilling recent non-AI stories. */
+    private const MIN_ITEMS = 6;
 
     /** Official sources: display label => RSS feed URL. */
     private const FEEDS = [
@@ -32,12 +35,20 @@ class NewsController extends Controller
         'Penn Today' => 'https://penntoday.upenn.edu/rss.xml',
     ];
 
-    /** Multi-word phrases that mark an item as AI / analytics related. */
-    private const AI_PHRASES = [
+    /** Phrases weighted by how strongly they signal genuine AI content. */
+    private const AI_TERMS_STRONG = [
         'artificial intelligence', 'machine learning', 'deep learning',
-        'generative', 'large language model', 'analytics', 'data science',
-        'algorithm', 'neural', 'chatbot', 'automation', 'autonomous',
-        'robot', 'predictive', 'gpt', 'copilot',
+        'large language model', 'generative ai', 'genai', 'chatbot',
+        'neural network',
+    ];
+
+    private const AI_TERMS_MEDIUM = [
+        'data science', 'algorithm', 'automation', 'autonomous',
+        'predictive', 'generative', 'neural', 'robotics',
+    ];
+
+    private const AI_TERMS_WEAK = [
+        'analytics', 'big data', 'data-driven',
     ];
 
     public function index(): JsonResponse
@@ -78,20 +89,25 @@ class NewsController extends Controller
             }
         }
 
-        // AI / analytics items first, then most recent first.
-        usort($items, function (array $a, array $b): int {
-            if ($a['ai'] !== $b['ai']) {
-                return $b['ai'] <=> $a['ai'];
-            }
+        $ai = array_values(array_filter($items, static fn (array $i): bool => $i['_score'] > 0));
+        $general = array_values(array_filter($items, static fn (array $i): bool => $i['_score'] === 0));
 
-            return $b['_ts'] <=> $a['_ts'];
-        });
+        // AI / analytics items first: strongest signal, then most recent.
+        usort($ai, static fn (array $a, array $b): int => ($b['_score'] <=> $a['_score']) ?: ($b['_ts'] <=> $a['_ts']));
+        usort($general, static fn (array $a, array $b): int => $b['_ts'] <=> $a['_ts']);
+
+        // Keep the feed AI-focused, but never let it look empty: if there are
+        // only a few AI stories, backfill with the most recent general items.
+        $result = $ai;
+        if (count($result) < self::MIN_ITEMS) {
+            $result = array_merge($result, array_slice($general, 0, self::MIN_ITEMS - count($result)));
+        }
 
         return array_values(array_map(static function (array $item): array {
-            unset($item['_ts']);
+            unset($item['_ts'], $item['_score']);
 
             return $item;
-        }, array_slice($items, 0, self::MAX_ITEMS)));
+        }, array_slice($result, 0, self::MAX_ITEMS)));
     }
 
     /**
@@ -124,6 +140,7 @@ class NewsController extends Controller
 
             $pubDate = (string) ($entry->pubDate ?? '');
             $timestamp = $pubDate !== '' ? strtotime($pubDate) : false;
+            $score = $this->aiScore($title.' '.$descriptionRaw);
 
             $out[] = [
                 'title' => $title,
@@ -131,21 +148,44 @@ class NewsController extends Controller
                 'source' => $source,
                 'excerpt' => $excerpt,
                 'published_at' => $timestamp ? date(DATE_ATOM, $timestamp) : null,
-                'ai' => $this->isAiRelated($title.' '.$descriptionRaw) ? 1 : 0,
+                'ai' => $score > 0 ? 1 : 0,
                 '_ts' => $timestamp ?: 0,
+                '_score' => $score,
             ];
         }
 
         return $out;
     }
 
-    private function isAiRelated(string $text): bool
+    /**
+     * Weighted AI-relevance score. Strong terms (e.g. "machine learning") and
+     * whole-word AI/LLM/GPT mentions count most; "analytics" alone counts least
+     * so a sports-analytics piece never outranks a real AI story.
+     */
+    private function aiScore(string $text): int
     {
-        // Whole-word "AI" / "A.I." / "GenAI" / "LLM", or any AI phrase.
-        if (preg_match('/\b(a\.?i\.?|genai|llm|llms)\b/i', $text) === 1) {
-            return true;
+        $haystack = ' '.Str::lower($text).' ';
+        $score = 0;
+
+        if (preg_match('/\b(ai|a\.i\.|llm|llms|gpt(?:-?\d+)?|copilot)\b/i', $text) === 1) {
+            $score += 3;
+        }
+        foreach (self::AI_TERMS_STRONG as $term) {
+            if (str_contains($haystack, $term)) {
+                $score += 3;
+            }
+        }
+        foreach (self::AI_TERMS_MEDIUM as $term) {
+            if (str_contains($haystack, $term)) {
+                $score += 2;
+            }
+        }
+        foreach (self::AI_TERMS_WEAK as $term) {
+            if (str_contains($haystack, $term)) {
+                $score += 1;
+            }
         }
 
-        return Str::contains(Str::lower($text), self::AI_PHRASES);
+        return $score;
     }
 }
