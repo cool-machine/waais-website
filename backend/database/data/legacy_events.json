@@ -115,5 +115,31 @@
     "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1646/meta_images/original/contacts-and-drinking.jpeg?1666428505",
     "registration_url": "https://www.whartonclubuk.net/20221122_social_drinks",
     "visibility": "public"
+  },
+  {
+    "external_ref": "ai_studio_meetup",
+    "title": "Wharton AI Studio Informal Meetup (London)",
+    "summary": "An informal evening of drinks and networking for London-based alumni interested in AI, at Gustave London Wine Bar.",
+    "description": "An informal AI Studio meetup for London-based Wharton alumni interested in artificial intelligence, along with their friends — experts and entrepreneurs — held at Gustave London Wine Bar in Shoreditch. A relaxed evening of wine, shared food platters and networking within an AI-focused community.",
+    "starts_at": "2023-12-13T19:00:00+00:00",
+    "ends_at": "2023-12-13T22:00:00+00:00",
+    "location": "Gustave London Wine Bar, Rosewood Building, Gorsuch Pl, London E2 8GX, United Kingdom",
+    "format": "In person",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1683/meta_images/original/AI.jpeg?1701469421",
+    "registration_url": "https://www.whartonclubuk.net/ai_studio_meetup",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "ai_in_finance",
+    "title": "AI in Finance",
+    "summary": "An AI Studio working session on the finance pain points AI can address — discussing problems, brainstorming solutions, and spinning up new projects or startups.",
+    "description": "An AI Studio session focused on AI in finance: identifying real pain points that artificial intelligence can address, brainstorming how to solve them, and — where there is enough interest — initiating new projects or startups to tackle them. A practical, builder-oriented format for the alumni community.",
+    "starts_at": "2024-03-08T16:00:00+00:00",
+    "ends_at": "2024-03-08T18:00:00+00:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1689/meta_images/original/AI_in_Finance.png?1708966023",
+    "registration_url": "https://www.whartonclubuk.net/ai_in_finance",
+    "visibility": "public"
   }
 ]
