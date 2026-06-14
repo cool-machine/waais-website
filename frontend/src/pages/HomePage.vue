@@ -119,6 +119,23 @@ function formatEventDate(value) {
       </template>
     </PageHero>
 
+    <section v-if="latestNews.length > 0" class="section reveal-section">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <h2>Latest AI news.</h2>
+          </div>
+          <RouterLink class="button water" to="/news">View all news</RouterLink>
+        </div>
+        <ol class="news-list">
+          <li v-for="(item, index) in latestNews" :key="index" class="news-item">
+            <a class="news-title" :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>
+            <p class="news-meta">{{ formatNewsMeta(item) }}</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
     <section class="section paper reveal-section">
       <div class="section-inner">
         <div class="section-head">
@@ -141,23 +158,6 @@ function formatEventDate(value) {
             </template>
           </InfoCard>
         </CardGrid>
-      </div>
-    </section>
-
-    <section v-if="latestNews.length > 0" class="section reveal-section">
-      <div class="section-inner">
-        <div class="section-head">
-          <div>
-            <h2>Latest AI news.</h2>
-          </div>
-          <RouterLink class="button water" to="/news">View all news</RouterLink>
-        </div>
-        <ol class="news-list">
-          <li v-for="(item, index) in latestNews" :key="index" class="news-item">
-            <a class="news-title" :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>
-            <p class="news-meta">{{ formatNewsMeta(item) }}</p>
-          </li>
-        </ol>
       </div>
     </section>
 
