@@ -71,7 +71,7 @@ onMounted(() => {
   authUser.loadCurrentUser().catch(() => {})
   homepageCardsStore.loadList({ perPage: 48 }).catch(() => {})
   startupsStore.loadList({ perPage: 48 }).catch(() => {})
-  eventsStore.loadList({ time: 'upcoming', perPage: 3 }).catch(() => {})
+  eventsStore.loadList({ time: 'past', perPage: 3 }).catch(() => {})
   newsStore.loadList().catch(() => {})
 })
 
@@ -188,7 +188,7 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <h2>Selected events.</h2>
+            <h2>Recent events.</h2>
           </div>
           <RouterLink class="button water" to="/events">View all events</RouterLink>
         </div>
@@ -202,7 +202,7 @@ function formatEventDate(value) {
         </div>
 
         <div v-else-if="selectedEvents.length === 0" class="card">
-          <p class="meta">No upcoming events yet.</p>
+          <p class="meta">No events yet.</p>
         </div>
 
         <CardGrid v-else>
