@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
  */
 class NewsController extends Controller
 {
-    private const CACHE_KEY = 'public_news_v2';
+    private const CACHE_KEY = 'public_news_v3';
 
     private const CACHE_TTL_HOURS = 3;
 
@@ -76,7 +76,13 @@ class NewsController extends Controller
 
         foreach (self::FEEDS as $source => $url) {
             try {
-                $response = Http::timeout(5)->get($url);
+                $response = Http::timeout(6)
+                    ->withHeaders([
+                        // Some feeds reject the default client agent; use a normal one.
+                        'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                        'Accept' => 'application/rss+xml, application/xml, text/xml, */*',
+                    ])
+                    ->get($url);
                 if (! $response->successful()) {
                     continue;
                 }
