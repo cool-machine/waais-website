@@ -1,7 +1,25 @@
 <script setup>
+import { onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
+import CardGrid from '../components/CardGrid.vue'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
+import { usePublicTeamStore } from '../stores/publicTeam'
+
+const teamStore = usePublicTeamStore()
+const { founders, advisors } = storeToRefs(teamStore)
+
+onMounted(() => {
+  teamStore.loadList().catch(() => {})
+})
+
+function initials(name) {
+  const words = (name || '').trim().split(/\s+/).filter(Boolean)
+  if (!words.length) return '•'
+  if (words.length === 1) return words[0].slice(0, 1).toUpperCase()
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase()
+}
 </script>
 
 <template>
@@ -51,6 +69,50 @@ import PublicLayout from '../components/PublicLayout.vue'
           WAAIS was founded by George Gvishiani, founder of the Wharton Alumni AI Studio and
           co-founder of the Wharton AI Studio Expert Network.
         </p>
+      </div>
+    </section>
+
+    <section v-if="founders.length > 0 || advisors.length > 0" class="section paper">
+      <div class="section-inner">
+        <template v-if="founders.length > 0">
+          <div class="section-head"><div><h2>Founders.</h2></div></div>
+          <CardGrid>
+            <article v-for="member in founders" :key="member.id" class="card info-card team-card">
+              <div class="team-photo">
+                <img v-if="member.photo_url" :src="member.photo_url" :alt="member.name">
+                <span v-else class="logo-monogram" aria-hidden="true">{{ initials(member.name) }}</span>
+              </div>
+              <div class="card-body">
+                <h3>{{ member.name }}</h3>
+                <p v-if="member.role_title" class="meta">{{ member.role_title }}</p>
+                <p v-if="member.bio" class="small">{{ member.bio }}</p>
+                <div class="card-actions">
+                  <a v-if="member.linkedin_url" class="button water" :href="member.linkedin_url" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+                </div>
+              </div>
+            </article>
+          </CardGrid>
+        </template>
+
+        <template v-if="advisors.length > 0">
+          <div class="section-head" :style="founders.length > 0 ? 'margin-top: 36px' : ''"><div><h2>Board advisors.</h2></div></div>
+          <CardGrid>
+            <article v-for="member in advisors" :key="member.id" class="card info-card team-card">
+              <div class="team-photo">
+                <img v-if="member.photo_url" :src="member.photo_url" :alt="member.name">
+                <span v-else class="logo-monogram" aria-hidden="true">{{ initials(member.name) }}</span>
+              </div>
+              <div class="card-body">
+                <h3>{{ member.name }}</h3>
+                <p v-if="member.role_title" class="meta">{{ member.role_title }}</p>
+                <p v-if="member.bio" class="small">{{ member.bio }}</p>
+                <div class="card-actions">
+                  <a v-if="member.linkedin_url" class="button water" :href="member.linkedin_url" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+                </div>
+              </div>
+            </article>
+          </CardGrid>
+        </template>
       </div>
     </section>
 

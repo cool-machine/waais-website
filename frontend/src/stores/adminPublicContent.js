@@ -25,6 +25,13 @@ const RESOURCES = {
     titleField: 'name',
     defaultStatus: 'draft',
   },
+  team_members: {
+    label: 'Team',
+    singularLabel: 'Team member',
+    path: '/api/admin/team-members',
+    titleField: 'name',
+    defaultStatus: 'draft',
+  },
 }
 
 function paginationMeta(response) {

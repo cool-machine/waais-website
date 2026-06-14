@@ -83,6 +83,11 @@ const publicContentForm = reactive({
   description: '',
   website_url: '',
   logo_url: '',
+  role_title: '',
+  member_group: 'advisor',
+  bio: '',
+  photo_url: '',
+  linkedin_url: '',
   visibility: 'public',
   sort_order: '',
 })
@@ -257,8 +262,9 @@ const adminEventStatusFilters = ['all', 'draft', 'pending_review', 'published', 
 const adminPublicContentResources = [
   ['homepage_cards', 'Homepage cards'],
   ['partners', 'Partners'],
+  ['team_members', 'Team'],
 ]
-// Homepage cards are super-admin only; partners are visible to partner admins.
+// Homepage cards and team are super-admin only; partners are visible to partner admins.
 const visiblePublicContentResources = computed(() =>
   adminPublicContentResources.filter(([resource]) =>
     resource === 'partners' ? canManagePartners.value : isSuperAdmin.value,
@@ -558,6 +564,11 @@ function populatePublicContentForm(item) {
   publicContentForm.description = source.description ?? ''
   publicContentForm.website_url = source.website_url ?? ''
   publicContentForm.logo_url = source.logo_url ?? ''
+  publicContentForm.role_title = source.role_title ?? ''
+  publicContentForm.member_group = source.member_group ?? 'advisor'
+  publicContentForm.bio = source.bio ?? ''
+  publicContentForm.photo_url = source.photo_url ?? ''
+  publicContentForm.linkedin_url = source.linkedin_url ?? ''
   publicContentForm.visibility = source.visibility ?? 'public'
   publicContentForm.sort_order = source.sort_order === null || source.sort_order === undefined
     ? ''
@@ -573,6 +584,19 @@ function publicContentPayload() {
       description: publicContentForm.description.trim(),
       website_url: nullableString(publicContentForm.website_url),
       logo_url: nullableString(publicContentForm.logo_url),
+      visibility: publicContentForm.visibility || null,
+      sort_order: nullableInteger(publicContentForm.sort_order),
+    }
+  }
+
+  if (adminPublicContentStore.resource === 'team_members') {
+    return {
+      name: publicContentForm.name.trim(),
+      role_title: nullableString(publicContentForm.role_title),
+      member_group: publicContentForm.member_group || 'advisor',
+      bio: nullableString(publicContentForm.bio),
+      photo_url: nullableString(publicContentForm.photo_url),
+      linkedin_url: nullableString(publicContentForm.linkedin_url),
       visibility: publicContentForm.visibility || null,
       sort_order: nullableInteger(publicContentForm.sort_order),
     }
@@ -1681,7 +1705,7 @@ watch(currentView, () => {
                 <span>
                   {{ item.title || item.name }}
                   <br>
-                  <small>{{ item.section || item.partner_type || item.summary || 'No grouping' }}</small>
+                  <small>{{ item.section || item.partner_type || item.role_title || item.summary || 'No grouping' }}</small>
                 </span>
                 <strong>{{ titleize(item.content_status) }}</strong>
               </button>
@@ -1707,6 +1731,19 @@ watch(currentView, () => {
               <label class="full">Body<textarea v-model="publicContentForm.body" :disabled="adminPublicContentStore.saving" required /></label>
               <label>Link label<input v-model="publicContentForm.link_label" :disabled="adminPublicContentStore.saving" /></label>
               <label>Link URL<input v-model="publicContentForm.link_url" :disabled="adminPublicContentStore.saving" /></label>
+            </template>
+            <template v-else-if="adminPublicContentStore.resource === 'team_members'">
+              <label class="full">Name<input v-model="publicContentForm.name" :disabled="adminPublicContentStore.saving" required /></label>
+              <label>Role / title<input v-model="publicContentForm.role_title" :disabled="adminPublicContentStore.saving" placeholder="e.g. Board Advisor" /></label>
+              <label>Group
+                <select v-model="publicContentForm.member_group" :disabled="adminPublicContentStore.saving">
+                  <option value="founder">Founder</option>
+                  <option value="advisor">Board advisor</option>
+                </select>
+              </label>
+              <label class="full">Bio<textarea v-model="publicContentForm.bio" :disabled="adminPublicContentStore.saving" /></label>
+              <label class="full">Photo URL<input v-model="publicContentForm.photo_url" :disabled="adminPublicContentStore.saving" placeholder="/team/jane.jpg" /></label>
+              <label class="full">LinkedIn URL<input v-model="publicContentForm.linkedin_url" type="url" :disabled="adminPublicContentStore.saving" /></label>
             </template>
             <template v-else>
               <label class="full">Name<input v-model="publicContentForm.name" :disabled="adminPublicContentStore.saving" required /></label>

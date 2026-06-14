@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\AdminHomepageCardController;
 use App\Http\Controllers\Api\Admin\AdminMembershipApplicationController;
 use App\Http\Controllers\Api\Admin\AdminPartnerController;
 use App\Http\Controllers\Api\Admin\AdminStartupListingController;
+use App\Http\Controllers\Api\Admin\AdminTeamMemberController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\Admin\AdminUserRoleController;
 use App\Http\Controllers\Api\AnnouncementController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Api\PublicEventController;
 use App\Http\Controllers\Api\PublicHomepageCardController;
 use App\Http\Controllers\Api\PublicPartnerController;
 use App\Http\Controllers\Api\PublicStartupListingController;
+use App\Http\Controllers\Api\PublicTeamMemberController;
 use App\Http\Controllers\Api\StartupListingController;
 use App\Http\Controllers\Auth\EmailAuthController;
 use App\Http\Controllers\Auth\PasswordAuthController;
@@ -38,6 +40,8 @@ Route::prefix('public')->group(function (): void {
     Route::get('/partners/{partner}', [PublicPartnerController::class, 'show']);
 
     Route::get('/news', [NewsController::class, 'index']);
+
+    Route::get('/team-members', [PublicTeamMemberController::class, 'index']);
 
     Route::get('/homepage-cards', [PublicHomepageCardController::class, 'index']);
     Route::get('/homepage-cards/{homepageCard}', [PublicHomepageCardController::class, 'show']);
@@ -113,6 +117,14 @@ Route::middleware('auth:sanctum')->group(function (): void {
             Route::post('/applications/{application}/approve', [AdminMembershipApplicationController::class, 'approve']);
             Route::post('/applications/{application}/reject', [AdminMembershipApplicationController::class, 'reject']);
             Route::post('/applications/{application}/request-info', [AdminMembershipApplicationController::class, 'requestInfo']);
+
+            Route::get('/team-members', [AdminTeamMemberController::class, 'index']);
+            Route::post('/team-members', [AdminTeamMemberController::class, 'store']);
+            Route::get('/team-members/{teamMember}', [AdminTeamMemberController::class, 'show']);
+            Route::patch('/team-members/{teamMember}', [AdminTeamMemberController::class, 'update']);
+            Route::post('/team-members/{teamMember}/publish', [AdminTeamMemberController::class, 'publish']);
+            Route::post('/team-members/{teamMember}/hide', [AdminTeamMemberController::class, 'hide']);
+            Route::post('/team-members/{teamMember}/archive', [AdminTeamMemberController::class, 'archive']);
 
             Route::get('/homepage-cards', [AdminHomepageCardController::class, 'index']);
             Route::post('/homepage-cards', [AdminHomepageCardController::class, 'store']);
