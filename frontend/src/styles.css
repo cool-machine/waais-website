@@ -401,8 +401,12 @@ h3 {
 .image-card img {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+  height: 132px;
+  object-fit: contain;
+  object-position: center;
+  padding: 18px;
+  background: var(--white);
+  border-bottom: 1px solid var(--paper-line);
 }
 
 .card-body {
