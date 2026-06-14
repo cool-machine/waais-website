@@ -54,9 +54,4 @@ php artisan storage:link  || true
 # overwrite, or --dry-run to preview without writing.
 # php artisan waais:import-partners database/data/partners.json || true
 
-# ONE-TIME refresh (--update) to push corrected logos for existing records.
-# Disabled again in the next commit so dashboard edits stay permanent.
-php artisan waais:import-startups database/data/startups.json --update || true
-php artisan waais:import-partners database/data/partners.json --update || true
-
 echo "[waais-startup] ready"
