@@ -63,5 +63,57 @@
     "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1589/meta_images/original/mathew_photo.jpg?1620858834",
     "registration_url": "https://www.whartonclubuk.net/20210520_ai_fintech_cryptocurrencies",
     "visibility": "public"
+  },
+  {
+    "external_ref": "20220615_ai_openai",
+    "title": "AI Studio Research & Collab: Algorithms & OpenAI (DALL·E 2)",
+    "summary": "A Research & Collab session on OpenAI's DALL·E 2 and diffusion models — how it works, industrial applications and societal risks — from engineering and business angles.",
+    "description": "A Research & Collab workshop on OpenAI's DALL·E 2 — the system that generates and edits realistic images and art from natural-language descriptions — and the diffusion-model architecture behind it. The session covered the foundations of OpenAI's paper, its potential industrial applications and the societal risks to mitigate, then explored practical uses of ML/AI techniques across economic sectors. Presented by Adrien Philippe (Data CTO at La Redoute; HEC / ENS Paris-Saclay) and host George Gvishiani.",
+    "starts_at": "2022-07-26T17:30:00+01:00",
+    "ends_at": "2022-07-26T18:30:00+01:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1623/meta_images/original/shiba.jpeg?1653642111",
+    "registration_url": "https://www.whartonclubuk.net/20220615_ai_openai",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "20221215_ai_processors",
+    "title": "AI Studio: AI-Specialised Processors — Landscape, Market Trends & Geopolitical Impacts",
+    "summary": "A session on the AI chip landscape — AI-specialised processors, their supply chain, and how geopolitics (Taiwan, China) is reshaping the market — with Adrien Philippe.",
+    "description": "A one-hour AI Studio session on AI-specialised processors: why AI workloads such as self-driving and edge computing demand new chips, how the semiconductor supply chain is structured, and how events around Taiwan and China directly affect the processor market and are creating new challengers. Presented by Adrien Philippe (Data CTO at La Redoute; HEC / ENS Paris-Saclay) and moderated by George Gvishiani.",
+    "starts_at": "2022-12-15T17:30:00+00:00",
+    "ends_at": "2022-12-15T18:30:00+00:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1649/meta_images/original/adrien.png?1669589654",
+    "registration_url": "https://www.whartonclubuk.net/20221215_ai_processors",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "20221103_social_drinks",
+    "title": "AI Studio Happy Hour with Wharton Alumni Angels",
+    "summary": "An in-person happy hour in Mayfair, co-sponsored by the AI Studio and Wharton Alumni Angels, for alumni interested in AI and angel investing.",
+    "description": "A relaxed in-person happy hour at The Market Tavern in Mayfair, co-sponsored by the AI Studio and Wharton Alumni Angels — a chance for alumni who are curious about AI and angel investing, or already active in it, to meet like-minded people, discuss the latest trends, and expand their network. Nibbles provided.",
+    "starts_at": "2022-11-03T18:30:00+00:00",
+    "ends_at": "2022-11-03T21:00:00+00:00",
+    "location": "The Market Tavern, 7 Shepherd St, Mayfair, London W1J 7HR, United Kingdom",
+    "format": "In person",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1633/meta_images/original/contacts-and-drinking.jpeg?1661075632",
+    "registration_url": "https://www.whartonclubuk.net/20221103_social_drinks",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "20221122_social_drinks",
+    "title": "AI Studio Happy Hour with Wharton Alumni Angels (November)",
+    "summary": "An in-person happy hour in Mayfair, co-sponsored by the AI Studio and Wharton Alumni Angels, for alumni interested in AI and angel investing. Rescheduled from 3 to 22 November.",
+    "description": "A relaxed in-person happy hour at The Market Tavern in Mayfair, co-sponsored by the AI Studio and Wharton Alumni Angels, for alumni who are curious about — or active in — AI and angel investing, to meet and discuss the latest trends. Originally planned for 3 November, it was moved to 22 November due to planned London transport industrial action. Nibbles provided.",
+    "starts_at": "2022-11-22T18:30:00+00:00",
+    "ends_at": "2022-11-22T21:00:00+00:00",
+    "location": "The Market Tavern, 7 Shepherd St, Mayfair, London W1J 7HR, United Kingdom",
+    "format": "In person",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/1646/meta_images/original/contacts-and-drinking.jpeg?1666428505",
+    "registration_url": "https://www.whartonclubuk.net/20221122_social_drinks",
+    "visibility": "public"
   }
 ]
