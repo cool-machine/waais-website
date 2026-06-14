@@ -5,7 +5,7 @@
     "summary": "America's first university and the home of the Wharton School.",
     "description": "The University of Pennsylvania is an Ivy League research university founded by Benjamin Franklin in 1740 in Philadelphia. As the parent institution of the Wharton School and Penn Engineering, Penn is the academic home of the Wharton Alumni AI Studio community.",
     "website_url": "https://www.upenn.edu/",
-    "logo_url": "https://www.upenn.edu/themes/custom/penn_starter/assets/img/UPenn-logo.svg",
+    "logo_url": "/logos/Penn-logo.png",
     "sort_order": 1,
     "visibility": "public"
   },
@@ -35,7 +35,7 @@
     "summary": "The official Wharton alumni club for France.",
     "description": "The Wharton Club de France is the official Wharton alumni club serving Penn and Wharton alumni across France, with events, career programming, and a Paris-based community. It is part of the global Wharton Clubs network and a co-host of AI Studio sessions.",
     "website_url": "https://www.whartonfrance.com/",
-    "logo_url": "https://assets.nationbuilder.com/whartonparis/pages/12/meta_images/original/logo.png?1466437185",
+    "logo_url": "/logos/wharton-club-de-france-logo.png",
     "sort_order": 4,
     "visibility": "public"
   },
