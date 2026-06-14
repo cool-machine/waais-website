@@ -219,5 +219,57 @@
     "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/3382/meta_images/original/Screenshot_2025-09-01_at_8.40.13PM.png?1757682324",
     "registration_url": "https://www.whartonclubuk.net/future_of_ai_in_government",
     "visibility": "public"
+  },
+  {
+    "external_ref": "thinking_in_systems_ai_with_claude",
+    "title": "Thinking in Systems, Building in Real Time: AI with Claude",
+    "summary": "Lauren Cantor (WG'98) on bringing systems thinking to the Claude ecosystem — building real tools, mapping complex decisions, and designing AI workflows that hold up under enterprise pressure.",
+    "description": "Most people treat AI like a search engine with better grammar — this session went further. AI advisor Lauren Cantor (WG'98), founder of Field & Edge, explored what happens when you bring systems thinking to the Claude ecosystem: building real tools, mapping complex decisions, and designing workflows that hold up under enterprise pressure. Less \"here's a cool prompt,\" more \"here's how this becomes operational infrastructure\" — leaving attendees with a framework for treating AI as a structural advantage.",
+    "starts_at": "2026-04-16T19:00:00+02:00",
+    "ends_at": "2026-04-16T20:00:00+02:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/4141/attachments/original/1774379955/lauren.jpg?1774379955",
+    "registration_url": "https://www.whartonfrance.com/wharton_alumni_ai_studio_thinking_in_systems_building_in_real_time_ai_with_claude",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "from_ai_hype_to_adoption",
+    "title": "From AI Hype to Adoption: What Actually Works in Organizations",
+    "summary": "Steve Smith (WG'98), CEO of Intelligence by Intent, on Project Ollie — a 13-agent AI system running on a $600 Mac Mini that operates his consulting practice 24/7 — and what really bridges the gap from demo to production.",
+    "description": "Steve Smith (WG'98), CEO of Intelligence by Intent, shared how he went from open-source experimentation to a custom multi-agent system running in production. The result is Project Ollie: 13 specialized agents on a $600 Mac Mini that operate his consulting practice 24/7 — scanning emails, generating intelligence briefings, tracking prospects, and delivering executive summaries before he wakes. He walked through the architecture and security decisions that bridge \"cool demo\" and \"I trust this with my clients,\" with practical lessons on what autonomous AI can do for professionals today.",
+    "starts_at": "2026-05-07T18:00:00+01:00",
+    "ends_at": "2026-05-07T19:00:00+01:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/4174/meta_images/original/steve_headshot_final.png?1774780288",
+    "registration_url": "https://www.whartonclubuk.net/from_ai_hype_to_adoption_what_actually_works_in_organizations",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "bringing_ai_to_the_edge",
+    "title": "Bringing AI to the Edge: Why It Matters",
+    "summary": "A fireside chat with Edge AI Foundation leaders Didem Ün Ateş (WH/SEAS '97), founder of LotusAI and board member of the Edge AI Foundation and Wharton AI Studio, and Pete Bernard, the Foundation's Executive Director, on why edge AI matters.",
+    "description": "A fireside chat with the Edge AI Foundation leadership team. Didem Ün Ateş (WH '97 & SEAS '97) — founder of LotusAI, Goldman Sachs AI council advisor, and board member of the Edge AI Foundation and Wharton AI Studio — and Pete Bernard, Executive Director of the Edge AI Foundation and a veteran of Microsoft's edge-computing efforts, discussed why running AI at the edge matters, the state of the technology, and the strategic and responsible-AI implications for businesses.",
+    "starts_at": "2025-03-27T17:00:00+00:00",
+    "ends_at": "2025-03-27T18:00:00+00:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/2656/meta_images/original/growtika-nGoCBxiaRO0-unsplash.jpg?1742161475",
+    "registration_url": "https://www.whartonclubuk.net/bringing_ai_to_the_edge_why_it_matters",
+    "visibility": "public"
+  },
+  {
+    "external_ref": "designing_ai_workflows_for_every_profession",
+    "title": "Designing AI Workflows for Every Profession",
+    "summary": "An AI Studio workshop on designing practical, repeatable AI workflows tailored to the needs of different professions.",
+    "description": "An AI Studio session on designing practical AI workflows that work across professions — moving beyond one-off prompts to repeatable, role-specific ways of getting real work done with AI. (This session page was published without a full write-up; the summary is based on the event title and series.)",
+    "starts_at": "2026-06-12T17:00:00+01:00",
+    "ends_at": "2026-06-12T18:30:00+01:00",
+    "location": "Online",
+    "format": "Online",
+    "image_url": "https://assets.nationbuilder.com/whartonclubuk/pages/3085/meta_images/original/ai-studio-logo.png?1748795758",
+    "registration_url": "https://www.whartonclubuk.net/designing_ai_workflows_for_every_profession",
+    "visibility": "public"
   }
 ]
