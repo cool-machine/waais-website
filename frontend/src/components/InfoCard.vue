@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps({
   eyebrow: { type: String, default: '' },
@@ -11,7 +11,10 @@ const props = defineProps({
   logoFallback: { type: Boolean, default: false },
 })
 
-const hasTile = computed(() => Boolean(props.image) || props.logoFallback)
+const broken = ref(false)
+const showImage = computed(() => Boolean(props.image) && !broken.value)
+const showMonogram = computed(() => !showImage.value && (props.logoFallback || broken.value))
+const hasTile = computed(() => showImage.value || showMonogram.value)
 
 const initials = computed(() => {
   const words = (props.title || '').trim().split(/\s+/).filter(Boolean)
@@ -23,8 +26,10 @@ const initials = computed(() => {
 
 <template>
   <article class="card" :class="{ 'image-card': hasTile }">
-    <img v-if="image" :src="image" :alt="imageAlt || title">
-    <div v-else-if="logoFallback" class="logo-fallback" aria-hidden="true">{{ initials }}</div>
+    <div v-if="hasTile" class="logo-tile">
+      <img v-if="showImage" class="logo-mark" :src="image" :alt="imageAlt || title" @error="broken = true">
+      <span v-else class="logo-monogram" aria-hidden="true">{{ initials }}</span>
+    </div>
     <div class="card-body">
       <span v-if="eyebrow" class="tag">{{ eyebrow }}</span>
       <h3>{{ title }}</h3>
