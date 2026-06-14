@@ -54,8 +54,4 @@ php artisan storage:link  || true
 # overwrite, or --dry-run to preview without writing.
 # php artisan waais:import-partners database/data/partners.json || true
 
-# ONE-TIME seed of founders/advisors. Create-only, drafts (admin publishes).
-# Disabled again in the next commit; afterwards team is managed in the dashboard.
-php artisan waais:import-team database/data/team.json || true
-
 echo "[waais-startup] ready"
