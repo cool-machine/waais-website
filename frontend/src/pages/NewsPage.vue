@@ -1,8 +1,6 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import CardGrid from '../components/CardGrid.vue'
-import InfoCard from '../components/InfoCard.vue'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
 import { usePublicNewsStore } from '../stores/publicNews'
@@ -57,19 +55,13 @@ function itemMeta(item) {
           <p class="meta">No news right now. Please check back soon.</p>
         </div>
 
-        <CardGrid v-else>
-          <InfoCard
-            v-for="(item, index) in list"
-            :key="index"
-            :title="item.title"
-            :meta="itemMeta(item)"
-          >
-            {{ item.excerpt }}
-            <template #actions>
-              <a class="button water" :href="item.url" target="_blank" rel="noopener noreferrer">Read article</a>
-            </template>
-          </InfoCard>
-        </CardGrid>
+        <ol v-else class="news-list">
+          <li v-for="(item, index) in list" :key="index" class="news-item">
+            <a class="news-title" :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>
+            <p class="news-meta">{{ itemMeta(item) }}</p>
+            <p v-if="item.excerpt" class="news-excerpt">{{ item.excerpt }}</p>
+          </li>
+        </ol>
       </div>
     </section>
   </PublicLayout>

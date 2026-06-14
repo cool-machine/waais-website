@@ -25,7 +25,7 @@ const initials = computed(() => {
 </script>
 
 <template>
-  <article class="card" :class="{ 'image-card': hasTile }">
+  <article class="card info-card" :class="{ 'image-card': hasTile }">
     <div v-if="hasTile" class="logo-tile">
       <img v-if="showImage" class="logo-mark" :src="image" :alt="imageAlt || title" @error="broken = true">
       <span v-else class="logo-monogram" aria-hidden="true">{{ initials }}</span>

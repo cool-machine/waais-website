@@ -69,7 +69,7 @@ const selectedEvents = computed(() => events.value.slice(0, 3))
 
 const newsStore = usePublicNewsStore()
 const { list: news } = storeToRefs(newsStore)
-const latestNews = computed(() => news.value.slice(0, 3))
+const latestNews = computed(() => news.value.slice(0, 5))
 
 onMounted(() => {
   authUser.loadCurrentUser().catch(() => {})
@@ -156,19 +156,12 @@ function formatEventDate(value) {
           </div>
           <RouterLink class="button water" to="/news">View all news</RouterLink>
         </div>
-        <CardGrid>
-          <InfoCard
-            v-for="(item, index) in latestNews"
-            :key="index"
-            :title="item.title"
-            :meta="formatNewsMeta(item)"
-          >
-            {{ item.excerpt }}
-            <template #actions>
-              <a class="button water" :href="item.url" target="_blank" rel="noopener noreferrer">Read article</a>
-            </template>
-          </InfoCard>
-        </CardGrid>
+        <ol class="news-list">
+          <li v-for="(item, index) in latestNews" :key="index" class="news-item">
+            <a class="news-title" :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>
+            <p class="news-meta">{{ formatNewsMeta(item) }}</p>
+          </li>
+        </ol>
       </div>
     </section>
 

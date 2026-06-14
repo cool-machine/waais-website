@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
  */
 class NewsController extends Controller
 {
-    private const CACHE_KEY = 'public_news_v3';
+    private const CACHE_KEY = 'public_news_v4';
 
     private const CACHE_TTL_HOURS = 3;
 
@@ -45,6 +45,10 @@ class NewsController extends Controller
     private const AI_TERMS_MEDIUM = [
         'data science', 'algorithm', 'automation', 'autonomous',
         'predictive', 'generative', 'neural', 'robotics',
+        // Quantitative finance is a priority topic for the program too.
+        'quantitative finance', 'quant finance', 'equity research',
+        'asset pricing', 'portfolio optimization', 'algorithmic trading',
+        'financial derivatives', 'levy center',
     ];
 
     private const AI_TERMS_WEAK = [

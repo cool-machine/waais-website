@@ -455,7 +455,15 @@ h3 {
   padding: 20px;
 }
 
-.image-card .card-body {
+/* Every InfoCard is a flex column so its action row can pin to the bottom —
+   keeps "Details / View / Read" buttons aligned across a row regardless of
+   how long each card's text is, even on cards without an image tile. */
+.info-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-card .card-body {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -467,6 +475,61 @@ h3 {
   gap: 10px;
   margin-top: auto;
   padding-top: 12px;
+}
+
+/* Bloggy / headline-feed list used for News (works on light and dark sections). */
+.news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 860px;
+}
+
+.news-item {
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.news-item:first-child {
+  padding-top: 0;
+}
+
+.news-item:last-child {
+  border-bottom: none;
+}
+
+.paper .news-item {
+  border-bottom-color: var(--paper-line);
+}
+
+.news-title {
+  display: inline-block;
+  font-size: 1.15rem;
+  font-weight: 650;
+  line-height: 1.35;
+  color: var(--white);
+  text-decoration: none;
+}
+
+.paper .news-title {
+  color: var(--ink);
+}
+
+.news-title:hover {
+  color: var(--nav);
+  text-decoration: underline;
+}
+
+.news-meta {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.news-excerpt {
+  margin: 6px 0 0;
+  line-height: 1.55;
+  color: var(--muted);
 }
 
 .card:not(.image-card) .card-body {
