@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { getJson } from '../lib/api'
+import { readCache, writeCache } from '../lib/persistentCache'
 
 // Public, anonymous, read-only view of partner profiles.
 // Backed by /api/public/partners, which serves only published,
@@ -40,6 +41,17 @@ export const usePublicPartnersStore = defineStore('publicPartners', {
         return this.list
       }
 
+      const cacheKey = `partners:${page}:${perPage}`
+
+      // Paint last-seen data instantly on a cold load, then revalidate below.
+      if (this.list.length === 0) {
+        const cached = readCache(cacheKey)
+        if (cached) {
+          this.list = cached.list
+          this.listMeta = cached.meta ?? this.listMeta
+        }
+      }
+
       this.listLoading = true
       this.listError = null
 
@@ -57,6 +69,7 @@ export const usePublicPartnersStore = defineStore('publicPartners', {
           total: response?.total ?? this.list.length,
         }
         this.listFetchedAt = Date.now()
+        writeCache(cacheKey, { list: this.list, meta: this.listMeta })
         return this.list
       } catch (error) {
         this.listError = error

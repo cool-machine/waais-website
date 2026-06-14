@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { getJson } from '../lib/api'
+import { readCache, writeCache } from '../lib/persistentCache'
 
 // Public, anonymous, read-only view of the startup directory.
 // Backed by /api/public/startup-listings, which serves only listings
@@ -61,6 +62,17 @@ export const usePublicStartupsStore = defineStore('publicStartups', {
         return this.list
       }
 
+      const cacheKey = `startups:${page}:${perPage}`
+
+      // Paint last-seen data instantly on a cold load, then revalidate below.
+      if (this.list.length === 0) {
+        const cached = readCache(cacheKey)
+        if (cached) {
+          this.list = cached.list
+          this.listMeta = cached.meta ?? this.listMeta
+        }
+      }
+
       this.listLoading = true
       this.listError = null
 
@@ -78,6 +90,7 @@ export const usePublicStartupsStore = defineStore('publicStartups', {
           total: response?.total ?? this.list.length,
         }
         this.listFetchedAt = Date.now()
+        writeCache(cacheKey, { list: this.list, meta: this.listMeta })
         return this.list
       } catch (error) {
         this.listError = error

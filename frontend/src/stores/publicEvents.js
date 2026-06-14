@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { getJson } from '../lib/api'
+import { readCache, writeCache } from '../lib/persistentCache'
 
 // Public, anonymous, read-only view of the events calendar.
 // Backed by /api/public/events, which serves only published,
@@ -42,6 +43,17 @@ export const usePublicEventsStore = defineStore('publicEvents', {
         return this.list
       }
 
+      const cacheKey = `events:${time}:${page}:${perPage}`
+
+      // Paint last-seen data instantly on a cold load, then revalidate below.
+      if (this.list.length === 0) {
+        const cached = readCache(cacheKey)
+        if (cached) {
+          this.list = cached.list
+          this.listMeta = cached.meta ?? this.listMeta
+        }
+      }
+
       this.listLoading = true
       this.listError = null
 
@@ -60,6 +72,7 @@ export const usePublicEventsStore = defineStore('publicEvents', {
           time,
         }
         this.listFetchedAt = Date.now()
+        writeCache(cacheKey, { list: this.list, meta: this.listMeta })
         return this.list
       } catch (error) {
         this.listError = error
