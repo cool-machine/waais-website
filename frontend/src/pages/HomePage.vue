@@ -9,6 +9,7 @@ import PublicLayout from '../components/PublicLayout.vue'
 import { useAuthUserStore } from '../stores/authUser'
 import { usePublicEventsStore } from '../stores/publicEvents'
 import { usePublicHomepageCardsStore } from '../stores/publicHomepageCards'
+import { usePublicNewsStore } from '../stores/publicNews'
 import { usePublicStartupsStore } from '../stores/publicStartups'
 
 const authUser = useAuthUserStore()
@@ -66,12 +67,22 @@ const eventsStore = usePublicEventsStore()
 const { list: events, listLoading: eventsLoading, listError: eventsError } = storeToRefs(eventsStore)
 const selectedEvents = computed(() => events.value.slice(0, 3))
 
+const newsStore = usePublicNewsStore()
+const { list: news } = storeToRefs(newsStore)
+const latestNews = computed(() => news.value.slice(0, 3))
+
 onMounted(() => {
   authUser.loadCurrentUser().catch(() => {})
   homepageCardsStore.loadList({ perPage: 48 }).catch(() => {})
   startupsStore.loadList({ perPage: 48 }).catch(() => {})
   eventsStore.loadList({ time: 'upcoming', perPage: 3 }).catch(() => {})
+  newsStore.loadList().catch(() => {})
 })
+
+function formatNewsMeta(item) {
+  const date = item.published_at ? formatEventDate(item.published_at) : ''
+  return [item.source, date].filter(Boolean).join(' · ')
+}
 
 function formatEventDate(value) {
   if (!value) return 'Date TBD'
@@ -131,6 +142,30 @@ function formatEventDate(value) {
             <template #actions v-if="card.link_url && card.link_label">
               <RouterLink v-if="card.link_url.startsWith('/')" class="button water" :to="card.link_url">{{ card.link_label }}</RouterLink>
               <a v-else class="button water" :href="card.link_url" target="_blank" rel="noopener noreferrer">{{ card.link_label }}</a>
+            </template>
+          </InfoCard>
+        </CardGrid>
+      </div>
+    </section>
+
+    <section v-if="latestNews.length > 0" class="section reveal-section">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <h2>Latest AI news.</h2>
+          </div>
+          <RouterLink class="button water" to="/news">View all news</RouterLink>
+        </div>
+        <CardGrid>
+          <InfoCard
+            v-for="(item, index) in latestNews"
+            :key="index"
+            :title="item.title"
+            :meta="formatNewsMeta(item)"
+          >
+            {{ item.excerpt }}
+            <template #actions>
+              <a class="button water" :href="item.url" target="_blank" rel="noopener noreferrer">Read article</a>
             </template>
           </InfoCard>
         </CardGrid>

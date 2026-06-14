@@ -8,6 +8,7 @@ import ForumPreviewPage from '../pages/ForumPreviewPage.vue'
 import HomePage from '../pages/HomePage.vue'
 import LegalPage from '../pages/LegalPage.vue'
 import MembershipPage from '../pages/MembershipPage.vue'
+import NewsPage from '../pages/NewsPage.vue'
 import PartnerDetailPage from '../pages/PartnerDetailPage.vue'
 import PartnersPage from '../pages/PartnersPage.vue'
 import ResetPasswordPage from '../pages/ResetPasswordPage.vue'
@@ -24,6 +25,7 @@ const routes = [
   { path: '/about', name: 'about', component: AboutPage },
   { path: '/partners', name: 'partners', component: PartnersPage },
   { path: '/partners/:id', name: 'partner-detail', component: PartnerDetailPage },
+  { path: '/news', name: 'news', component: NewsPage },
   { path: '/membership', name: 'membership', component: MembershipPage },
   { path: '/reset-password', name: 'reset-password', component: ResetPasswordPage },
   { path: '/sign-in', name: 'sign-in', component: SignInPage },

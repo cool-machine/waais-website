@@ -12,6 +12,7 @@ const links = [
   { label: 'Home', to: '/' },
   { label: 'Events', to: '/events' },
   { label: 'Startups', to: '/startups' },
+  { label: 'News', to: '/news' },
   { label: 'About', to: '/about' },
   { label: 'Partners', to: '/partners' },
   { label: 'Forum', to: '/forum' },

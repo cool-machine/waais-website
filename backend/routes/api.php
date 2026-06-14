@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\AdminUserRoleController;
 use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\MembershipApplicationController;
+use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\PublicEventController;
 use App\Http\Controllers\Api\PublicHomepageCardController;
 use App\Http\Controllers\Api\PublicPartnerController;
@@ -35,6 +36,8 @@ Route::prefix('public')->group(function (): void {
 
     Route::get('/partners', [PublicPartnerController::class, 'index']);
     Route::get('/partners/{partner}', [PublicPartnerController::class, 'show']);
+
+    Route::get('/news', [NewsController::class, 'index']);
 
     Route::get('/homepage-cards', [PublicHomepageCardController::class, 'index']);
     Route::get('/homepage-cards/{homepageCard}', [PublicHomepageCardController::class, 'show']);
