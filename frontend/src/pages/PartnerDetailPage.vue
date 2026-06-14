@@ -39,13 +39,12 @@ const publishedAt = computed(() => {
 <template>
   <PublicLayout>
     <template v-if="partner">
-      <PageHero compact :eyebrow="partner.partner_type || 'Partner'" :title="partner.name" :lede="partner.summary" />
+      <PageHero compact :title="partner.name" :lede="partner.summary" />
       <section class="section paper">
         <div class="section-inner detail-grid">
           <article class="card image-card detail-card">
             <img v-if="partner.logo_url" :src="partner.logo_url" :alt="`${partner.name} logo`">
             <div class="card-body">
-              <p class="eyebrow">Partner detail</p>
               <h2>{{ partner.name }}</h2>
               <p>{{ partner.description }}</p>
               <div class="row">

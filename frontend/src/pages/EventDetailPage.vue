@@ -61,17 +61,16 @@ function formatStatus(status) {
 <template>
   <PublicLayout>
     <template v-if="event">
-      <PageHero compact :eyebrow="event.visibility" :title="event.title" :lede="event.summary" />
+      <PageHero compact :title="event.title" :lede="event.summary" />
       <section class="section paper">
         <div class="section-inner detail-grid">
           <article class="card image-card detail-card">
             <img v-if="event.image_url" :src="event.image_url" :alt="event.title">
             <div class="card-body">
-              <p class="eyebrow">Event detail</p>
               <h2>{{ event.title }}</h2>
               <p>{{ event.description }}</p>
               <div v-if="event.recap_content" class="notice">
-                <p class="eyebrow">Recap</p>
+                <p class="meta">Recap</p>
                 <p class="small">{{ event.recap_content }}</p>
               </div>
               <div class="row">

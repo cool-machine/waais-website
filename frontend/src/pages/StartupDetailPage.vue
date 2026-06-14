@@ -38,13 +38,12 @@ const approvedAt = computed(() => {
 <template>
   <PublicLayout>
     <template v-if="startup">
-      <PageHero compact :eyebrow="startup.industry" :title="startup.name" :lede="startup.tagline" />
+      <PageHero compact :title="startup.name" :lede="startup.tagline" />
       <section class="section paper">
         <div class="section-inner detail-grid">
           <article class="card image-card detail-card">
             <img v-if="startup.logo_url" :src="startup.logo_url" :alt="`${startup.name} logo`">
             <div class="card-body">
-              <p class="eyebrow">Startup profile</p>
               <h2>{{ startup.name }}</h2>
               <p>{{ startup.description }}</p>
               <div class="notice">
