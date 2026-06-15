@@ -72,47 +72,28 @@ function initials(name) {
       </div>
     </section>
 
-    <section v-if="founders.length > 0 || advisors.length > 0" class="section paper about-team">
+    <section v-if="founders.length > 0" class="section paper about-team">
       <div class="section-inner">
-        <template v-if="founders.length > 0">
-          <div class="section-head"><div><h2>Founders.</h2></div></div>
-          <CardGrid>
-            <article v-for="member in founders" :key="member.id" class="card info-card team-card">
-              <div class="team-photo">
-                <img v-if="member.photo_url" :src="member.photo_url" :alt="member.name">
-                <span v-else class="logo-monogram" aria-hidden="true">{{ initials(member.name) }}</span>
+        <div class="section-head">
+          <div><h2>Founders.</h2></div>
+          <RouterLink v-if="advisors.length > 0" class="button water" to="/advisors">Board advisors</RouterLink>
+        </div>
+        <CardGrid>
+          <article v-for="member in founders" :key="member.id" class="card info-card team-card">
+            <div class="team-photo">
+              <img v-if="member.photo_url" :src="member.photo_url" :alt="member.name">
+              <span v-else class="logo-monogram" aria-hidden="true">{{ initials(member.name) }}</span>
+            </div>
+            <div class="card-body">
+              <h3>{{ member.name }}</h3>
+              <p v-if="member.role_title" class="meta">{{ member.role_title }}</p>
+              <p v-if="member.bio" class="small">{{ member.bio }}</p>
+              <div class="card-actions">
+                <a v-if="member.linkedin_url" class="button water" :href="member.linkedin_url" target="_blank" rel="noopener noreferrer">LinkedIn</a>
               </div>
-              <div class="card-body">
-                <h3>{{ member.name }}</h3>
-                <p v-if="member.role_title" class="meta">{{ member.role_title }}</p>
-                <p v-if="member.bio" class="small">{{ member.bio }}</p>
-                <div class="card-actions">
-                  <a v-if="member.linkedin_url" class="button water" :href="member.linkedin_url" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-                </div>
-              </div>
-            </article>
-          </CardGrid>
-        </template>
-
-        <template v-if="advisors.length > 0">
-          <div class="section-head" :style="founders.length > 0 ? 'margin-top: 36px' : ''"><div><h2>Board advisors.</h2></div></div>
-          <CardGrid>
-            <article v-for="member in advisors" :key="member.id" class="card info-card team-card">
-              <div class="team-photo">
-                <img v-if="member.photo_url" :src="member.photo_url" :alt="member.name">
-                <span v-else class="logo-monogram" aria-hidden="true">{{ initials(member.name) }}</span>
-              </div>
-              <div class="card-body">
-                <h3>{{ member.name }}</h3>
-                <p v-if="member.role_title" class="meta">{{ member.role_title }}</p>
-                <p v-if="member.bio" class="small">{{ member.bio }}</p>
-                <div class="card-actions">
-                  <a v-if="member.linkedin_url" class="button water" :href="member.linkedin_url" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-                </div>
-              </div>
-            </article>
-          </CardGrid>
-        </template>
+            </div>
+          </article>
+        </CardGrid>
       </div>
     </section>
 

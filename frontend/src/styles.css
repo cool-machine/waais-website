@@ -572,6 +572,8 @@ h3 {
 
 .prose h2 {
   margin-top: 2em;
+  margin-bottom: 0.55em;
+  font-weight: 700;
 }
 
 .prose h2:first-child {

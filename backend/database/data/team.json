@@ -5,7 +5,7 @@
     "member_group": "founder",
     "bio": "Senior Applied Machine Learning Engineer with 10+ years building production AI systems across computer vision, NLP, recommendation systems, and multi-agent LLM architectures. Currently co-founding an AI startup (Microsoft for Startups accelerator) focused on agentic LLM orchestration using LangGraph, LangChain, and CrewAI. Previously built and led AI ventures delivering real-world systems in medical diagnosis, legal tech, fintech, and edtech — from CNN-based object detection pipelines (Faster R-CNN, YOLO, Mask R-CNN) to sequence models with attention mechanisms and reinforcement learning. Background in investment banking (Wharton MBA) and law provides the ability to work across technical and business teams, navigate regulated environments, and translate complex ML capabilities into practical products. Founder of the Wharton Alumni AI Studio, developing domain-specific prompts and collaborating with student startups on applied AI projects.",
     "photo_url": "/team/george.png",
-    "linkedin_url": null,
+    "linkedin_url": "https://www.linkedin.com/in/georgegvishiani/",
     "sort_order": 1,
     "content_status": "published",
     "visibility": "public"
@@ -17,7 +17,7 @@
     "member_group": "founder",
     "bio": "Senior international leader with extensive experience in business transformation and innovation, sales, marketing, and communications. Her work spans strategy and business design, intrapreneurship and entrepreneurship, go-to-market and new business, partnerships, product and category management, CRM, analytics and research, and digital transformation — drawing on design thinking, Lean, visual thinking, and business-model design. She has worked with organisations from startups to CAC 40 companies, across government and public sector, higher education and EdTech, luxury and creative, smart mobility and travel, consulting, fintech, insurance and financial services, real estate, energy, technology, and FMCG. At the Wharton Alumni AI Studio she is Co-Founder and Head of Marketing and Social Media.",
     "photo_url": "/team/ines.png",
-    "linkedin_url": null,
+    "linkedin_url": "https://www.linkedin.com/in/ines-kethevan-bagration/",
     "sort_order": 2,
     "content_status": "published",
     "visibility": "public"

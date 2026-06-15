@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AboutPage from '../pages/AboutPage.vue'
+import AdvisorsPage from '../pages/AdvisorsPage.vue'
 import ContactPage from '../pages/ContactPage.vue'
 import AppMockupPage from '../pages/AppMockupPage.vue'
 import EventDetailPage from '../pages/EventDetailPage.vue'
@@ -23,6 +24,7 @@ const routes = [
   { path: '/startups', name: 'startups', component: StartupsPage },
   { path: '/startups/:id', name: 'startup-detail', component: StartupDetailPage },
   { path: '/about', name: 'about', component: AboutPage },
+  { path: '/advisors', name: 'advisors', component: AdvisorsPage },
   { path: '/partners', name: 'partners', component: PartnersPage },
   { path: '/partners/:id', name: 'partner-detail', component: PartnerDetailPage },
   { path: '/news', name: 'news', component: NewsPage },
