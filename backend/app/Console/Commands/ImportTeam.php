@@ -66,7 +66,8 @@ class ImportTeam extends Command
 
             $attributes = [
                 'created_by' => $creator->id,
-                'content_status' => ContentStatus::Draft,
+                'content_status' => ContentStatus::from($row['content_status'] ?? 'draft'),
+                'published_at' => (($row['content_status'] ?? 'draft') === 'published') ? now() : null,
                 'visibility' => ContentVisibility::from($row['visibility'] ?? 'public'),
                 'name' => $row['name'],
                 'role_title' => $row['role_title'] ?? null,
