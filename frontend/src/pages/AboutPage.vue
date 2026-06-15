@@ -72,7 +72,7 @@ function initials(name) {
       </div>
     </section>
 
-    <section v-if="founders.length > 0 || advisors.length > 0" class="section paper">
+    <section v-if="founders.length > 0 || advisors.length > 0" class="section paper about-team">
       <div class="section-inner">
         <template v-if="founders.length > 0">
           <div class="section-head"><div><h2>Founders.</h2></div></div>

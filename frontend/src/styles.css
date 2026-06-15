@@ -567,6 +567,21 @@ h3 {
 .prose p {
   color: var(--muted);
   line-height: 1.6;
+  margin: 0 0 1.1em;
+}
+
+.prose h2 {
+  margin-top: 2em;
+}
+
+.prose h2:first-child {
+  margin-top: 0;
+}
+
+/* Clear divider + breathing room before the founders/advisors profiles,
+   since the narrative and the team share the same light section background. */
+.section.about-team {
+  border-top: 1px solid var(--paper-line);
 }
 
 .tag {

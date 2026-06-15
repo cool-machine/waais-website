@@ -54,4 +54,7 @@ php artisan storage:link  || true
 # overwrite, or --dry-run to preview without writing.
 # php artisan waais:import-partners database/data/partners.json || true
 
+# ONE-TIME refresh to update founder cards (Ines full name). Disabled next commit.
+php artisan waais:import-team database/data/team.json --update || true
+
 echo "[waais-startup] ready"

@@ -80,6 +80,12 @@ class ImportTeam extends Command
 
             $existing = TeamMember::query()->where('name', $row['name'])->first();
 
+            // Allow renaming an existing member: match the old name if the new
+            // one isn't found yet (idempotent — a second run matches the new name).
+            if (! $existing && ! empty($row['match_name'])) {
+                $existing = TeamMember::query()->where('name', $row['match_name'])->first();
+            }
+
             if ($existing) {
                 if ($this->option('update')) {
                     $existing->fill($attributes)->save();
