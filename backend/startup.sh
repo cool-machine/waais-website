@@ -54,7 +54,13 @@ php artisan storage:link  || true
 # overwrite, or --dry-run to preview without writing.
 # php artisan waais:import-partners database/data/partners.json || true
 
-# ONE-TIME refresh to add founder LinkedIn links. Disabled in the next commit.
-php artisan waais:import-team database/data/team.json --update || true
+# Team members were a ONE-TIME seed and are now managed manually in the admin
+# dashboard, so the deploy-time auto-import is intentionally disabled — keeping
+# dashboard edits/removals permanent (never re-seeded).
+# To re-run the one-off import by hand if ever needed:
+#   php artisan waais:import-team database/data/team.json
+# Create-only by default (matches on name); add --update to overwrite, or
+# --dry-run to preview without writing. Supports match_name for renames.
+# php artisan waais:import-team database/data/team.json --update || true
 
 echo "[waais-startup] ready"
