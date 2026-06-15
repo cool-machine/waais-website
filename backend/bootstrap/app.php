@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\RefreshNews;
 use App\Console\Commands\SendAnnouncementEmails;
 use App\Console\Commands\SendEventReminders;
 use App\Http\Middleware\EnsureAdminAccess;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withCommands([
+        RefreshNews::class,
         SendAnnouncementEmails::class,
         SendEventReminders::class,
     ])
@@ -31,6 +33,13 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $schedule->command('events:send-reminders')
             ->dailyAt('09:00')
+            ->withoutOverlapping();
+
+        // Proactively refresh the public news feed twice a day (06:00 and
+        // 18:00 UTC) so it stays current even with no visitor traffic. The
+        // endpoint also refreshes lazily on a short cache, so this is a floor.
+        $schedule->command('news:refresh')
+            ->twiceDaily(6, 18)
             ->withoutOverlapping();
 
         // First-super-admin bootstrap is intentionally NOT scheduled. It is a

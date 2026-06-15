@@ -42,8 +42,8 @@ async function signOut() {
         <RouterLink class="brand brand--logo" to="/">
           <img
             class="brand-logo brand-logo--mark"
-            src="/brand/waais-mark.svg"
-            alt="Wharton Alumni AI Studio"
+            src="/logos/wcuk-logo.png"
+            alt="Wharton Club of the UK"
             width="100"
             height="100"
           />

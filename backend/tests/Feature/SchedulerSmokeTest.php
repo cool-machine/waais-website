@@ -133,6 +133,44 @@ class SchedulerSmokeTest extends TestCase
     }
 
     #[Test]
+    public function schedule_runs_news_refresh_twice_daily_with_overlap_guard(): void
+    {
+        $event = $this->resolveScheduleEvent('news:refresh');
+
+        $this->assertNotNull(
+            $event,
+            'news:refresh is not registered on the schedule.',
+        );
+        $this->assertSame(
+            '0 6,18 * * *',
+            $event->expression,
+            'news:refresh should run twice daily at 06:00 and 18:00.',
+        );
+        $this->assertTrue(
+            $event->withoutOverlapping,
+            'news:refresh should be guarded by withoutOverlapping so a slow run does not stack.',
+        );
+
+        $this->travelTo('2026-05-04 06:00:00');
+        $this->assertTrue(
+            $event->isDue($this->app),
+            'news:refresh should be due at 06:00.',
+        );
+
+        $this->travelTo('2026-05-04 18:00:00');
+        $this->assertTrue(
+            $event->isDue($this->app),
+            'news:refresh should be due at 18:00.',
+        );
+
+        $this->travelTo('2026-05-04 12:00:00');
+        $this->assertFalse(
+            $event->isDue($this->app),
+            'news:refresh should not fire outside its two daily slots.',
+        );
+    }
+
+    #[Test]
     public function both_commands_succeed_against_an_empty_freshly_migrated_database(): void
     {
         // Mirrors the production smoke-check expectations:

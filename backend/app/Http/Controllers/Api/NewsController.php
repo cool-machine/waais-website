@@ -72,6 +72,26 @@ class NewsController extends Controller
     }
 
     /**
+     * Force a fresh fetch of the feeds and refresh the cached, ranked list.
+     * Called by the scheduled `news:refresh` command so the feed is proactively
+     * refreshed a couple of times a day regardless of visitor traffic. Only a
+     * successful (non-empty) fetch overwrites the cache, so a transient feed
+     * outage never replaces good content with an empty list.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function rebuildCache(): array
+    {
+        $items = $this->buildItems();
+
+        if (! empty($items)) {
+            Cache::put(self::CACHE_KEY, $items, now()->addHours(self::CACHE_TTL_HOURS));
+        }
+
+        return $items;
+    }
+
+    /**
      * @return array<int, array<string, mixed>>
      */
     private function buildItems(): array

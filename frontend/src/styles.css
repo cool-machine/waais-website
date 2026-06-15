@@ -85,20 +85,22 @@ textarea {
   font-weight: 800;
 }
 
-/* WAAIS "AI" mark used as the site logo on top of dark surfaces
-   (water-blue navbar, navy app sidebar). White-on-transparent SVG so
-   the underlying surface color shows through. The mark is square, so
-   width follows height. */
+/* Official Wharton Club of the UK logo, used as the site logo. It is a
+   square full-colour tile (Penn-blue ground, white crest + wordmark), so
+   it sits on the navbar / app sidebar as a rounded badge rather than a
+   transparent mark. The image is square, so width follows height. */
 .brand-logo {
   display: block;
-  height: 44px;
-  width: 44px;
+  height: 46px;
+  width: 46px;
   object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
 }
 
 .brand-logo--mark {
-  height: 44px;
-  width: 44px;
+  height: 46px;
+  width: 46px;
 }
 
 .brand-logo--vertical {
@@ -488,7 +490,7 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 220px;
+  aspect-ratio: 1 / 1;
   background: #eef2f7;
   border-bottom: 1px solid var(--paper-line);
   overflow: hidden;
@@ -497,8 +499,10 @@ h3 {
 .team-card .team-photo img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center top;
+  /* Show the whole photo, never cropped. Square photos fill the square box
+     exactly; any non-square upload is letterboxed on the soft tile bg. */
+  object-fit: contain;
+  object-position: center;
 }
 
 /* Bloggy / headline-feed list used for News (works on light and dark sections). */
