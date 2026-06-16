@@ -1208,16 +1208,31 @@ textarea:disabled {
 @media (max-width: 1320px) {
   .topbar-inner {
     grid-template-columns: 1fr auto;
+    row-gap: 12px;
     padding-top: 14px;
     padding-bottom: 14px;
   }
 
-  .main-nav {
+  /* Brand on its own top line; the nav and the CTAs share the line below, so
+     the "Become a member" / "Sign in" buttons line up with the menu links. */
+  .brand {
     grid-column: 1 / -1;
-    order: 3;
+    grid-row: 1;
+  }
+
+  .main-nav {
+    grid-column: 1;
+    grid-row: 2;
     justify-content: start;
     overflow-x: auto;
+    min-width: 0;
     padding-bottom: 4px;
+  }
+
+  .actions {
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: flex-end;
   }
 }
 
