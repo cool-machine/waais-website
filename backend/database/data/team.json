@@ -54,5 +54,16 @@
     "sort_order": 5,
     "content_status": "published",
     "visibility": "public"
+  },
+  {
+    "name": "Beny Rubinstein",
+    "role_title": "AI & Growth Advisor",
+    "member_group": "advisor",
+    "bio": "Beny is a growth leader and former Microsoft global sales, marketing, and business development executive who now helps organizations and leaders navigate the future with AI. A hands-on intrapreneur and entrepreneur, he brings strategy-consulting and corporate venture capital experience and a focus on startups disrupting their industries. Across 25+ years he has started, incubated, and scaled new businesses — spanning product, marketing, sales, technology, and fundraising — for customers and partners worldwide. He is also a keynote speaker, judge, and mentor in entrepreneurship programs across Israel, Latin America, and the U.S., and speaks English, Hebrew, Spanish, and Portuguese.",
+    "photo_url": "/team/beny.jpeg",
+    "linkedin_url": "https://www.linkedin.com/in/rubinsteinbeny/",
+    "sort_order": 6,
+    "content_status": "published",
+    "visibility": "public"
   }
 ]
