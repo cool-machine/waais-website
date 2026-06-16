@@ -2,7 +2,6 @@
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
-import CardGrid from '../components/CardGrid.vue'
 import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
 import { usePublicTeamStore } from '../stores/publicTeam'
@@ -90,7 +89,7 @@ function initials(name) {
           <div><h2>Founders.</h2></div>
           <RouterLink v-if="advisors.length > 0" class="button water" to="/advisors">Board advisors</RouterLink>
         </div>
-        <CardGrid>
+        <div class="grid founders-grid">
           <article v-for="member in founders" :key="member.id" class="card info-card team-card">
             <div class="team-photo">
               <img v-if="member.photo_url" :src="member.photo_url" :alt="member.name">
@@ -105,7 +104,7 @@ function initials(name) {
               </div>
             </div>
           </article>
-        </CardGrid>
+        </div>
       </div>
     </section>
 

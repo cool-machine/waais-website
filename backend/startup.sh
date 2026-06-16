@@ -63,9 +63,11 @@ php artisan storage:link  || true
 # --dry-run to preview without writing. Supports match_name for renames.
 # php artisan waais:import-team database/data/team.json --update || true
 
-# ONE-TIME: seed the first board advisors (create-only — founders and any
-# dashboard edits are left untouched; only new names are created + published).
-# Disabled again in the next commit once the import is verified on prod.
-php artisan waais:import-team database/data/team.json || true
+# The first board advisors (Didem Ün Ateş, Bruno Occhipinti, Tomás Gazmuri)
+# were seeded once via the create-only import below and are now managed in the
+# dashboard, so it is disabled again. To re-run by hand if ever needed:
+#   php artisan waais:import-team database/data/team.json
+# (create-only: skips existing names; add --update to overwrite.)
+# php artisan waais:import-team database/data/team.json || true
 
 echo "[waais-startup] ready"
