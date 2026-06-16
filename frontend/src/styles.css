@@ -1200,7 +1200,12 @@ textarea:disabled {
   margin-top: 16px;
 }
 
-@media (max-width: 1120px) {
+/* Header: the topbar content is capped at 1320px wide, so once the viewport is
+   narrower than that the brand + the 9-item nav + the CTAs can no longer share
+   one row without colliding. At/below 1320px we drop the nav onto its own
+   full-width row beneath the brand (it scrolls horizontally if still too wide),
+   so the "Wharton Alumni AI Studio" name never overlaps the menu links. */
+@media (max-width: 1320px) {
   .topbar-inner {
     grid-template-columns: 1fr auto;
     padding-top: 14px;
@@ -1214,7 +1219,9 @@ textarea:disabled {
     overflow-x: auto;
     padding-bottom: 4px;
   }
+}
 
+@media (max-width: 1120px) {
   .grid,
   .detail-grid,
   .grid.two {
