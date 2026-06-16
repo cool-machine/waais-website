@@ -78,9 +78,8 @@ php artisan storage:link  || true
 # below and is now managed in the dashboard, so it is disabled again.
 # php artisan waais:import-team database/data/team.json || true
 
-# ONE-TIME: add Caroline Dahllöf, Jeffrey Gross, Keith Robinson, Mir Haque, and
-# Rohit Kumar, and re-order all advisors alphabetically by surname. --update so
-# existing rows pick up the new sort_order. Disabled again in the next commit.
-php artisan waais:import-team database/data/team.json --update || true
+# The full board of advisors was seeded/reordered once via the --update import
+# below and is now managed in the dashboard, so it is disabled again.
+# php artisan waais:import-team database/data/team.json --update || true
 
 echo "[waais-startup] ready"
