@@ -74,8 +74,8 @@ php artisan storage:link  || true
 # are now managed in the dashboard, so it is disabled again.
 # php artisan waais:import-team database/data/team.json --update || true
 
-# ONE-TIME: add board advisor Beny Rubinstein (create-only — existing rows are
-# left untouched). Disabled again in the next commit once verified on prod.
-php artisan waais:import-team database/data/team.json || true
+# Board advisor Beny Rubinstein was seeded once via the create-only import
+# below and is now managed in the dashboard, so it is disabled again.
+# php artisan waais:import-team database/data/team.json || true
 
 echo "[waais-startup] ready"
