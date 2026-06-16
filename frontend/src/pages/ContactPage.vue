@@ -34,7 +34,7 @@ async function submit() {
 
 <template>
   <PublicLayout>
-    <PageHero compact title="Reach the WAAIS team." lede="Questions about membership, events, partnerships, or anything else — send us a message and we'll reply by email." />
+    <PageHero compact title="Reach the WAAIS team" lede="Questions about membership, events, partnerships, or anything else — send us a message and we'll reply by email." />
     <section class="section paper">
       <div class="section-inner">
         <div v-if="contactStore.sent" class="notice" style="margin-top: 20px">

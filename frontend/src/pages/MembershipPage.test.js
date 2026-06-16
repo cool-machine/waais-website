@@ -196,7 +196,7 @@ describe('header sign-out clears member state', () => {
     const wrapper = await mountMembershipPage()
 
     // Approved-member card is showing.
-    expect(wrapper.text()).toContain("Welcome, you're a WAAIS member.")
+    expect(wrapper.text()).toContain("Welcome, you're a WAAIS member")
     expect(wrapper.text()).toContain('Open dashboard')
 
     // The shared header's Sign out only calls authUser.signOut(); it does not
@@ -204,7 +204,7 @@ describe('header sign-out clears member state', () => {
     await useAuthUserStore().signOut()
     await flushPromises()
 
-    expect(wrapper.text()).not.toContain("Welcome, you're a WAAIS member.")
+    expect(wrapper.text()).not.toContain("Welcome, you're a WAAIS member")
     expect(wrapper.text()).not.toContain('Open dashboard')
     // Falls back to the anonymous account-creation card.
     expect(wrapper.find('form.compact-auth-form').exists()).toBe(true)

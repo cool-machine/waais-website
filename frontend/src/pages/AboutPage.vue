@@ -25,7 +25,7 @@ function initials(name) {
   <PublicLayout>
     <PageHero
       compact
-      title="About the Wharton Alumni AI Studio."
+      title="About the Wharton Alumni AI Studio"
       lede="Connecting Wharton alumni, entrepreneurs, investors, and researchers around real-world AI since 2020."
     />
 
@@ -34,7 +34,7 @@ function initials(name) {
         <div class="grid journey">
           <article class="card journey-card">
             <span class="journey-step" aria-hidden="true">1</span>
-            <h2 class="journey-title">Where we started.</h2>
+            <h2 class="journey-title">Where we started</h2>
             <p>
               The Wharton Alumni AI Studio (WAAIS) began in 2020, in collaboration with the Wharton
               Club of the United Kingdom, to strengthen the connections between business
@@ -49,7 +49,7 @@ function initials(name) {
 
           <article class="card journey-card">
             <span class="journey-step" aria-hidden="true">2</span>
-            <h2 class="journey-title">What we do.</h2>
+            <h2 class="journey-title">What we do</h2>
             <p>
               Our purpose is to help Wharton alumni turn their business expertise into something
               valuable in the world of AI: launching new projects and startups alongside AI
@@ -65,7 +65,7 @@ function initials(name) {
 
           <article class="card journey-card">
             <span class="journey-step" aria-hidden="true">3</span>
-            <h2 class="journey-title">Where we're going.</h2>
+            <h2 class="journey-title">Where we're going</h2>
             <p>
               AI Studio wants to go a step further — bringing tech experts, industry professionals,
               investors, entrepreneurs, and future leaders closer together to exchange knowledge,
@@ -86,7 +86,7 @@ function initials(name) {
     <section v-if="founders.length > 0" class="section paper about-team">
       <div class="section-inner">
         <div class="section-head">
-          <div><h2>Founders.</h2></div>
+          <div><h2>Founders</h2></div>
           <RouterLink v-if="advisors.length > 0" class="button water" to="/advisors">Board advisors</RouterLink>
         </div>
         <div class="grid founders-grid">
@@ -112,7 +112,7 @@ function initials(name) {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <h2>Join the community.</h2>
+            <h2>Join the community</h2>
             <p class="lede">If you'd like to be part of what we're building, we'd love to hear from you.</p>
           </div>
           <RouterLink class="button primary" to="/membership">Become a member</RouterLink>

@@ -27,7 +27,7 @@ function retry() {
 
 <template>
   <PublicLayout>
-    <PageHero compact title="Partners that help alumni build." />
+    <PageHero compact title="Partners that help alumni build" />
     <section class="section paper">
       <div class="section-inner">
         <div v-if="listLoading && list.length === 0" class="card">

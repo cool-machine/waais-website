@@ -16,7 +16,7 @@ onMounted(() => {
 <template>
   <PublicLayout>
     <PageHero
-      title="The WAAIS forum is live."
+      title="The WAAIS forum is live"
       lede="A space for AI builders inside the Wharton alumni community. Anyone can browse public discussions; approved members sign in with their WAAIS account to post — no separate forum password."
     />
     <section class="section paper">

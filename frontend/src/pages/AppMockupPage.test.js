@@ -197,7 +197,7 @@ describe('member dashboard live state', () => {
 
     const wrapper = await mountAt('/app/dashboard')
 
-    expect(wrapper.text()).toContain('Welcome back, Grace Hopper.')
+    expect(wrapper.text()).toContain('Welcome back, Grace Hopper')
     expect(wrapper.text()).toContain('Approved member access')
     expect(wrapper.text()).toContain('Submitted')
     expect(wrapper.text()).toContain('Wharton MBA')
@@ -217,7 +217,7 @@ describe('member dashboard live state', () => {
 
     const wrapper = await mountAt('/app/profile')
 
-    expect(wrapper.text()).toContain('Grace Hopper.')
+    expect(wrapper.text()).toContain('Grace Hopper')
     expect(wrapper.text()).toContain('Enterprise software')
     expect(wrapper.text()).toContain('AI systems')
     expect(wrapper.text()).toContain('Two hours per month')
@@ -234,7 +234,7 @@ describe('member dashboard live state', () => {
 
     const wrapper = await mountAt('/app/my-startups')
 
-    expect(wrapper.text()).toContain('Submit and track your startup listings.')
+    expect(wrapper.text()).toContain('Submit and track your startup listings')
     expect(wrapper.text()).toContain('AutoFlow AI')
     expect(wrapper.text()).toContain('Submitted')
 
@@ -254,7 +254,7 @@ describe('member dashboard live state', () => {
 
     const wrapper = await mountAt('/app/my-startups')
 
-    expect(wrapper.text()).toContain('Startup submissions open after member approval.')
+    expect(wrapper.text()).toContain('Startup submissions open after member approval')
     expect(wrapper.find('form').exists()).toBe(false)
   })
 
@@ -277,7 +277,7 @@ describe('member dashboard live state', () => {
 
     const wrapper = await mountAt('/app/approvals')
 
-    expect(wrapper.text()).toContain('Review new member applications.')
+    expect(wrapper.text()).toContain('Review new member applications')
     expect(wrapper.text()).toContain('Ada Lovelace')
     expect(wrapper.text()).toContain('ada@example.com')
     expect(wrapper.text()).toContain('Wharton MBA')
@@ -315,7 +315,7 @@ describe('member dashboard live state', () => {
     expect(approveRequest[1].credentials).toBe('include')
     expect(JSON.parse(approveRequest[1].body)).toEqual({ review_notes: null })
     expect(wrapper.text()).toContain('No applications in this status.')
-    expect(wrapper.text()).toContain('Select an application.')
+    expect(wrapper.text()).toContain('Select an application')
   })
 
   it('renders the admin startup review queue from the admin API', async () => {
@@ -337,7 +337,7 @@ describe('member dashboard live state', () => {
 
     const wrapper = await mountAt('/app/startup-review')
 
-    expect(wrapper.text()).toContain('Review submitted startup listings.')
+    expect(wrapper.text()).toContain('Review submitted startup listings')
     expect(wrapper.text()).toContain('AutoFlow AI')
     expect(wrapper.text()).toContain('Workflow automation for B2B teams.')
     expect(wrapper.text()).toContain('Grace Hopper')
@@ -375,7 +375,7 @@ describe('member dashboard live state', () => {
     expect(approveRequest[1].credentials).toBe('include')
     expect(JSON.parse(approveRequest[1].body)).toEqual({ review_notes: null })
     expect(wrapper.text()).toContain('No startup listings in this status.')
-    expect(wrapper.text()).toContain('Select a startup listing.')
+    expect(wrapper.text()).toContain('Select a startup listing')
   })
 
   it('shows a sign-out action for authenticated users and clears app state after logout', async () => {
@@ -538,7 +538,7 @@ describe('member dashboard live state', () => {
 
     const wrapper = await mountAt('/app/events-admin')
 
-    expect(wrapper.text()).toContain('Create, edit, publish, hide, archive, and cancel events.')
+    expect(wrapper.text()).toContain('Create, edit, publish, hide, archive, and cancel events')
     expect(wrapper.text()).toContain('AI Founder Salon')
 
     const listRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/events?'))
@@ -577,7 +577,7 @@ describe('member dashboard live state', () => {
 
     const wrapper = await mountAt('/app/users')
 
-    expect(wrapper.text()).toContain('Search the members and adjust roles.')
+    expect(wrapper.text()).toContain('Search the members and adjust roles')
     expect(wrapper.text()).toContain('Grace Hopper')
     expect(wrapper.text()).toContain('grace@example.com')
 
@@ -607,7 +607,7 @@ describe('member dashboard live state', () => {
 
     const wrapper = await mountAt('/app/content-admin')
 
-    expect(wrapper.text()).toContain('Edit homepage cards and partners without touching code.')
+    expect(wrapper.text()).toContain('Edit homepage cards and partners without touching code')
     expect(wrapper.text()).toContain('Build with Wharton AI operators')
 
     const listRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/homepage-cards?'))
@@ -709,7 +709,7 @@ describe('member dashboard live state', () => {
 
     const wrapper = await mountAt('/app/announcements')
 
-    expect(wrapper.text()).toContain('Create, edit, publish, hide, and archive member announcements.')
+    expect(wrapper.text()).toContain('Create, edit, publish, hide, and archive member announcements')
     expect(wrapper.text()).toContain('Forum categories are live')
 
     const listRequest = fetchMock.mock.calls.find(([url]) => url.includes('/api/admin/announcements?'))

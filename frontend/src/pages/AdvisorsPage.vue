@@ -28,7 +28,7 @@ function initials(name) {
   <PublicLayout>
     <PageHero
       compact
-      title="Board advisors."
+      title="Board advisors"
       lede="The advisors who help guide the Wharton Alumni AI Studio."
     />
     <section class="section paper">

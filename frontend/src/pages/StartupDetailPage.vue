@@ -82,7 +82,7 @@ const approvedAt = computed(() => {
     <section v-else-if="isNotFound" class="section paper">
       <div class="section-inner">
         <article class="card">
-          <h1>Startup not found.</h1>
+          <h1>Startup not found</h1>
           <p class="small">This listing may not be published, may be members-only, or may not exist.</p>
           <RouterLink class="button water" to="/startups">Back to startups</RouterLink>
         </article>
@@ -92,7 +92,7 @@ const approvedAt = computed(() => {
     <section v-else-if="isOtherError" class="section paper">
       <div class="section-inner">
         <article class="card">
-          <h1>We couldn't load this listing.</h1>
+          <h1>We couldn't load this listing</h1>
           <p class="small">The API didn't respond. Please try again in a moment.</p>
           <RouterLink class="button water" to="/startups">Back to startups</RouterLink>
         </article>

@@ -38,7 +38,7 @@ function itemMeta(item) {
   <PublicLayout>
     <PageHero
       compact
-      title="AI news from Penn & Wharton."
+      title="AI news from Penn & Wharton"
       lede="The latest artificial-intelligence and analytics stories from across Penn and Wharton, refreshed automatically. Each headline links to the original source."
     />
     <section class="section paper">

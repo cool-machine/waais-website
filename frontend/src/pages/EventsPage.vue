@@ -64,12 +64,12 @@ function eventMeta(event) {
 
 <template>
   <PublicLayout>
-    <PageHero compact title="Events for builders and decision makers." lede="Salons, workshops, roundtables, and demo nights for the WAAIS community." />
+    <PageHero compact title="Events for builders and decision makers" lede="Salons, workshops, roundtables, and demo nights for the WAAIS community." />
     <section class="section paper">
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <h2>Upcoming and past sessions.</h2>
+            <h2>Upcoming and past sessions</h2>
           </div>
           <div class="filters" aria-label="Event filters">
             <button
@@ -116,7 +116,7 @@ function eventMeta(event) {
 
         <section class="section-head" style="margin-top: 30px">
           <div>
-            <h2>Suggest a founder salon, workshop, or focused AI adoption roundtable.</h2>
+            <h2>Suggest a founder salon, workshop, or focused AI adoption roundtable</h2>
           </div>
           <RouterLink class="button primary" to="/contact">Propose a topic</RouterLink>
         </section>

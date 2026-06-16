@@ -41,7 +41,7 @@ async function submit() {
 
 <template>
   <PublicLayout>
-    <PageHero compact title="Reset your password." lede="Choose a new password for your WAAIS account." />
+    <PageHero compact title="Reset your password" lede="Choose a new password for your WAAIS account." />
     <section class="section paper">
       <div class="section-inner">
         <div v-if="!hasToken" class="notice error-notice" style="margin-top: 20px">

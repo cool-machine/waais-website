@@ -70,7 +70,7 @@ async function sendResetLink() {
         <div class="auth-gate">
           <article v-if="isAuthenticated" class="card">
             <span class="tag">Member sign in</span>
-            <h3>You're already signed in.</h3>
+            <h3>You're already signed in</h3>
             <p class="small">Signed in as {{ displayName }}.</p>
             <div class="row" style="margin-top: 14px">
               <RouterLink class="button primary" to="/app/dashboard">Go to dashboard</RouterLink>
@@ -80,7 +80,7 @@ async function sendResetLink() {
 
           <article v-else-if="mode === 'sign-in'" class="card">
             <span class="tag">Member sign in</span>
-            <h3>Welcome back.</h3>
+            <h3>Welcome back</h3>
             <form class="compact-auth-form" @submit.prevent="signIn">
               <label>Email<input v-model="form.email" required type="email" autocomplete="email" placeholder="you@example.com" :disabled="authUser.loggingIn" /></label>
               <label>Password<input v-model="form.password" required type="password" autocomplete="current-password" placeholder="Your password" :disabled="authUser.loggingIn" /></label>
@@ -99,7 +99,7 @@ async function sendResetLink() {
 
           <article v-else class="card">
             <span class="tag">Password reset</span>
-            <h3>Get a reset link by email.</h3>
+            <h3>Get a reset link by email</h3>
             <div v-if="authUser.passwordResetRequested" class="notice" style="margin-top: 14px">
               <p class="small"><strong>Reset link on its way.</strong> If an account exists for {{ form.email }}, you'll receive an email shortly. Open the link inside to choose a new password.</p>
               <p class="small">No email after a few minutes? Check spam, or the address may not be registered — you can <RouterLink to="/membership">create an account</RouterLink>.</p>

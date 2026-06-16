@@ -108,7 +108,7 @@ function formatEventDate(value) {
 <template>
   <PublicLayout>
     <PageHero
-      title="Where Wharton alumni working in AI meet, build, and share."
+      title="Where Wharton alumni working in AI meet, build, and share"
       lede="WAAIS brings together founders, operators, investors, researchers, and executives using artificial intelligence in the real world."
       :video-src="heroVideoSrc"
       poster="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=2200&q=80"
@@ -134,7 +134,7 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <h2>Latest AI news.</h2>
+            <h2>Latest AI news</h2>
           </div>
           <RouterLink class="button water" to="/news">View all news</RouterLink>
         </div>
@@ -151,7 +151,7 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <h2>What you'll find at the AI Studio.</h2>
+            <h2>What you'll find at the AI Studio</h2>
           </div>
           <RouterLink v-if="isAuthenticated" class="button water" to="/app/dashboard">Go to dashboard</RouterLink>
           <RouterLink v-else class="button water" to="/membership">Apply for access</RouterLink>
@@ -176,7 +176,7 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="grid two">
           <div>
-            <h2>Turning Wharton expertise into impact in AI.</h2>
+            <h2>Turning Wharton expertise into impact in AI</h2>
             <p class="lede">Founded in 2020 with the Wharton Club of the UK, WAAIS connects business professionals, domain experts, and researchers around real-world AI — helping alumni turn that expertise into new projects, startups, and an expert network across the deep-tech ecosystem.</p>
           </div>
           <div class="card">
@@ -199,7 +199,7 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <h2>Recent events.</h2>
+            <h2>Recent events</h2>
           </div>
           <RouterLink class="button water" to="/events">View all events</RouterLink>
         </div>
@@ -237,7 +237,7 @@ function formatEventDate(value) {
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <h2>Featured alumni startups.</h2>
+            <h2>Featured alumni startups</h2>
           </div>
           <RouterLink class="button water" to="/startups">Open directory</RouterLink>
         </div>

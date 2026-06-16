@@ -983,7 +983,7 @@ watch(currentView, () => {
     <main class="app-canvas">
       <section v-if="currentView === 'sign-in'" class="auth-wrap">
         <div class="auth-panel">
-          <h1>Sign in to WAAIS.</h1>
+          <h1>Sign in to WAAIS</h1>
           <p class="lede">Google verifies the account first; WAAIS then checks whether the person is approved, pending, admin, or super admin.</p>
           <div class="grid three">
             <div class="metric"><span>Pending approvals</span><strong>8</strong></div>
@@ -1017,7 +1017,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'pending'" class="app-stack">
         <div class="app-hero">
-          <h1>Your account is awaiting approval.</h1>
+          <h1>Your account is awaiting approval</h1>
           <p class="lede">Pending users are not shown in the directory or forums, including private forums.</p>
         </div>
         <div class="grid two">
@@ -1042,7 +1042,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'dashboard'" class="app-stack">
         <div class="app-hero">
-          <h1>Welcome back, {{ displayName }}.</h1>
+          <h1>Welcome back, {{ displayName }}</h1>
           <p class="lede">Your WAAIS account, application status, and member access state in one place.</p>
           <p v-if="authUser.initialized && !authUser.canAccessMemberAreas" class="small">This account has not been approved for member areas yet.</p>
         </div>
@@ -1089,7 +1089,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'profile'" class="app-stack">
         <div class="app-hero">
-          <h1>{{ displayName }}.</h1>
+          <h1>{{ displayName }}</h1>
           <p class="lede">Profile and application fields pulled from the current authenticated session and membership application record.</p>
         </div>
         <div class="grid two">
@@ -1112,7 +1112,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'my-startups'" class="app-stack">
         <div class="app-hero">
-          <h1>Submit and track your startup listings.</h1>
+          <h1>Submit and track your startup listings</h1>
           <p class="lede">Approved members can submit startup listings for admin review before they appear publicly.</p>
           <p v-if="authUser.initialized && !authUser.canAccessMemberAreas" class="small">Approved member access is required before you can submit startup listings.</p>
         </div>
@@ -1143,7 +1143,7 @@ watch(currentView, () => {
 
           <article v-if="authUser.initialized && !authUser.canAccessMemberAreas" class="card">
             <span class="tag">Approval required</span>
-            <h2>Startup submissions open after member approval.</h2>
+            <h2>Startup submissions open after member approval</h2>
             <p class="small">Your account can still track membership status, but startup listings are accepted only from approved members. Once approved, this page will show the listing form.</p>
             <RouterLink class="button water" to="/app/dashboard">View account status</RouterLink>
           </article>
@@ -1182,7 +1182,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'my-events'" class="app-stack">
         <div class="app-hero">
-          <h1>Registered events and recommended sessions.</h1>
+          <h1>Registered events and recommended sessions</h1>
           <p class="lede">This view previews registrations, waitlists, reminders, tickets, and past event artifacts.</p>
         </div>
         <article class="card">
@@ -1195,7 +1195,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'forum-feed'" class="app-stack">
         <div class="app-hero">
-          <h1>Recent discussion from Discourse.</h1>
+          <h1>Recent discussion from Discourse</h1>
           <p class="lede">Full posting and moderation will remain in Discourse at forum.whartonai.studio.</p>
         </div>
         <article class="card">
@@ -1209,7 +1209,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'admin'" class="app-stack">
         <div class="app-hero">
-          <h1>Manage approvals, public content, members, and announcements.</h1>
+          <h1>Manage approvals, public content, members, and announcements</h1>
           <p class="lede">Admins control approvals, events, startups, partners, homepage cards, announcements, and moderation shortcuts. Super admins can override and manage admin privileges.</p>
         </div>
         <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this dashboard.</p>
@@ -1262,7 +1262,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'approvals'" class="app-stack">
         <div class="app-hero">
-          <h1>Review new member applications.</h1>
+          <h1>Review new member applications</h1>
           <p class="lede">Membership applications come from the authenticated admin API and use the same approve, request-more-info, and reject transitions as the backend.</p>
           <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this queue.</p>
         </div>
@@ -1309,7 +1309,7 @@ watch(currentView, () => {
 
           <article v-if="!selectedApplication" class="card">
             <span class="tag">No selection</span>
-            <h2>Select an application.</h2>
+            <h2>Select an application</h2>
             <p class="small">Choose a row from the queue to view the applicant profile and review actions.</p>
           </article>
 
@@ -1347,7 +1347,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'startup-review'" class="app-stack">
         <div class="app-hero">
-          <h1>Review submitted startup listings.</h1>
+          <h1>Review submitted startup listings</h1>
           <p class="lede">Startup listings come from the authenticated admin API and use the same approve, request-more-info, and reject transitions as member applications.</p>
           <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this queue.</p>
         </div>
@@ -1394,7 +1394,7 @@ watch(currentView, () => {
 
           <article v-if="!selectedAdminStartupListing" class="card">
             <span class="tag">No selection</span>
-            <h2>Select a startup listing.</h2>
+            <h2>Select a startup listing</h2>
             <p class="small">Choose a row from the queue to view listing context and review actions.</p>
           </article>
 
@@ -1433,7 +1433,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'users'" class="app-stack">
         <div class="app-hero">
-          <h1>Search the members and adjust roles.</h1>
+          <h1>Search the members and adjust roles</h1>
           <p class="lede">Filter the directory by role, approval, or affiliation. Only super admins can promote or demote admins; regular admins can review profiles only.</p>
           <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this view.</p>
         </div>
@@ -1503,7 +1503,7 @@ watch(currentView, () => {
 
           <article v-if="!selectedAdminUser" class="card">
             <span class="tag">No selection</span>
-            <h2>Select a user.</h2>
+            <h2>Select a user</h2>
             <p class="small">Choose a row from the directory to view profile context and role actions.</p>
           </article>
 
@@ -1547,7 +1547,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'events-admin'" class="app-stack">
         <div class="app-hero">
-          <h1>Create, edit, publish, hide, archive, and cancel events.</h1>
+          <h1>Create, edit, publish, hide, archive, and cancel events</h1>
           <p class="lede">Admins author events as drafts, then publish them to public or members-only audiences. Cancellation hides events from public surfaces while keeping them visible here.</p>
           <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this view.</p>
         </div>
@@ -1652,7 +1652,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'content-admin'" class="app-stack">
         <div class="app-hero">
-          <h1>Edit homepage cards and partners without touching code.</h1>
+          <h1>Edit homepage cards and partners without touching code</h1>
           <p class="lede">Admins can create drafts, edit content, publish, hide, and archive the website content already backed by the Laravel CMS APIs.</p>
           <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this view.</p>
         </div>
@@ -1778,7 +1778,7 @@ watch(currentView, () => {
 
       <section v-else-if="currentView === 'announcements'" class="app-stack">
         <div class="app-hero">
-          <h1>Create, edit, publish, hide, and archive member announcements.</h1>
+          <h1>Create, edit, publish, hide, and archive member announcements</h1>
           <p class="lede">Announcements are admin-authored content. Published items appear in the member dashboard for the selected audience.</p>
           <p v-if="authUser.initialized && !currentViewAllowed" class="small">Approved admin access is required for this view.</p>
         </div>

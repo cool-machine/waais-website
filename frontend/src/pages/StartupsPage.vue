@@ -29,12 +29,12 @@ function retry() {
 
 <template>
   <PublicLayout>
-    <PageHero compact title="Discover Wharton alumni AI companies." lede="AI companies founded and built by Wharton alumni." />
+    <PageHero compact title="Discover Wharton alumni AI companies" lede="AI companies founded and built by Wharton alumni." />
     <section class="section paper">
       <div class="section-inner">
         <div class="lock-box">
           <div>
-            <h2>Full member directory and contact details require approved member access.</h2>
+            <h2>Full member directory and contact details require approved member access</h2>
             <p>Approved members can submit startup listings. Admins review and approve listings before publication.</p>
           </div>
           <RouterLink class="button water" to="/membership">Apply for access</RouterLink>
@@ -73,7 +73,7 @@ function retry() {
 
         <section class="section-head" style="margin-top: 30px">
           <div>
-            <h2>Startup listings enter admin review before publication.</h2>
+            <h2>Startup listings enter admin review before publication</h2>
           </div>
           <RouterLink class="button primary" to="/contact">Request listing</RouterLink>
         </section>

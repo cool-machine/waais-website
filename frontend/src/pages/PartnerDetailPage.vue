@@ -77,7 +77,7 @@ const publishedAt = computed(() => {
     <section v-else-if="isNotFound" class="section paper">
       <div class="section-inner">
         <article class="card">
-          <h1>Partner not found.</h1>
+          <h1>Partner not found</h1>
           <p class="small">This partner profile may not be published, may be members-only, or may not exist.</p>
           <RouterLink class="button water" to="/partners">Back to partners</RouterLink>
         </article>
@@ -87,7 +87,7 @@ const publishedAt = computed(() => {
     <section v-else-if="isOtherError" class="section paper">
       <div class="section-inner">
         <article class="card">
-          <h1>We couldn't load this partner.</h1>
+          <h1>We couldn't load this partner</h1>
           <p class="small">The API didn't respond. Please try again in a moment.</p>
           <RouterLink class="button water" to="/partners">Back to partners</RouterLink>
         </article>
