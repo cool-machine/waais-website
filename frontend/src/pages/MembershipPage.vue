@@ -226,7 +226,7 @@ onMounted(() => {
 
 <template>
   <PublicLayout>
-    <PageHero compact eyebrow="Membership" title="Become a WAAIS member" lede="Create your account, verify your email, then complete the membership application for admin review." />
+    <PageHero compact title="Become a WAAIS member" lede="Create your account, verify your email, then complete the membership application for admin review." />
     <section class="section paper">
       <div class="section-inner">
         <div v-if="hasSession && !isApprovedMember && !awaitingVerification" class="notice" style="margin-top: 20px">
@@ -242,7 +242,6 @@ onMounted(() => {
 
         <div v-if="isApprovedMember" class="auth-gate">
           <article class="card">
-            <span class="tag">Member</span>
             <h3>Welcome, you're a WAAIS member</h3>
             <p>Your membership is active for {{ authUser.user?.email }}. Head to your dashboard to manage your profile and startup listings, or join the conversation on the forum.</p>
             <div class="row" style="margin-top: 14px">
@@ -263,7 +262,6 @@ onMounted(() => {
 
         <div v-if="checkingSession" class="auth-gate">
           <article class="card">
-            <span class="tag">Checking session</span>
             <h3>Looking for an active session</h3>
             <p>The application form appears after WAAIS confirms your identity.</p>
           </article>
@@ -280,7 +278,6 @@ onMounted(() => {
 
         <div v-else-if="isAnonymous" class="auth-gate">
           <article class="card">
-            <span class="tag">Step 1 of 2</span>
             <h3>Create your account</h3>
             <p>After verifying your email you will complete the membership application, which our admins review.</p>
             <form class="compact-auth-form" @submit.prevent="register">

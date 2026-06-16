@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import PageHero from '../components/PageHero.vue'
 import PublicLayout from '../components/PublicLayout.vue'
 import { useAuthUserStore } from '../stores/authUser'
 
@@ -60,16 +59,10 @@ async function sendResetLink() {
 
 <template>
   <PublicLayout>
-    <PageHero
-      compact
-      :title="isAuthenticated ? 'You\'re signed in.' : (mode === 'forgot' ? 'Reset your password.' : 'Sign in.')"
-      :lede="isAuthenticated ? 'Head to your member dashboard, or sign out to use a different account.' : (mode === 'forgot' ? 'Enter your account email and we will send you a link to choose a new password.' : 'Access your member dashboard, application status, and startup listings.')"
-    />
     <section class="section paper">
       <div class="section-inner">
         <div class="auth-gate">
           <article v-if="isAuthenticated" class="card">
-            <span class="tag">Member sign in</span>
             <h3>You're already signed in</h3>
             <p class="small">Signed in as {{ displayName }}.</p>
             <div class="row" style="margin-top: 14px">
@@ -79,7 +72,6 @@ async function sendResetLink() {
           </article>
 
           <article v-else-if="mode === 'sign-in'" class="card">
-            <span class="tag">Member sign in</span>
             <h3>Welcome back</h3>
             <form class="compact-auth-form" @submit.prevent="signIn">
               <label>Email<input v-model="form.email" required type="email" autocomplete="email" placeholder="you@example.com" :disabled="authUser.loggingIn" /></label>
@@ -98,7 +90,6 @@ async function sendResetLink() {
           </article>
 
           <article v-else class="card">
-            <span class="tag">Password reset</span>
             <h3>Get a reset link by email</h3>
             <div v-if="authUser.passwordResetRequested" class="notice" style="margin-top: 14px">
               <p class="small"><strong>Reset link on its way.</strong> If an account exists for {{ form.email }}, you'll receive an email shortly. Open the link inside to choose a new password.</p>
