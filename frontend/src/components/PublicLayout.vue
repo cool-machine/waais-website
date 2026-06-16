@@ -14,6 +14,7 @@ const links = [
   { label: 'Startups', to: '/startups' },
   { label: 'News', to: '/news' },
   { label: 'About', to: '/about' },
+  { label: 'Board of Advisors', to: '/advisors' },
   { label: 'Partners', to: '/partners' },
   { label: 'Forum', to: '/forum' },
   { label: 'Contact', to: '/contact' },

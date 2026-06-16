@@ -34,12 +34,12 @@
     "visibility": "public"
   },
   {
-    "name": "Bruno Occhipinti",
-    "role_title": "CEO, Qritive",
+    "name": "Caroline Dahllöf",
+    "role_title": "Co-Founder, Raven",
     "member_group": "advisor",
-    "bio": "Bruno is a business leader and strategist with more than 20 years of international experience across Asia and Europe, much of it in the technology and healthcare industries. He is CEO of Qritive, a Singapore-based company building AI-powered solutions for affordable histopathological diagnosis of cancer. He previously founded CrestaLab, a boutique consulting firm, and was General Manager of AICS, a venture of ASUS applying computer vision and NLP to healthcare; earlier roles spanned Philips — chronic-care management, telehealth, and affordable care across Southeast Asia — as well as Samsung Group and business-intelligence software at Hyperion (now Oracle). He holds an MBA from the Wharton School and graduate degrees in international studies, finance, and entrepreneurship, and is an ICF-accredited coach.",
-    "photo_url": "/team/bruno.jpeg",
-    "linkedin_url": "https://www.linkedin.com/in/brunoocchipinti/",
+    "bio": "Caroline is a technical product leader who builds new products in ambiguous, roadmap-free environments — writing code and talking to users in equal measure, with a CS/MS from Brown and an MBA from Wharton. She was the first Data/AI product manager in Meraki's $4B business, where she built its data foundation and shipped a conversational LLM product, and earlier led Kespry's $11M pivot from hardware to an AI platform. At Rhythm & Hues she turned computational-fluid-dynamics research into production visual-effects tools whose technology earned an Academy Technical Achievement Award. She is now co-founding Raven, an AI reading coach for dyslexic children, as its sole engineer.",
+    "photo_url": "/team/caroline.jpeg",
+    "linkedin_url": "https://www.linkedin.com/in/cdahllof/",
     "sort_order": 4,
     "content_status": "published",
     "visibility": "public"
@@ -56,13 +56,67 @@
     "visibility": "public"
   },
   {
+    "name": "Jeffrey Gross",
+    "role_title": "Data Scientist & MLOps Engineer, Booz Allen Hamilton",
+    "member_group": "advisor",
+    "bio": "Jeffrey specializes in operationalizing machine learning — including large language models — using DataOps, MLOps, and DevSecOps across cloud and edge environments. For the past six years he has worked at Booz Allen Hamilton as a data scientist and cloud, DataOps, MLOps, and LLMOps engineer, most recently bringing machine learning and MLOps to a data-engineering team building on Azure. His Penn and Wharton background adds domain depth in life sciences and finance, helping ensure sound data and model development. He works primarily in Python across Azure, AWS, and GCP, with hands-on experience in LLM fine-tuning, retrieval-augmented generation, agents, and red-teaming.",
+    "photo_url": "/team/jeff.jpeg",
+    "linkedin_url": "https://www.linkedin.com/in/jeffrey-gross/",
+    "sort_order": 6,
+    "content_status": "published",
+    "visibility": "public"
+  },
+  {
+    "name": "Mir Haque",
+    "role_title": "Founder, Fairbanc",
+    "member_group": "advisor",
+    "bio": "Mir Haque, based in San Francisco, is the Founder of Fairbanc. He has previously held roles at Aphaea Capital, Realtor.com, Clear Immigration, and Adobe, with a background spanning strategy, mergers and acquisitions, investment banking, corporate finance, and corporate development. He holds an MBA in Finance from the Wharton School.",
+    "photo_url": "/team/mir.jpeg",
+    "sort_order": 7,
+    "content_status": "published",
+    "visibility": "public"
+  },
+  {
+    "name": "Rohit Kumar",
+    "role_title": "Founder & CEO, Chapter Apps",
+    "member_group": "advisor",
+    "bio": "Rohit is the Founder and CEO of Chapter Apps, an enterprise AI agentic and learning platform used by more than 60 large corporates across emerging markets to engage and connect their global workforces. Drawing on a decade of training employees and integrating enterprise systems, his team builds AI agents designed to learn, adapt, and evolve with a business rather than act as generic tools. He was previously Managing Director of Elsevier's Health Solutions business for South Asia — where he pioneered mobile-first learning — and held senior roles at Microsoft, Wipro, and Oracle, after beginning his career in consulting with BCG and Accenture. Rohit is President of the Wharton Club of Delhi and holds an MBA from Wharton and an engineering degree from IIT Roorkee.",
+    "photo_url": "/team/rohit.jpeg",
+    "linkedin_url": "https://www.linkedin.com/in/rohitkumar007/",
+    "sort_order": 8,
+    "content_status": "published",
+    "visibility": "public"
+  },
+  {
+    "name": "Bruno Occhipinti",
+    "role_title": "CEO, Qritive",
+    "member_group": "advisor",
+    "bio": "Bruno is a business leader and strategist with more than 20 years of international experience across Asia and Europe, much of it in the technology and healthcare industries. He is CEO of Qritive, a Singapore-based company building AI-powered solutions for affordable histopathological diagnosis of cancer. He previously founded CrestaLab, a boutique consulting firm, and was General Manager of AICS, a venture of ASUS applying computer vision and NLP to healthcare; earlier roles spanned Philips — chronic-care management, telehealth, and affordable care across Southeast Asia — as well as Samsung Group and business-intelligence software at Hyperion (now Oracle). He holds an MBA from the Wharton School and graduate degrees in international studies, finance, and entrepreneurship, and is an ICF-accredited coach.",
+    "photo_url": "/team/bruno.jpeg",
+    "linkedin_url": "https://www.linkedin.com/in/brunoocchipinti/",
+    "sort_order": 9,
+    "content_status": "published",
+    "visibility": "public"
+  },
+  {
+    "name": "Keith Robinson",
+    "role_title": "Founder, Foundation Partners",
+    "member_group": "advisor",
+    "bio": "Keith has spent 25+ years investing in, operating, and advising high-growth software businesses across the US and Europe. In 2023 he founded Foundation Partners to originate and execute software and technology investments alongside leading private funds across buyout, growth, private credit, and venture. He was previously Chairman of EMEA Technology Banking & Principal Investments at Barclays, Chief Strategy Officer at Sage, and co-founder of Lamond Capital Partners, a technology-focused hedge fund; earlier he advised on billions of dollars of cross-border software M&A at Arma Partners. He is also an active angel investor and a board member or advisor to numerous high-growth software companies.",
+    "photo_url": "/team/keith.jpeg",
+    "linkedin_url": "https://www.linkedin.com/in/keithprobinson/",
+    "sort_order": 10,
+    "content_status": "published",
+    "visibility": "public"
+  },
+  {
     "name": "Beny Rubinstein",
     "role_title": "AI & Growth Advisor",
     "member_group": "advisor",
     "bio": "Beny is a growth leader and former Microsoft global sales, marketing, and business development executive who now helps organizations and leaders navigate the future with AI. A hands-on intrapreneur and entrepreneur, he brings strategy-consulting and corporate venture capital experience and a focus on startups disrupting their industries. Across 25+ years he has started, incubated, and scaled new businesses — spanning product, marketing, sales, technology, and fundraising — for customers and partners worldwide. He is also a keynote speaker, judge, and mentor in entrepreneurship programs across Israel, Latin America, and the U.S., and speaks English, Hebrew, Spanish, and Portuguese.",
     "photo_url": "/team/beny.jpeg",
     "linkedin_url": "https://www.linkedin.com/in/rubinsteinbeny/",
-    "sort_order": 6,
+    "sort_order": 11,
     "content_status": "published",
     "visibility": "public"
   }

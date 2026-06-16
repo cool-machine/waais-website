@@ -29,7 +29,7 @@ function initials(name) {
     <PageHero
       compact
       title="Board advisors"
-      lede="The advisors who help guide the Wharton Alumni AI Studio."
+      lede="The advisors who help guide the Wharton Alumni AI Studio, listed alphabetically by surname."
     />
     <section class="section paper">
       <div class="section-inner">
