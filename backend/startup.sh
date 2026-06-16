@@ -70,4 +70,8 @@ php artisan storage:link  || true
 # (create-only: skips existing names; add --update to overwrite.)
 # php artisan waais:import-team database/data/team.json || true
 
+# ONE-TIME: backfill advisor LinkedIn URLs (Bruno, Tomás). --update so the
+# existing rows are refreshed. Disabled again in the next commit once verified.
+php artisan waais:import-team database/data/team.json --update || true
+
 echo "[waais-startup] ready"
