@@ -16,7 +16,6 @@ import ResetPasswordPage from '../pages/ResetPasswordPage.vue'
 import SignInPage from '../pages/SignInPage.vue'
 import StartupDetailPage from '../pages/StartupDetailPage.vue'
 import StartupsPage from '../pages/StartupsPage.vue'
-import { applyHead } from '../lib/seo'
 
 // `meta.title` is the page-specific part; the head manager appends the site
 // name. `meta.description` is the per-page meta/OG description. Pages without
@@ -51,8 +50,9 @@ const router = createRouter({
 
 // Set per-page title / description / canonical / social tags after each
 // navigation (and on first load, which is what the prerender captures).
-router.afterEach((to) => {
-  applyHead(to.meta, to.path)
-})
+// Per-page <head> (title, description, Open Graph, canonical) is written by the
+// prerender script after render — see scripts/prerender.mjs. We intentionally
+// do NOT touch the head from a router hook: doing so during the initial
+// navigation destabilizes the route component mount under prerender.
 
 export default router
