@@ -574,10 +574,10 @@ h3 {
    breathing room than the default grid (which would left-align two cards in a
    three-column track). Collapses to one column on narrow screens. */
 .founders-grid {
-  grid-template-columns: repeat(2, minmax(0, 320px));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 320px));
   justify-content: center;
   gap: 32px;
-  max-width: 760px;
+  max-width: 1040px;
   margin-inline: auto;
 }
 
