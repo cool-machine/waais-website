@@ -82,9 +82,9 @@ php artisan storage:link  || true
 # below and is now managed in the dashboard, so it is disabled again.
 # php artisan waais:import-team database/data/team.json --update || true
 
-# ONE-TIME: hide three inactive advisors (Jeffrey Gross, Keith Robinson, Beny
-# Rubinstein) and promote Didem Ün Ateş to co-founder. --update applies both;
-# super-admins can adjust visibility/role in the dashboard. Disabled next commit.
-php artisan waais:import-team database/data/team.json --update || true
+# Inactive advisors were hidden and Didem Ün Ateş promoted to co-founder once
+# via the --update import below; the team is now managed in the dashboard, so it
+# is disabled again.
+# php artisan waais:import-team database/data/team.json --update || true
 
 echo "[waais-startup] ready"
