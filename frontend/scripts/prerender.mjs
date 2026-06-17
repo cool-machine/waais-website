@@ -24,8 +24,14 @@ const PORT = 4317
 
 // Public, crawlable routes. Member-only (/app/*) and dynamic detail pages are
 // intentionally left to client-side rendering.
+// NB: '/' is intentionally NOT prerendered. index.html doubles as the SPA
+// navigation fallback that Azure serves for any route without its own file, so
+// it must stay the neutral build shell — if we baked the home page into it,
+// every not-yet-prerendered route would serve the home page's content to
+// crawlers. Home still gets the baseline meta + Organization JSON-LD from
+// index.html.
 const ROUTES = [
-  '/', '/about', '/advisors', '/events', '/startups',
+  '/about', '/advisors', '/events', '/startups',
   '/partners', '/news', '/contact', '/membership', '/sign-in', '/legal', '/forum',
 ]
 
