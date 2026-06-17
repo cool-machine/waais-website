@@ -27,7 +27,7 @@ const routes = [
   { path: '/events/:id', name: 'event-detail', component: EventDetailPage },
   { path: '/startups', name: 'startups', component: StartupsPage, meta: { title: 'Startups', description: 'AI companies founded and built by Wharton alumni.' } },
   { path: '/startups/:id', name: 'startup-detail', component: StartupDetailPage },
-  { path: '/about', name: 'about', component: AboutPage, meta: { title: 'About', description: 'How the Wharton Alumni AI Studio began, what we do, and the founders behind it — George Gvishiani, Ines de Bagration de Ulloa, and Didem Ün Ateş.' } },
+  { path: '/about', name: 'about', component: AboutPage, meta: { title: 'About', description: 'How the Wharton Alumni AI Studio began, what we do, and the founders behind it — George Gvishiani and Ines de Bagration de Ulloa.' } },
   { path: '/advisors', name: 'advisors', component: AdvisorsPage, meta: { title: 'Board of Advisors', description: 'The board advisors guiding the Wharton Alumni AI Studio.' } },
   { path: '/partners', name: 'partners', component: PartnersPage, meta: { title: 'Partners', description: 'Organisations partnering with the Wharton Alumni AI Studio.' } },
   { path: '/partners/:id', name: 'partner-detail', component: PartnerDetailPage },
