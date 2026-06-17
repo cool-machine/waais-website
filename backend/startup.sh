@@ -82,4 +82,10 @@ php artisan storage:link  || true
 # below and is now managed in the dashboard, so it is disabled again.
 # php artisan waais:import-team database/data/team.json --update || true
 
+# ONE-TIME: hide three currently-inactive advisors (Jeffrey Gross, Keith
+# Robinson, Beny Rubinstein) via content_status=hidden. --update applies it;
+# super-admins can re-show them anytime with Publish in the dashboard Team
+# section. Disabled again in the next commit once verified on prod.
+php artisan waais:import-team database/data/team.json --update || true
+
 echo "[waais-startup] ready"

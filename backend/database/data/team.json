@@ -63,7 +63,7 @@
     "photo_url": "/team/jeff.jpeg",
     "linkedin_url": "https://www.linkedin.com/in/jeffrey-gross/",
     "sort_order": 6,
-    "content_status": "published",
+    "content_status": "hidden",
     "visibility": "public"
   },
   {
@@ -106,7 +106,7 @@
     "photo_url": "/team/keith.jpeg",
     "linkedin_url": "https://www.linkedin.com/in/keithprobinson/",
     "sort_order": 10,
-    "content_status": "published",
+    "content_status": "hidden",
     "visibility": "public"
   },
   {
@@ -117,7 +117,7 @@
     "photo_url": "/team/beny.jpeg",
     "linkedin_url": "https://www.linkedin.com/in/rubinsteinbeny/",
     "sort_order": 11,
-    "content_status": "published",
+    "content_status": "hidden",
     "visibility": "public"
   }
 ]
