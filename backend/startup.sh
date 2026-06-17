@@ -87,4 +87,8 @@ php artisan storage:link  || true
 # is disabled again.
 # php artisan waais:import-team database/data/team.json --update || true
 
+# ONE-TIME: move Didem Ün Ateş back from co-founder to board advisor.
+# --update applies the change; disabled again in the next commit.
+php artisan waais:import-team database/data/team.json --update || true
+
 echo "[waais-startup] ready"
