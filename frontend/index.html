@@ -14,6 +14,33 @@
     <meta name="theme-color" content="#011f5b" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wharton Alumni AI Studio</title>
+
+    <!-- Baseline SEO / social tags. Per-page values are set at runtime by
+         src/lib/seo.js (and baked into each prerendered page at build). -->
+    <meta name="description" content="The Wharton Alumni AI Studio (WAAIS) connects Wharton alumni, entrepreneurs, investors, and researchers building real-world AI — an affinity group of the Wharton Club of the United Kingdom." />
+    <meta property="og:site_name" content="Wharton Alumni AI Studio" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://whartonai.studio/og-icon-512.png" />
+    <meta name="twitter:card" content="summary" />
+
+    <!-- Tell Google the organisation, its official logo, and its founders. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Wharton Alumni AI Studio",
+        "alternateName": "WAAIS",
+        "url": "https://whartonai.studio",
+        "logo": "https://whartonai.studio/logos/wcuk-logo.png",
+        "description": "An affinity group of the Wharton Club of the United Kingdom connecting Wharton alumni, entrepreneurs, investors, and researchers building real-world AI.",
+        "parentOrganization": { "@type": "Organization", "name": "Wharton Club of the United Kingdom" },
+        "founder": [
+          { "@type": "Person", "name": "George Gvishiani", "jobTitle": "Founder & Chairman", "sameAs": "https://www.linkedin.com/in/georgegvishiani/" },
+          { "@type": "Person", "name": "Ines de Bagration de Ulloa", "jobTitle": "Co-Founder & Head of Marketing and Social Media", "sameAs": "https://www.linkedin.com/in/ines-kethevan-bagration/" },
+          { "@type": "Person", "name": "Didem Ün Ateş", "jobTitle": "Co-Founder", "sameAs": "https://www.linkedin.com/in/didemunates/" }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>
