@@ -49,6 +49,16 @@ jobs:
           VITE_API_BASE_URL: ${{ env.VITE_API_BASE_URL }}
           VITE_BASE: '/'
 
+      # Prerender the public routes to real HTML so crawlers/link-preview bots
+      # see the content without running JavaScript. Non-blocking: the script
+      # exits 0 on any failure, and continue-on-error guarantees a prerender
+      # problem never stops the deploy (it just ships the plain SPA).
+      - name: Prerender public routes (SEO)
+        continue-on-error: true
+        run: npm run prerender
+        env:
+          VITE_API_BASE_URL: ${{ env.VITE_API_BASE_URL }}
+
       - name: Copy SWA config into dist
         run: cp staticwebapp.config.json dist/staticwebapp.config.json
 
