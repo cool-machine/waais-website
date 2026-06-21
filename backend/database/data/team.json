@@ -41,7 +41,7 @@
     "photo_url": "/team/caroline.jpeg",
     "linkedin_url": "https://www.linkedin.com/in/cdahllof/",
     "sort_order": 4,
-    "content_status": "published",
+    "content_status": "hidden",
     "visibility": "public"
   },
   {
@@ -52,7 +52,7 @@
     "photo_url": "/team/tomas.jpeg",
     "linkedin_url": "https://www.linkedin.com/in/tgazmuri/",
     "sort_order": 5,
-    "content_status": "published",
+    "content_status": "hidden",
     "visibility": "public"
   },
   {
@@ -73,7 +73,7 @@
     "bio": "Mir Haque, based in San Francisco, is the Founder of Fairbanc. He has previously held roles at Aphaea Capital, Realtor.com, Clear Immigration, and Adobe, with a background spanning strategy, mergers and acquisitions, investment banking, corporate finance, and corporate development. He holds an MBA in Finance from the Wharton School.",
     "photo_url": "/team/mir.jpeg",
     "sort_order": 7,
-    "content_status": "published",
+    "content_status": "hidden",
     "visibility": "public"
   },
   {
@@ -84,7 +84,7 @@
     "photo_url": "/team/rohit.jpeg",
     "linkedin_url": "https://www.linkedin.com/in/rohitkumar007/",
     "sort_order": 8,
-    "content_status": "published",
+    "content_status": "hidden",
     "visibility": "public"
   },
   {
@@ -95,7 +95,7 @@
     "photo_url": "/team/bruno.jpeg",
     "linkedin_url": "https://www.linkedin.com/in/brunoocchipinti/",
     "sort_order": 9,
-    "content_status": "published",
+    "content_status": "hidden",
     "visibility": "public"
   },
   {
