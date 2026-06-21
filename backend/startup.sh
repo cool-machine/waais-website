@@ -91,9 +91,9 @@ php artisan storage:link  || true
 # the team is managed in the dashboard, so it is disabled again.
 # php artisan waais:import-team database/data/team.json --update || true
 
-# ONE-TIME: hide all board advisors except Didem Ün Ateş (the others are not yet
-# paid members). --update applies it; re-publish via the dashboard when they
-# join. Disabled again in the next commit.
-php artisan waais:import-team database/data/team.json --update || true
+# Board advisors other than Didem Ün Ateş were hidden via the --update import
+# below (pending paid membership); the team is managed in the dashboard, so it
+# is disabled again.
+# php artisan waais:import-team database/data/team.json --update || true
 
 echo "[waais-startup] ready"
