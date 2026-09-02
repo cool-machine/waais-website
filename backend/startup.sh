@@ -96,8 +96,8 @@ php artisan storage:link  || true
 # is disabled again.
 # php artisan waais:import-team database/data/team.json --update || true
 
-# All eight board advisors are being published via the --update import below
-# (one-time; the team is managed in the dashboard).
-php artisan waais:import-team database/data/team.json --update || true
+# The full board of advisors was published once via the --update import below;
+# the team is managed in the dashboard, so it is disabled again.
+# php artisan waais:import-team database/data/team.json --update || true
 
 echo "[waais-startup] ready"
